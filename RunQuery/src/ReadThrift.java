@@ -150,7 +150,7 @@ public final class ReadThrift {
                     				new FileInputStream(fileInput)));
                     TBinaryProtocol protocol = new TBinaryProtocol(transport);
                     transport.open();
-                    int counter = 0;
+                    
                     Set<String> added = new HashSet<String>();
                     while (true) 
                     {
@@ -227,7 +227,7 @@ public final class ReadThrift {
 	                        			EntityType ent = currentToken.entity_type;
 	                        			int mention_id = currentToken.mention_id;
 	                        			int equiv_id  = currentToken.equiv_id;
-	                        			allTokens.append(word + "__" + ent + " ");
+	                        			allTokens.append(word + "__" + ent + "__" + mention_id + "__" + equiv_id + " ");
 	                        			
 	                        		}
 	                        		out.write(allTokens.toString());
