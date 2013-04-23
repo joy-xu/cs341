@@ -13,7 +13,7 @@ public class QueryRetreiver {
 		
 		
 		options.putAll(CommandLineUtils.simpleCommandLineParser(args));
-		System.out.println(options.size());
+		
 		System.out.println("Query Retreiver Options");
 		for (Map.Entry<String, String> entry: options.entrySet()) {
 			System.out.printf("  %s: %s%n", entry.getKey(), entry.getValue());
@@ -82,6 +82,7 @@ public class QueryRetreiver {
     	
     	boolean getSentences = false;
     	boolean getCompleteDocument = false;
+    	boolean includeNER = false;
     	String sentenceOutput = null;
     	String documentOutput = null;
     	
@@ -96,20 +97,22 @@ public class QueryRetreiver {
     		getCompleteDocument = true;
     		documentOutput = options.get("-getCompleteDocument");
     	}
+    	if (options.containsKey("-includeNER"))
+    		includeNER = true;
     	
     	if (getSentences)
     	{
     		System.out.println("Printing sentences...");
     		if (numQueryTerms == 1)
-    			tr.getSentences(first, sentenceOutput);
+    			tr.getSentences(first, includeNER, sentenceOutput);
     		if (numQueryTerms == 2)
-    			tr.getSentences(first,second,sentenceOutput);
+    			tr.getSentences(first,second,includeNER, sentenceOutput);
     	}
     	
     	if (getCompleteDocument)
     	{
     		System.out.println("Printing complete document...");
-    		tr.getCompleteDocument(documentOutput);
+    		tr.getCompleteDocument(includeNER, documentOutput);
     	}
     	System.out.println("Done!");
     	return;
@@ -128,10 +131,12 @@ public class QueryRetreiver {
 		System.out.println("-getSentences outputFile (If you want to get concerned sentences only");
 		System.out.println("-getCompleteDocument outputFile (If you want the entire document, with NER tags");
 		System.out.println("At least one of the above two options must be enabled");
+		System.out.println("-includeNER NER Tags will be printed if this argument is present");
 		System.out.println("Example Usage:");
-		System.out.println("java -jar QueryRetreiver.jar -indexLocation /home/ubuntu/chunk/ -numTerms 2" +
-				" -q1 \"Clifford May\" -q2 EMET -withinWords 10 -downloadDirectory /home/ubuntu/downloaded/" +
-				" -getSentences retreivedSentences -getCompleteDocument retreivedDocument");
+		System.out.println("java -jar QueryRetreiver.jar " +
+				"-indexLocation /home/ubuntu/chunk -numTerms 2 -q1 EMET -q2 \"Clifford May\"" +
+				" -withinWords 10 -getSentences retreivedSentences_Cliff -getCompleteDocument retreivedDoc_Cliff" +
+				" -downloadDirectory /home/ubuntu/testing/");
 		System.exit(0);
 	}
 }

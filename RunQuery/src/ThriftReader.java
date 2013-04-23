@@ -11,7 +11,8 @@ public class ThriftReader {
 	public List<String> queryResults;
 	public String workingDirectory;
 	public Map<String,StreamItem> mapOfItems;
-	public Map<String, List<Token>> mapOfTokens;
+	public Map<String, List<String>> mapOfSentences;
+	public Map<String, List<String>> mapOfTags;
 	
 	public ThriftReader(List<String> queryResult, String workingDirectoryInput)
 	{
@@ -20,7 +21,8 @@ public class ThriftReader {
 		queryResults.addAll(queryResult);
 		workingDirectory = workingDirectoryInput;
 		mapOfItems = new HashMap<String, StreamItem>();
-		mapOfTokens = new HashMap<String, List<Token>>();
+		mapOfSentences = new HashMap<String, List<String>>();
+		mapOfTags = new HashMap<String, List<String>>();
 		Map<String,Set<String>> folderToFiles = new HashMap<String,Set<String>>();
     	Map<String,Set<String>> fileToDocID = new HashMap<String,Set<String>>();
     	
@@ -120,25 +122,45 @@ public class ThriftReader {
                 transport.open();
                 
                 Set<String> added = new HashSet<String>();
+                
+                 
                 while (true) 
                 {
                     final StreamItem item = new StreamItem();
+                    if (added.equals(streamIDs))
+                     	break;
+                    
                     item.read(protocol);
                     //out.write("counter = " + ++counter);
-                    if (added.equals(streamIDs))
-                    	break;
+                  
+                    
                     if (streamIDs.contains(item.stream_id))
                     {
+                    	
                     	added.add(item.stream_id);
+                    	
                     	mapOfItems.put(absFileName + "_" + item.stream_id, item);
                     	List<Sentence> s = item.body.sentences.get("lingpipe");
-                        List<Token> listOfTokens = new ArrayList<Token>();
+                        
+                    	List<String> allSentences = new ArrayList<String>();
+                    	List<String> allTags = new ArrayList<String>();
                     	for (int n = 0;n<s.size();n++)
                     	{
-                    		List<Token> t = s.get(n).getTokens();
-                    		listOfTokens.addAll(t);
+                    		List<Token> tList = s.get(n).getTokens();
+                    		StringBuilder sbuf = new StringBuilder();
+                    		StringBuilder nbuf = new StringBuilder();
+                    		for (int t = 0;t<tList.size();t++)
+                    		{
+                    			sbuf.append(tList.get(t).token.toLowerCase());
+                    			sbuf.append(" ");
+                    			nbuf.append(tList.get(t).entity_type);
+                    			nbuf.append(" ");
+                    		}
+                    		allSentences.add(sbuf.toString());
+                    		allTags.add(nbuf.toString());
                     	}
-                        mapOfTokens.put(absFileName + "_" + item.stream_id, listOfTokens);
+                        mapOfSentences.put(absFileName + "_" + item.stream_id,allSentences);
+                        mapOfTags.put(absFileName + "_" + item.stream_id, allTags);
                     }
                 }
     		}
@@ -149,21 +171,16 @@ public class ThriftReader {
 	}
 	
 	
-	public void getSentences(String first, String outputFile) throws IOException
+	public void getSentences(String first, Boolean includeNER, String outputFile) throws IOException
 	{
 		BufferedWriter buf = new BufferedWriter(new FileWriter(workingDirectory + outputFile));
 		
-		Iterator<String> it = mapOfItems.keySet().iterator();
+		Iterator<String> it = mapOfSentences.keySet().iterator();
 		while(it.hasNext())
 		{
 			String absFileName = it.next();
-			StreamItem currentItem = mapOfItems.get(absFileName);
-			if (currentItem == null || currentItem.body == null)
-				continue;
-			String clean_visible = currentItem.body.clean_visible;
-			if (clean_visible == null)
-				continue;
-			String[] sentences = clean_visible.split(".");
+			List<String> currentAllSentences = mapOfSentences.get(absFileName);
+			List<String> currentAllTags = mapOfTags.get(absFileName);
 			
 			buf.write("<DOC>");
 			buf.newLine();
@@ -176,13 +193,26 @@ public class ThriftReader {
 			buf.write("<SENTENCES>");
 			buf.newLine();
 			
-			for (int j = 0;j<sentences.length;j++)
+			for (int j = 0;j<currentAllSentences.size();j++)
 			{
-				String currentSentence = sentences[j];
+				String currentSentence = currentAllSentences.get(j);
 				
-				if (currentSentence.indexOf(first) != -1)
+				if (currentSentence.indexOf(first.toLowerCase()) != -1)
 				{
-					buf.write(currentSentence);
+					StringBuilder sbuf = new StringBuilder();
+					String[] words = currentSentence.split(" ");
+					String[] tags = currentAllTags.get(j).split(" ");
+					for (int w = 0;w<words.length;w++)
+					{
+						sbuf.append(words[w]);
+						if (includeNER)
+						{
+							sbuf.append("__");
+							sbuf.append(tags[w]);
+						}
+						sbuf.append(" ");
+					}
+					buf.write(sbuf.toString());
 					buf.newLine();
 				}
 			}
@@ -195,21 +225,17 @@ public class ThriftReader {
 		buf.close();
 	}
 	
-	public void getSentences(String first, String second, String outputFile) throws IOException
+	public void getSentences(String first, String second, boolean includeNER, String outputFile) throws IOException
 	{
 		BufferedWriter buf = new BufferedWriter(new FileWriter(workingDirectory + outputFile));
 		
-		Iterator<String> it = mapOfItems.keySet().iterator();
+		Iterator<String> it = mapOfSentences.keySet().iterator();
 		while(it.hasNext())
 		{
 			String absFileName = it.next();
-			StreamItem currentItem = mapOfItems.get(absFileName);
-			if (currentItem == null || currentItem.body == null)
-				continue;
-			String clean_visible = currentItem.body.clean_visible;
-			if (clean_visible == null)
-				continue;
-			String[] sentences = clean_visible.split(".");
+			List<String> currentAllSentences = mapOfSentences.get(absFileName);
+			List<String> currentAllTags = mapOfTags.get(absFileName);
+			
 			
 			buf.write("<DOC>");
 			buf.newLine();
@@ -227,19 +253,33 @@ public class ThriftReader {
 			String output = "";
 			int firstPos = -1;
 			int secondPos = -1;
-			for (int j = 0;j<sentences.length;j++)
+			for (int j = 0;j<currentAllSentences.size();j++)
 			{
-				String currentSentence = sentences[j];
+				String currentSentence = currentAllSentences.get(j);
+				String currentTags = currentAllTags.get(j);
 				if (done)
 				{
-					firstPos = currentSentence.indexOf(first);
+					firstPos = currentSentence.indexOf(first.toLowerCase());
 				}
-				secondPos = currentSentence.indexOf(second);
+				secondPos = currentSentence.indexOf(second.toLowerCase());
 				if (!done)
 				{
 					if (secondPos != -1)
 					{
-						output = output + "." + currentSentence;
+						StringBuilder sbuf = new StringBuilder();
+						String[] allWords = currentSentence.split(" ");
+						String[] allTags =  currentTags.split(" ");
+						for (int w = 0;w<allWords.length;w++)
+						{
+							sbuf.append(allWords[w]);
+							if (includeNER)
+							{
+								sbuf.append("__");
+								sbuf.append(allTags[w]);
+							}
+							sbuf.append(" ");
+						}
+						output = output + "." + sbuf.toString();
 						buf.write(output);
 						buf.newLine();
 						
@@ -250,21 +290,38 @@ public class ThriftReader {
 				}
 				else
 				{
-					if (firstPos != -1 && secondPos != -1)
-					{
-						output = currentSentence;
-						buf.write(output);
-						buf.newLine();
-						output = "";
-						done = true;
-					}
-					else if (firstPos != -1 && secondPos == -1)
-					{
-						output = currentSentence;
-						done = false;
-					}
-					else
+					if (firstPos == -1)
 						continue;
+					else
+					{
+						StringBuilder sbuf = new StringBuilder();
+						String[] allWords = currentSentence.split(" ");
+						String[] allTags =  currentTags.split(" ");
+						for (int w = 0;w<allWords.length;w++)
+						{
+							sbuf.append(allWords[w]);
+							if (includeNER)
+							{
+								sbuf.append("__");
+								sbuf.append(allTags[w]);
+							}
+							sbuf.append(" ");
+						}
+					
+						if (firstPos != -1 && secondPos != -1)
+						{
+							output = sbuf.toString();
+							buf.write(output);
+							buf.newLine();
+							output = "";
+							done = true;
+						}
+						else if (firstPos != -1 && secondPos == -1)
+						{
+							output = sbuf.toString();
+							done = false;
+						}
+					}
 				}
 					
 			}
@@ -277,7 +334,7 @@ public class ThriftReader {
 		buf.close();
 	}
 
-	public void getCompleteDocument(String outputFile) throws IOException
+	public void getCompleteDocument(Boolean includeNER, String outputFile) throws IOException
 	{
 		BufferedWriter buf = new BufferedWriter(new FileWriter(workingDirectory + outputFile));
 		
@@ -329,8 +386,10 @@ public class ThriftReader {
             			EntityType ent = currentToken.entity_type;
             			int mention_id = currentToken.mention_id;
             			int equiv_id  = currentToken.equiv_id;
-            			allTokens.append(word + "__" + ent + " ");
-            			
+            			if (includeNER)
+            				allTokens.append(word + "__" + ent + " ");
+            			else
+            				allTokens.append(word + " ");
             		}
             		buf.write(allTokens.toString());
             		buf.newLine();
