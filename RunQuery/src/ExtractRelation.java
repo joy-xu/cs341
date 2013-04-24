@@ -99,4 +99,7 @@ public class ExtractRelation {
 		}
 		else {
 			System.out.println("Not returning anything from findRelation - " + shortestPath);
-			return r
+			return relationsFound;
+		}
+	}
+}
