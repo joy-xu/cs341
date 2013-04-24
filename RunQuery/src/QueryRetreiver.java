@@ -75,6 +75,8 @@ public class QueryRetreiver {
     	if (options.containsKey("-downloadDirectory"))
     	{
     		workingDirectory = options.get("-downloadDirectory");
+    		if (workingDirectory == null)
+    			workingDirectory = "";
     		if (workingDirectory.charAt(workingDirectory.length()-1) != '/')
     			workingDirectory = workingDirectory + "/";
     	}
@@ -100,13 +102,19 @@ public class QueryRetreiver {
     	if (options.containsKey("-includeNER"))
     		includeNER = true;
     	
+    	// Use return variable sentences for all the sentences
     	if (getSentences)
     	{
     		System.out.println("Printing sentences...");
+    		List<String> sentences;
     		if (numQueryTerms == 1)
-    			tr.getSentences(first, includeNER, sentenceOutput);
+    		{
+    			sentences = tr.getSentences(first, includeNER, sentenceOutput);
+    		}
     		if (numQueryTerms == 2)
-    			tr.getSentences(first,second,includeNER, sentenceOutput);
+    		{
+    			sentences = tr.getSentences(first,second,includeNER, sentenceOutput);
+    		}
     	}
     	
     	if (getCompleteDocument)
