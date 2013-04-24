@@ -85,6 +85,7 @@ public class QueryRetreiver {
     	boolean getSentences = false;
     	boolean getCompleteDocument = false;
     	boolean includeNER = false;
+    	boolean doBootstrap = false;
     	String sentenceOutput = null;
     	String documentOutput = null;
     	
@@ -101,6 +102,9 @@ public class QueryRetreiver {
     	}
     	if (options.containsKey("-includeNER"))
     		includeNER = true;
+    	
+    	if (options.containsKey("-bootstrap"))
+    		doBootstrap = true;
     	
     	// Use return variable sentences for all the sentences
     	if (getSentences)

@@ -260,11 +260,14 @@ public class ThriftReader {
 			{
 				String currentSentence = currentAllSentences.get(j);
 				String currentTags = currentAllTags.get(j);
-				if (done)
-				{
-					firstPos = currentSentence.toLowerCase().indexOf(first.toLowerCase());
-				}
+				
+				firstPos = currentSentence.toLowerCase().indexOf(first.toLowerCase());
 				secondPos = currentSentence.toLowerCase().indexOf(second.toLowerCase());
+				if (!done && firstPos != 1 && firstPos < secondPos)
+				{
+					output = "";
+					done = true;
+				}
 				if (!done)
 				{
 					if (secondPos != -1)

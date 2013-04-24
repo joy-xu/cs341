@@ -251,7 +251,9 @@ public final class ReadThrift {
                     transport.close();
         		}
         	}
-        	
+        }
+    }
+}   	
         	/*
             File f = new File(fileInput);
            
