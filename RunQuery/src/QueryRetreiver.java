@@ -75,6 +75,8 @@ public class QueryRetreiver {
     	if (options.containsKey("-downloadDirectory"))
     	{
     		workingDirectory = options.get("-downloadDirectory");
+    		if (workingDirectory == null)
+    			workingDirectory = "";
     		if (workingDirectory.charAt(workingDirectory.length()-1) != '/')
     			workingDirectory = workingDirectory + "/";
     	}
