@@ -22,12 +22,14 @@ import edu.stanford.nlp.util.StringUtils;
 
 public class ExtractRelation {
 	StanfordCoreNLP processor;
-	IntCounter<String> relationCounter = new IntCounter<String>();
+	static IntCounter<String> relationCounter = new IntCounter<String>();
+	
+	public ExtractRelation(StanfordCoreNLP processor) {
+		this.processor = processor;
+	}
 	
 	public ExtractRelation() {
-		Properties props = new Properties();
-		props.put("annotators", "tokenize, ssplit, pos, lemma, parse");
-		processor = new StanfordCoreNLP(props, false);
+		
 	}
 	
 	public void findRelations(List<String> sentences, String ent1, String ent2){
@@ -46,6 +48,7 @@ public class ExtractRelation {
             								ent1, ent2));// item(0).getTextContent());*/
             for(int sentenceCounter = 0; sentenceCounter < sentences.size(); sentenceCounter++) {
             	String sentence = sentences.get(sentenceCounter);
+            	System.out.println("\n\n" + sentence);
     			List<String> relations = findRelation(sentence, ent1, ent2);
     			for(String relation:relations) {
     				relationCounter.incrementCount(relation);
@@ -60,11 +63,17 @@ public class ExtractRelation {
 	}
 	
 	public List<String> findRelation(String sentence, String ent1, String ent2) {
-		Annotation document = new Annotation(sentence);
-		processor.annotate(document);
-		CoreMap sentenceMap = document.get(SentencesAnnotation.class).get(0);
-		SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
-		return findRelation(graph, findWordsInSemanticGraph(graph, ent1), findWordsInSemanticGraph(graph, ent2));
+		try {
+			Annotation document = new Annotation(sentence);
+			processor.annotate(document);
+			CoreMap sentenceMap = document.get(SentencesAnnotation.class).get(0);
+			SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
+			return findRelation(graph, findWordsInSemanticGraph(graph, ent1), findWordsInSemanticGraph(graph, ent2));
+		}
+		catch(Exception ex) {
+			
+		}
+		return new ArrayList<String>();
 	}
 	
 	public List<IndexedWord> findWordsInSemanticGraph(SemanticGraph graph, String entity) {
@@ -102,6 +111,7 @@ public class ExtractRelation {
 					relationsFound.add(edge.getTarget().originalText());
 					
 			}
+			System.out.println("Returning relations - " + relationsFound);
 			return relationsFound;
 		}
 		else {

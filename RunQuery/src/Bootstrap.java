@@ -1,6 +1,8 @@
 import java.util.*;
 import java.io.*;
 
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+
 import util.*;
 public class Bootstrap {
 
@@ -22,66 +24,25 @@ public class Bootstrap {
 		if (!options.containsKey("-indexLocation"))
 			PrintUsageAndExit();
 		
-		if (!options.containsKey("-numTerms"))
-			PrintUsageAndExit();
-		
-		
-		
 		String indexLoc = options.get("-indexLocation");
-		
-		int numQueryTerms = Integer.parseInt(options.get("-numTerms"));
-		if (numQueryTerms < 0 || numQueryTerms > 2)
-			PrintUsageAndExit();
 		
 		if (!options.containsKey("-getSentences") && !options.containsKey("-getCompleteDocument"))
 			PrintUsageAndExit();
 		
-		String first = null;
-		String second = null;
-		if (numQueryTerms == 1)
-		{
-			if (!options.containsKey("-q1"))
-				PrintUsageAndExit();
-			first = options.get("-q1");
-		}
-		if (numQueryTerms == 2)
-		{
-			if (!options.containsKey("-q1") || !options.containsKey("-q2"))
-				PrintUsageAndExit();
-			first = options.get("-q1");
-			second = options.get("-q2");
-		}
 		int withinWords = 1;
-		if (options.containsKey("-withinWords"))
-		{
+		if (options.containsKey("-withinWords")) {
 			withinWords = Integer.parseInt(options.get("-withinWords"));
-			if (numQueryTerms == 1)
-				System.out.println("Ignoring withinWords argument for a single term query...");
 		}
-		
-		String queryString = null;
-		if (second != null)
-			queryString = "#od" + withinWords + "(#1(" + first + ") #1(" + second + "))";
-		else
-			queryString = "#1(" + first + ")";
-		
-		System.out.println("Querying Index for " + queryString + "...");
-		Query q = new Query(indexLoc);
-    	List<String> queryResults = q.queryIndex(queryString);
-    	
-    	System.out.println("Retreiving documents...");
     	
     	String workingDirectory = "";
-    	if (options.containsKey("-downloadDirectory"))
-    	{
+    	if (options.containsKey("-downloadDirectory")) {
     		workingDirectory = options.get("-downloadDirectory");
     		if (workingDirectory == null)
     			workingDirectory = "";
     		if (workingDirectory.charAt(workingDirectory.length()-1) != '/')
     			workingDirectory = workingDirectory + "/";
     	}
-    	ThriftReader tr = new ThriftReader(queryResults,workingDirectory);
-    	
+    	    	
     	boolean getSentences = false;
     	boolean getCompleteDocument = false;
     	boolean includeNER = false;
@@ -106,31 +67,43 @@ public class Bootstrap {
     	if (options.containsKey("-bootstrap"))
     		doBootstrap = true;
     	
-    	// Use return variable sentences for all the sentences
-    	if (getSentences)
-    	{
-    		System.out.println("Printing sentences...");
-    		List<String> sentences = new ArrayList<String>();
-    		if (numQueryTerms == 1)
-    		{
-    			sentences = tr.getSentences(first, includeNER, sentenceOutput);
-    		}
-    		if (numQueryTerms == 2)
-    		{
-    			sentences = tr.getSentences(first,second,includeNER, sentenceOutput);
-    			if (doBootstrap)
-    			{
-    				ExtractRelation er = new ExtractRelation();
-    				er.findRelations(sentences, first, second);
-    			}
-    		}
-    	}
+    	Properties props = new Properties();
+		props.put("annotators", "tokenize, ssplit, pos, lemma, parse");
+		StanfordCoreNLP processor = new StanfordCoreNLP(props, false);
     	
-    	if (getCompleteDocument)
-    	{
-    		System.out.println("Printing complete document...");
-    		tr.getCompleteDocument(includeNER, documentOutput);
-    	}
+    	List<Pair<String, String>> bootstrapList = new ArrayList<Pair<String, String>>();
+    	//bootstrapList.add(new Pair<String, String>("Bill Gates", "Microsoft"));
+    	bootstrapList.add(new Pair<String, String>("Steve Jobs", "Apple"));
+    	/*bootstrapList.add(new Pair<String, String>("Larry Page", "Google"));
+    	bootstrapList.add(new Pair<String, String>("Sergey Brin", "Google"));
+    	bootstrapList.add(new Pair<String, String>("Narayana Murthy", "Infosys"));
+    	bootstrapList.add(new Pair<String, String>("Hugh Hefner", "Playboy"));
+    	bootstrapList.add(new Pair<String, String>("Marcus Goldman", "Goldman Sachs"));
+    	bootstrapList.add(new Pair<String, String>("Samuel Sachs", "Goldman Sachs"));
+    	bootstrapList.add(new Pair<String, String>("James Simons", "Renaissance Technologies"));
+    	bootstrapList.add(new Pair<String, String>("Kenneth Griffin", "Citadel LLC"));
+    	bootstrapList.add(new Pair<String, String>("Emanuel Lehman", "Lehman Brothers"));
+    	bootstrapList.add(new Pair<String, String>("Henry Lehman", "Lehman Brothers"));*/
+    	// Use return variable sentences for all the sentences
+    	
+    	if (getSentences) {
+    		Query q = new Query(indexLoc);
+    		for(Pair<String, String> pair:bootstrapList) {
+	    		String first = pair.getFirst();
+	    		String second = pair.getSecond();
+	    		String queryString = null;
+	    		if (second != null)
+	    			queryString = "#od" + withinWords + "(#1(" + first + ") #1(" + second + "))";
+	    		else
+	    			queryString = "#1(" + first + ")";
+	    		
+	    		System.out.println("Querying Index for " + queryString + "...");
+	    		
+	    		ExtractRelation er = new ExtractRelation(processor);
+	    		er.findRelations(QueryRetreiver.executeQuery(indexLoc, queryString, first, second, workingDirectory), first, second);
+    	   	}
+		}
+
     	System.out.println("Done!");
     	return;
 	}
