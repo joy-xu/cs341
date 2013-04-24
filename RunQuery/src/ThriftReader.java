@@ -227,8 +227,9 @@ public class ThriftReader {
 		return returnString;
 	}
 	
-	public void getSentences(String first, String second, boolean includeNER, String outputFile) throws IOException
+	public List<String> getSentences(String first, String second, boolean includeNER, String outputFile) throws IOException
 	{
+		List<String> returnString = new ArrayList<String>();
 		BufferedWriter buf = new BufferedWriter(new FileWriter(workingDirectory + outputFile));
 		buf.write("<DOCS>");
 		Iterator<String> it = mapOfSentences.keySet().iterator();
@@ -282,6 +283,7 @@ public class ThriftReader {
 							sbuf.append(" ");
 						}
 						output = output + "." + sbuf.toString();
+						returnString.add(output);
 						buf.write("<SENTENCE>");
 						buf.write(output);
 						buf.write("</SENTENCE>");
@@ -314,6 +316,7 @@ public class ThriftReader {
 						if (firstPos != -1 && secondPos != -1)
 						{
 							output = sbuf.toString();
+							returnString.add(output);
 							buf.write("<SENTENCE>");
 							buf.write(output);
 							buf.write("</SENTENCE>");
@@ -338,6 +341,7 @@ public class ThriftReader {
 		buf.write("</DOCS>");
 		buf.flush();
 		buf.close();
+		return returnString;
 	}
 
 	public void getCompleteDocument(Boolean includeNER, String outputFile) throws IOException
