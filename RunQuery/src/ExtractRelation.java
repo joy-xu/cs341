@@ -55,6 +55,7 @@ public class ExtractRelation {
         catch(Exception ex) {
         	
         }*/
+
         System.out.println(relationCounter);
 	}
 	

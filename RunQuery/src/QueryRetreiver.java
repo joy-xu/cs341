@@ -106,7 +106,7 @@ public class QueryRetreiver {
     	if (getSentences)
     	{
     		System.out.println("Printing sentences...");
-    		List<String> sentences;
+    		List<String> sentences = new ArrayList<String>();
     		if (numQueryTerms == 1)
     		{
     			sentences = tr.getSentences(first, includeNER, sentenceOutput);
@@ -114,6 +114,8 @@ public class QueryRetreiver {
     		if (numQueryTerms == 2)
     		{
     			sentences = tr.getSentences(first,second,includeNER, sentenceOutput);
+    			ExtractRelation er = new ExtractRelation();
+        		er.findRelations(sentences, first, second);
     		}
     	}
     	
