@@ -118,8 +118,11 @@ public class QueryRetreiver {
     		if (numQueryTerms == 2)
     		{
     			sentences = tr.getSentences(first,second,includeNER, sentenceOutput);
-    			ExtractRelation er = new ExtractRelation();
-        		er.findRelations(sentences, first, second);
+    			if (doBootstrap)
+    			{
+    				ExtractRelation er = new ExtractRelation();
+    				er.findRelations(sentences, first, second);
+    			}
     		}
     	}
     	
