@@ -72,9 +72,9 @@ public class Bootstrap {
 		StanfordCoreNLP processor = new StanfordCoreNLP(props, false);
     	
     	List<Pair<String, String>> bootstrapList = new ArrayList<Pair<String, String>>();
-    	//bootstrapList.add(new Pair<String, String>("Bill Gates", "Microsoft"));
+    	bootstrapList.add(new Pair<String, String>("Bill Gates", "Microsoft"));
     	bootstrapList.add(new Pair<String, String>("Steve Jobs", "Apple"));
-    	/*bootstrapList.add(new Pair<String, String>("Larry Page", "Google"));
+    	bootstrapList.add(new Pair<String, String>("Larry Page", "Google"));
     	bootstrapList.add(new Pair<String, String>("Sergey Brin", "Google"));
     	bootstrapList.add(new Pair<String, String>("Narayana Murthy", "Infosys"));
     	bootstrapList.add(new Pair<String, String>("Hugh Hefner", "Playboy"));
@@ -83,7 +83,7 @@ public class Bootstrap {
     	bootstrapList.add(new Pair<String, String>("James Simons", "Renaissance Technologies"));
     	bootstrapList.add(new Pair<String, String>("Kenneth Griffin", "Citadel LLC"));
     	bootstrapList.add(new Pair<String, String>("Emanuel Lehman", "Lehman Brothers"));
-    	bootstrapList.add(new Pair<String, String>("Henry Lehman", "Lehman Brothers"));*/
+    	bootstrapList.add(new Pair<String, String>("Henry Lehman", "Lehman Brothers"));
     	// Use return variable sentences for all the sentences
     	
     	if (getSentences) {
@@ -93,7 +93,7 @@ public class Bootstrap {
 	    		String second = pair.getSecond();
 	    		String queryString = null;
 	    		if (second != null)
-	    			queryString = "#od" + withinWords + "(#1(" + first + ") #1(" + second + "))";
+	    			queryString = "#uw" + withinWords + "(#1(" + first + ") #1(" + second + "))";
 	    		else
 	    			queryString = "#1(" + first + ")";
 	    		
@@ -102,6 +102,7 @@ public class Bootstrap {
 	    		ExtractRelation er = new ExtractRelation(processor);
 	    		er.findRelations(QueryRetreiver.executeQuery(indexLoc, queryString, first, second, workingDirectory), first, second);
     	   	}
+    		System.out.println(ExtractRelation.relationCounter);
 		}
 
     	System.out.println("Done!");

@@ -1,3 +1,5 @@
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -22,7 +24,7 @@ import edu.stanford.nlp.util.StringUtils;
 
 public class ExtractRelation {
 	StanfordCoreNLP processor;
-	static IntCounter<String> relationCounter = new IntCounter<String>();
+	public static IntCounter<String> relationCounter = new IntCounter<String>();
 	
 	public ExtractRelation(StanfordCoreNLP processor) {
 		this.processor = processor;
@@ -31,6 +33,13 @@ public class ExtractRelation {
 	public ExtractRelation() {
 		
 	}
+	
+	static CharsetEncoder asciiEncoder = 
+		      Charset.forName("US-ASCII").newEncoder(); // or "ISO-8859-1" for ISO Latin 1
+		  
+		  public static boolean isPureAscii(String v) {
+		    return asciiEncoder.canEncode(v);
+		  }	
 	
 	public void findRelations(List<String> sentences, String ent1, String ent2){
 		/*org.w3c.dom.Document document;
@@ -49,6 +58,16 @@ public class ExtractRelation {
             for(int sentenceCounter = 0; sentenceCounter < sentences.size(); sentenceCounter++) {
             	String sentence = sentences.get(sentenceCounter);
             	System.out.println("\n\n" + sentence);
+            	
+            	if(sentence.length() > 400) {
+            		System.out.println("Sentence too long.");
+            		continue;
+            	}	
+            	
+            	if(!isPureAscii(sentence)) {
+            		System.out.println("Contains non-ascii characters. Aborting.");
+            		continue;
+            	}
     			List<String> relations = findRelation(sentence, ent1, ent2);
     			for(String relation:relations) {
     				relationCounter.incrementCount(relation);
@@ -58,8 +77,6 @@ public class ExtractRelation {
         catch(Exception ex) {
         	
         }*/
-
-        System.out.println(relationCounter);
 	}
 	
 	public List<String> findRelation(String sentence, String ent1, String ent2) {
@@ -99,7 +116,8 @@ public class ExtractRelation {
 			}
 		}
 		
-		if(shortestPath.size() == 1) {
+		if(shortestPath.size() == 1 && !words1.contains(shortestPath.get(0))
+				&& !words2.contains(shortestPath.get(0))) {
 			relationsFound.add(shortestPath.get(0).originalText());
 			for(SemanticGraphEdge edge:graph.getIncomingEdgesSorted(shortestPath.get(0))) {
 				if(edge.getRelation().toString().equals("conj_and"))
