@@ -15,12 +15,14 @@ import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraphEdge;
+import edu.stanford.nlp.stats.IntCounter;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.StringUtils;
 
 
 public class ExtractRelation {
 	StanfordCoreNLP processor;
+	IntCounter<String> relationCounter = new IntCounter<String>();
 	
 	public ExtractRelation() {
 		Properties props = new Properties();
@@ -28,8 +30,8 @@ public class ExtractRelation {
 		processor = new StanfordCoreNLP(props, false);
 	}
 	
-	public void findRelationsFromFile(String fileName, String ent1, String ent2){
-		org.w3c.dom.Document document;
+	public void findRelations(List<String> sentences, String ent1, String ent2){
+		/*org.w3c.dom.Document document;
         // Make an  instance of the DocumentBuilderFactory
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         try {
@@ -41,15 +43,20 @@ public class ExtractRelation {
 
             NodeList sentenceList = document.getElementsByTagName("SENTENCE");
             System.out.println(String.format("%d sentences found matching '%s' and '%s'.", sentenceList.getLength(),
-            								ent1, ent2));// item(0).getTextContent());
-            for(int sentenceCounter = 0; sentenceCounter < sentenceList.getLength(); sentenceCounter++) {
-            	String sentence = sentenceList.item(sentenceCounter).getTextContent();
-    			System.out.println("Relation : " + findRelation(sentence, ent1, ent2));
+            								ent1, ent2));// item(0).getTextContent());*/
+            for(int sentenceCounter = 0; sentenceCounter < sentences.size(); sentenceCounter++) {
+            	String sentence = sentences.get(sentenceCounter);
+    			List<String> relations = findRelation(sentence, ent1, ent2);
+    			for(String relation:relations) {
+    				relationCounter.incrementCount(relation);
+    			}
             }
-        }
+        /*}
         catch(Exception ex) {
         	
-        }
+        }*/
+
+        System.out.println(relationCounter);
 	}
 	
 	public List<String> findRelation(String sentence, String ent1, String ent2) {
