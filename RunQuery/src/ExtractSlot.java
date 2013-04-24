@@ -20,11 +20,11 @@ import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.StringUtils;
 
 
-public class ExtractRelation {
+public class ExtractSlot {
 	StanfordCoreNLP processor;
 	IntCounter<String> relationCounter = new IntCounter<String>();
 	
-	public ExtractRelation() {
+	public ExtractSlot() {
 		Properties props = new Properties();
 		props.put("annotators", "tokenize, ssplit, pos, lemma, parse");
 		processor = new StanfordCoreNLP(props, false);
