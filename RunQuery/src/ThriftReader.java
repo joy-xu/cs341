@@ -151,7 +151,7 @@ public class ThriftReader {
                     		StringBuilder nbuf = new StringBuilder();
                     		for (int t = 0;t<tList.size();t++)
                     		{
-                    			sbuf.append(tList.get(t).token.toLowerCase());
+                    			sbuf.append(tList.get(t).token);
                     			sbuf.append(" ");
                     			nbuf.append(tList.get(t).entity_type);
                     			nbuf.append(" ");
@@ -259,9 +259,9 @@ public class ThriftReader {
 				String currentTags = currentAllTags.get(j);
 				if (done)
 				{
-					firstPos = currentSentence.indexOf(first.toLowerCase());
+					firstPos = currentSentence.toLowerCase().indexOf(first.toLowerCase());
 				}
-				secondPos = currentSentence.indexOf(second.toLowerCase());
+				secondPos = currentSentence.toLowerCase().indexOf(second.toLowerCase());
 				if (!done)
 				{
 					if (secondPos != -1)
