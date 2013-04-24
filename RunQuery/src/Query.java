@@ -37,7 +37,11 @@ public class Query {
 	}
 	
 	public List<String> queryIndex(String query) {
-		//ExtractRelation er = new ExtractRelation();
+		String abc = "ABCD";
+		System.out.println(abc.toLowerCase());
+		System.out.println(abc);
+		ExtractRelation er = new ExtractRelation();
+		er.findRelationsFromFile("/home/aju/cs341/data/expanded/retrieved.txt", "Bill Gates", "Microsoft");
 		//er.findRelation("Bill Gates founded the billion dollar company Microsoft.", "Bill Gates", "Microsoft");
 		return queryIndex(query, Integer.MAX_VALUE);
 	}

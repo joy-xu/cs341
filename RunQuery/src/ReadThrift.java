@@ -205,6 +205,7 @@ public final class ReadThrift {
 	                        */
 	                        out.write("<SENTENCE>");
 	                        Map<String,List<Sentence>> mm = item.body.sentences;
+	                        System.out.println(item.body.sentences.get(0));
 	                        
 	                        Iterator<String> it = mm.keySet().iterator();
 	                        

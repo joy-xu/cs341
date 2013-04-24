@@ -228,7 +228,7 @@ public class ThriftReader {
 	public void getSentences(String first, String second, boolean includeNER, String outputFile) throws IOException
 	{
 		BufferedWriter buf = new BufferedWriter(new FileWriter(workingDirectory + outputFile));
-		
+		buf.write("<DOCS>");
 		Iterator<String> it = mapOfSentences.keySet().iterator();
 		while(it.hasNext())
 		{
@@ -280,9 +280,10 @@ public class ThriftReader {
 							sbuf.append(" ");
 						}
 						output = output + "." + sbuf.toString();
+						buf.write("<SENTENCE>");
 						buf.write(output);
-						buf.newLine();
-						
+						buf.write("</SENTENCE>");
+						buf.newLine();						
 					}
 					output = "";
 					done = true;
@@ -311,7 +312,9 @@ public class ThriftReader {
 						if (firstPos != -1 && secondPos != -1)
 						{
 							output = sbuf.toString();
+							buf.write("<SENTENCE>");
 							buf.write(output);
+							buf.write("</SENTENCE>");
 							buf.newLine();
 							output = "";
 							done = true;
@@ -330,6 +333,7 @@ public class ThriftReader {
 			buf.write("</DOC>");
 			buf.newLine();
 		}
+		buf.write("</DOCS>");
 		buf.flush();
 		buf.close();
 	}
@@ -337,7 +341,7 @@ public class ThriftReader {
 	public void getCompleteDocument(Boolean includeNER, String outputFile) throws IOException
 	{
 		BufferedWriter buf = new BufferedWriter(new FileWriter(workingDirectory + outputFile));
-		
+		buf.write("<DOCS>");
 		Iterator<String> it = mapOfItems.keySet().iterator();
 		while(it.hasNext())
 		{
@@ -391,8 +395,10 @@ public class ThriftReader {
             			else
             				allTokens.append(word + " ");
             		}
+            		buf.write("<SENTENCE>");
             		buf.write(allTokens.toString());
             		buf.newLine();
+            		buf.write("</SENTENCE>");
             	}
             }
 			buf.write("</SENTENCES>");
@@ -400,6 +406,7 @@ public class ThriftReader {
 			buf.write("</DOC>");
 			buf.newLine();
 		}
+		buf.write("</DOCS>");
 		buf.flush();
 		buf.close();	
 	}
