@@ -2,9 +2,13 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
-
+import java.util.Queue;
+import java.util.Set;
+import java.util.HashSet;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -16,16 +20,17 @@ import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.BasicDependenciesAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraphEdge;
 import edu.stanford.nlp.stats.IntCounter;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.StringUtils;
-
+import util.Pair;
 
 public class ExtractRelation {
 	StanfordCoreNLP processor;
 	public static IntCounter<String> relationCounter = new IntCounter<String>();
-	
+	public static IntCounter<Pair<String,String>> entityPairCounter = new IntCounter<Pair<String,String>>();
 	public ExtractRelation(StanfordCoreNLP processor) {
 		this.processor = processor;
 	}
@@ -77,6 +82,161 @@ public class ExtractRelation {
         catch(Exception ex) {
         	
         }*/
+	}
+	
+	public void findEntityPairs(List<String> queryOutput, String term)
+	{
+		
+		
+		for (int i = 0;i<queryOutput.size();i++)
+		{
+			String sentence = queryOutput.get(i);
+			System.out.println("\n\n" + sentence);
+        	
+        	if(sentence.length() > 400) {
+        		System.out.println("Sentence too long.");
+        		continue;
+        	}	
+        	
+        	if(!isPureAscii(sentence)) {
+        		System.out.println("Contains non-ascii characters. Aborting.");
+        		continue;
+        	}
+			Pair<String, String> relations = findEntities(sentence, term);
+			
+			entityPairCounter.incrementCount(relations);
+			
+		}
+		
+		//System.out.println(entityPairCounter.toString());
+	}
+	
+	
+	public Pair<String,String> findEntities(String sentence, String term)
+	{
+		try {
+			Annotation document = new Annotation(sentence);
+			processor.annotate(document);
+			CoreMap sentenceMap = document.get(SentencesAnnotation.class).get(0);
+			
+			SemanticGraph basicgraph = sentenceMap.get(BasicDependenciesAnnotation.class);
+			SemanticGraph ccgraph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
+			
+			IndexedWord head = findHeadNode(basicgraph, term);
+			
+			List<IndexedWord> children = ccgraph.getChildList(head);
+			Pair<IndexedWord, IndexedWord> entityRoots = findEntityPairs(ccgraph, head, children);
+			String first = findChildPhrase(ccgraph,entityRoots.getFirst());
+			String second = findChildPhrase(ccgraph,entityRoots.getSecond());
+			return new Pair<String,String>(first,second);
+		}
+		catch(Exception ex) {
+			
+		}
+		return new Pair<String,String>("","");
+	}
+	
+	public String findChildPhrase(SemanticGraph graph, IndexedWord root)
+	{
+		Set<IndexedWord> children = new HashSet<IndexedWord>();
+		
+		Queue<IndexedWord> parents = new LinkedList<IndexedWord>();
+		parents.add(root);
+		
+		while(!parents.isEmpty())
+		{
+			IndexedWord current = parents.poll();
+			List<IndexedWord> allChildren = graph.getChildList(current);
+			for (int i =0;i<allChildren.size();i++)
+			{
+				parents.add(allChildren.get(i));
+				children.add(allChildren.get(i));
+			}
+		}
+	
+		List<IndexedWord> childList = new ArrayList<IndexedWord>(children);
+		Collections.sort(childList);
+		
+		StringBuilder sbuf = new StringBuilder();
+		for (int i = 0; i < childList.size();i++)
+		{
+			sbuf.append(childList.get(i).originalText());
+			sbuf.append(" ");
+		}
+		return sbuf.toString();
+	}
+	
+	public Pair<IndexedWord,IndexedWord> findEntityPairs(SemanticGraph graph, IndexedWord head, List<IndexedWord> children)
+	{
+		Collections.sort(children);
+		for (int i = 0;i<children.size();i++)
+		{
+			IndexedWord first = children.get(i);
+			for (int j = i+1;j<children.size();j++)
+			{
+				IndexedWord second = children.get(j);
+				if ((first.sentIndex() - head.sentIndex())*(second.sentIndex()-head.sentIndex()) >= 0)
+					continue;
+				
+				SemanticGraphEdge firstEdge = graph.getEdge(first, head);
+				SemanticGraphEdge secondEdge = graph.getEdge(second,head);
+				
+				String firstRelation = firstEdge.getRelation().toString();
+				String secondRelation = secondEdge.getRelation().toString();
+				
+				if ((firstRelation.equals("prep_at") && secondRelation.equals("nsubj"))
+					|| (firstRelation.equals("nsubj") && secondRelation.equals("prep_at")))
+					return new Pair<IndexedWord,IndexedWord>(first,second);
+				
+			}
+		}
+		return new Pair<IndexedWord, IndexedWord>(new IndexedWord(), new IndexedWord());
+	}
+	
+	public IndexedWord findHeadNodeForPhrase(String term)
+	{
+		Annotation document = new Annotation(term);
+		processor.annotate(document);
+		CoreMap sentenceMap = document.get(SentencesAnnotation.class).get(0);
+		SemanticGraph g = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
+		return g.getFirstRoot();
+	}
+	
+	
+	public IndexedWord findHeadNode(SemanticGraph graph, String term)
+	{
+		List<String> entitySplits = Arrays.asList(term.split(" "));
+		List<IndexedWord> allWords = new ArrayList<IndexedWord>();
+		
+		for(IndexedWord word: graph.vertexSet()) {
+			if(StringUtils.containsIgnoreCase(entitySplits, word.originalText()))
+				allWords.add(word);
+		}
+		
+		
+		for (IndexedWord word: allWords)
+		{
+			List<IndexedWord> allParents = graph.getParentList(word);
+			boolean isHead = true;
+			for (IndexedWord parent:allParents)
+			{
+				if (allWords.contains(parent))
+				{
+					isHead = false;
+					break;
+				}
+			}
+			if (isHead)
+			{
+				return word;
+			}
+		}
+		IndexedWord head = findHeadNodeForPhrase(term);
+		for(IndexedWord word: graph.vertexSet()) {
+			if(head.originalText().equals(word.originalText()))
+				return word;
+		}
+		return new IndexedWord();
 	}
 	
 	public List<String> findRelation(String sentence, String ent1, String ent2) {
