@@ -70,7 +70,7 @@ public class ExtractRelation {
             	}
     			List<String> relations = findRelation(sentence, ent1, ent2);
     			for(String relation:relations) {
-    				relationCounter.incrementCount(relation);
+    				relationCounter.incrementCount(relation.toLowerCase());
     			}
             }
         /*}
@@ -110,6 +110,7 @@ public class ExtractRelation {
 		for(IndexedWord w1: words1) {
 			for(IndexedWord w2: words2) {
 				List<IndexedWord> current = graph.getShortestUndirectedPathNodes(w1, w2);
+				List<SemanticGraphEdge> edges = graph.getShortestUndirectedPathEdges(w1, w2);
 				current.remove(w1); current.remove(w2);
 				if(shortestPath.size() == 0 ||shortestPath.size() > current.size())
 					shortestPath = current; 
@@ -120,12 +121,14 @@ public class ExtractRelation {
 				&& !words2.contains(shortestPath.get(0))) {
 			relationsFound.add(shortestPath.get(0).originalText());
 			for(SemanticGraphEdge edge:graph.getIncomingEdgesSorted(shortestPath.get(0))) {
-				if(edge.getRelation().toString().equals("conj_and"))
+				if(edge.getRelation().toString().equals("conj_and")&& !words1.contains(edge.getTarget())
+						&& !words2.contains(edge.getTarget()))
 					relationsFound.add(edge.getSource().originalText());
 					
 			}
 			for(SemanticGraphEdge edge:graph.getOutEdgesSorted(shortestPath.get(0))) {
-				if(edge.getRelation().toString().equals("conj_and"))
+				if(edge.getRelation().toString().equals("conj_and") && !words1.contains(edge.getTarget())
+						&& !words2.contains(edge.getTarget()))
 					relationsFound.add(edge.getTarget().originalText());
 					
 			}

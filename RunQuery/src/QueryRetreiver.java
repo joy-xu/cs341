@@ -7,9 +7,9 @@ public class QueryRetreiver {
 	/**
 	 * @param args
 	 */
-	public static List<String> executeQuery(String indexLoc, String query, String first, String second, String workingDirectory) {
+	public static List<String> executeQuery(String indexLoc, String query, int numResults, String first, String second, String workingDirectory) {
 		Query q = new Query(indexLoc);
-    	List<String> queryResults = q.queryIndex(query);
+    	List<String> queryResults = q.queryIndex(query, numResults);
     	
     	System.out.println("Retreiving documents...");
     	ThriftReader tr = new ThriftReader(queryResults,workingDirectory);
