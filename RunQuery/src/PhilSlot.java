@@ -4,8 +4,11 @@ import java.io.*;
 import util.*;
 public class PhilSlot {
 
-	static String indexLoc, first, second;
+	static String indexLoc, first, second, sentenceOutput = null, documentOutput = null, workingDirectory = "";
     static int withinWords;
+    static boolean getSentences = false, getCompleteDocument = false, includeNER = false;
+    static boolean doBootstrap= false, doPhilSlot= false;
+	
 	/**
 	 * @param args
 	 */
@@ -16,15 +19,9 @@ public class PhilSlot {
                         System.out.printf("  %s: %s%n", entry.getKey(), entry.getValue());
                 }
 
-
                 if (!options.containsKey("-indexLocation"))
                         PrintUsageAndExit();
                 indexLoc = options.get("-indexLocation");
-
-                if (!options.containsKey("-numTerms"))
-                        PrintUsageAndExit();
-                if (Integer.parseInt(options.get("-numTerms")) != 2)
-                        PrintUsageAndExit();
 
                 if (!options.containsKey("-getSentences") && !options.containsKey("-getCompleteDocument"))
                         PrintUsageAndExit();
@@ -38,14 +35,41 @@ public class PhilSlot {
                 withinWords = 1;
 		if (options.containsKey("-withinWords"))
                         withinWords = Integer.parseInt(options.get("-withinWords"));	
+	
+    	if (options.containsKey("-getSentences"))
+		{
+			getSentences = true;
+    		sentenceOutput = options.get("-getSentences");
+    	}
+	
+    	if (options.containsKey("-getCompleteDocument"))
+		{
+			getCompleteDocument = true;
+    		documentOutput = options.get("-getCompleteDocument");
+		}
+    	if (options.containsKey("-includeNER"))
+			includeNER = true;
+	
+    	if (options.containsKey("-bootstrap"))
+			doBootstrap = true;
+	
+    	if (options.containsKey("-philslot"))
+			doPhilSlot = true;
+    	
+    	if (options.containsKey("-downloadDirectory"))
+    	{
+			workingDirectory = options.get("-downloadDirectory");
+			if (workingDirectory == null)
+				workingDirectory = "";
+			if (workingDirectory.charAt(workingDirectory.length()-1) != '/')
+				workingDirectory = workingDirectory + "/";
+		}
 	}
 
 	public static void main(String[] args) throws IOException{
 		// TODO Auto-generated method stub
 		Map<String, String> options = new HashMap<String, String>();
-		
 		options.putAll(CommandLineUtils.simpleCommandLineParser(args));
-		
 		parseArgs(options);
 		
 		String queryString = null;
@@ -53,74 +77,36 @@ public class PhilSlot {
 		
 		System.out.println("Querying Index for " + queryString + "...");
 		Query q = new Query(indexLoc);
-    		List<String> queryResults = q.queryIndex(queryString);
+    	List<String> queryResults = q.queryIndex(queryString);
     	
-    		System.out.println("Retreiving documents...");
+    	System.out.println("Retreiving documents...");
     	
-  	  	String workingDirectory = "";
-    		if (options.containsKey("-downloadDirectory"))
-	    	{
-    			workingDirectory = options.get("-downloadDirectory");
-    			if (workingDirectory == null)
-    				workingDirectory = "";
-    			if (workingDirectory.charAt(workingDirectory.length()-1) != '/')
-    				workingDirectory = workingDirectory + "/";
+  	    ThriftReader tr = new ThriftReader(queryResults,workingDirectory);
+    	
+    	// Use return variable sentences for all the sentences
+    	if (getSentences)
+    	{
+    		System.out.println("Printing sentences...");
+    		List<String> sentences = new ArrayList<String>();
+    		sentences = tr.getSentences(first,second,includeNER, sentenceOutput);
+   			if(sentences.isEmpty()) {
+    			System.out.println("No matches found...");
+    			return;
     		}
-
-	    	ThriftReader tr = new ThriftReader(queryResults,workingDirectory);
+    				
+    		if (doPhilSlot) {
+               	ExtractSlot es = new ExtractSlot();
+               	es.findSlotVals(sentences, first, second, includeNER);
+            }
+    	}
     	
-    		boolean getSentences = false;
-    		boolean getCompleteDocument = false;
-    		boolean includeNER = false;
-	    	boolean doBootstrap = false;
-            boolean doPhilSlot= false;
-    		String sentenceOutput = null;
-	    	String documentOutput = null;
-    	
-	    	if (options.containsKey("-getSentences"))
-    		{
-    			getSentences = true;
-	    		sentenceOutput = options.get("-getSentences");
-	    	}
-    	
-	    	if (options.containsKey("-getCompleteDocument"))
-    		{
-    			getCompleteDocument = true;
-	    		documentOutput = options.get("-getCompleteDocument");
-    		}
-	    	if (options.containsKey("-includeNER"))
-    			includeNER = true;
-    	
-	    	if (options.containsKey("-bootstrap"))
-    			doBootstrap = true;
-    	
-	    	if (options.containsKey("-philslot"))
-    			doPhilSlot = true;
-    	
-	    	// Use return variable sentences for all the sentences
-    		if (getSentences)
-    		{
-    			System.out.println("Printing sentences...");
-    			List<String> sentences = new ArrayList<String>();
-    			sentences = tr.getSentences(first,second,includeNER, sentenceOutput);
-    			if (doBootstrap)
-    			{
-    				ExtractRelation er = new ExtractRelation();
-    				er.findRelations(sentences, first, second);
-    			}
-                if (doPhilSlot) {
-                	ExtractSlot es = new ExtractSlot();
-                	es.findSlotVals(sentences, first, second, includeNER);
-                }
-    		}
-    	
-    		if (getCompleteDocument)
-    		{
-    			System.out.println("Printing complete document...");
-	    		tr.getCompleteDocument(includeNER, documentOutput);
-    		}
-    		System.out.println("Done!");
-    		return;
+    	if (getCompleteDocument)
+    	{
+   			System.out.println("Printing complete document...");
+	    	tr.getCompleteDocument(includeNER, documentOutput);
+    	}
+    	System.out.println("Done!");
+    	return;
 	}
 
 	private static void PrintUsageAndExit()

@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -12,6 +13,7 @@ import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
+import edu.stanford.nlp.parser.lexparser.NoSuchParseException;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
@@ -60,7 +62,6 @@ public class ExtractSlot {
             	sentence = sentences.get(sentenceCounter);
             	nerMap.clear();
             	sentence = createNERMap(sentence, nerMap, notUseStanNER);
-            	
             	List<String> slotvals = findSlotVal(sentence, ent1, ent2, nerMap);
     			for(String slotVal:slotvals) {
     				slotValCounter.incrementCount(slotVal);
@@ -70,11 +71,16 @@ public class ExtractSlot {
 	}
 	
 	public List<String> findSlotVal(String sentence, String ent1, String ent2, Map<String, String> nerMap) {
-		Annotation document = new Annotation(sentence);
-		processor.annotate(document);
-		CoreMap sentenceMap = document.get(SentencesAnnotation.class).get(0);
-		SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
-		return findSlotVal(graph, findWordsInSemanticGraph(graph, ent1), findWordsInSemanticGraph(graph, ent2), nerMap);
+		try {
+			Annotation document = new Annotation(sentence);
+			processor.annotate(document);
+			CoreMap sentenceMap = document.get(SentencesAnnotation.class).get(0);
+			SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
+			return findSlotVal(graph, findWordsInSemanticGraph(graph, ent1), findWordsInSemanticGraph(graph, ent2), nerMap);
+		}
+		catch (NoSuchParseException e) {
+			return Collections.<String>emptyList();
+		}
 	}
 	
 	public List<IndexedWord> findWordsInSemanticGraph(SemanticGraph graph, String entity) {
