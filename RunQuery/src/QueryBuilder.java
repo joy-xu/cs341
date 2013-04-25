@@ -17,4 +17,9 @@ public class QueryBuilder {
 			queryString = "#1(" + first + ")";
 		return queryString;
 	}
+	
+	public static String buildSingleTermQuery(String term)
+	{
+		return "#1(" + term + ")";
+	}
 }
