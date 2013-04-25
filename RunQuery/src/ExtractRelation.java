@@ -2,8 +2,12 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+
 import java.util.Collections;
 import java.util.LinkedList;
+
+import java.util.HashMap;
+
 import java.util.List;
 import java.util.Properties;
 import java.util.Queue;
@@ -29,8 +33,10 @@ import util.Pair;
 
 public class ExtractRelation {
 	StanfordCoreNLP processor;
+
 	public static IntCounter<String> relationCounter = new IntCounter<String>();
 	public static IntCounter<Pair<String,String>> entityPairCounter = new IntCounter<Pair<String,String>>();
+
 	public ExtractRelation(StanfordCoreNLP processor) {
 		this.processor = processor;
 	}
@@ -46,7 +52,7 @@ public class ExtractRelation {
 		    return asciiEncoder.canEncode(v);
 		  }	
 	
-	public void findRelations(List<String> sentences, String ent1, String ent2){
+	public HashMap<String, Double> findRelations(List<String> sentences, String ent1, String ent2){
 		/*org.w3c.dom.Document document;
         // Make an  instance of the DocumentBuilderFactory
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -60,11 +66,12 @@ public class ExtractRelation {
             NodeList sentenceList = document.getElementsByTagName("SENTENCE");
             System.out.println(String.format("%d sentences found matching '%s' and '%s'.", sentenceList.getLength(),
             								ent1, ent2));// item(0).getTextContent());*/
+		    IntCounter<String> relationCounter = new IntCounter<String>();
             for(int sentenceCounter = 0; sentenceCounter < sentences.size(); sentenceCounter++) {
             	String sentence = sentences.get(sentenceCounter);
             	System.out.println("\n\n" + sentence);
             	
-            	if(sentence.length() > 400) {
+            	if(sentence.length() > 500) {
             		System.out.println("Sentence too long.");
             		continue;
             	}	
@@ -78,6 +85,11 @@ public class ExtractRelation {
     				relationCounter.incrementCount(relation.toLowerCase());
     			}
             }
+            double total = relationCounter.totalCount();
+            HashMap<String, Double> normalizedCounts = new HashMap<String, Double>();
+            for(String key:relationCounter.keySet())
+            	normalizedCounts.put(key, relationCounter.getCount(key) / total);
+            return normalizedCounts;
         /*}
         catch(Exception ex) {
         	
@@ -243,9 +255,12 @@ public class ExtractRelation {
 		try {
 			Annotation document = new Annotation(sentence);
 			processor.annotate(document);
-			CoreMap sentenceMap = document.get(SentencesAnnotation.class).get(0);
-			SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
-			return findRelation(graph, findWordsInSemanticGraph(graph, ent1), findWordsInSemanticGraph(graph, ent2));
+			List<String> relations = new ArrayList<String>();
+			for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
+				SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
+				relations.addAll(findRelation(graph, findWordsInSemanticGraph(graph, ent1), findWordsInSemanticGraph(graph, ent2)));
+			}
+			return relations;
 		}
 		catch(Exception ex) {
 			
@@ -270,7 +285,7 @@ public class ExtractRelation {
 		for(IndexedWord w1: words1) {
 			for(IndexedWord w2: words2) {
 				List<IndexedWord> current = graph.getShortestUndirectedPathNodes(w1, w2);
-				List<SemanticGraphEdge> edges = graph.getShortestUndirectedPathEdges(w1, w2);
+				//List<SemanticGraphEdge> edges = graph.getShortestUndirectedPathEdges(w1, w2);
 				current.remove(w1); current.remove(w2);
 				if(shortestPath.size() == 0 ||shortestPath.size() > current.size())
 					shortestPath = current; 
@@ -296,7 +311,9 @@ public class ExtractRelation {
 			return relationsFound;
 		}
 		else {
-			System.out.println("Not returning anything from findRelation - " + shortestPath);
+			//System.out.println("Not returning anything from findRelation - " + shortestPath);
+			for(IndexedWord w:shortestPath)
+				relationsFound.add(w.originalText());
 			return relationsFound;
 		}
 	}
