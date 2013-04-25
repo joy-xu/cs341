@@ -103,15 +103,19 @@ public class ThriftReader {
     	        							" -d " + downloadDirectory;
     	        	
     	        	
-    	        	System.out.println(decryptCommand);
+    	        	//System.out.println(decryptCommand);
     	        	p = Runtime.getRuntime().exec(decryptCommand);
     	        	
     	        	p.waitFor();
     	        	
     	        	String unxzCommand = "unxz " + decryptedFile;
     	        	
-    	        	System.out.println(unxzCommand);
+    	        	//System.out.println(unxzCommand);
     	        	p = Runtime.getRuntime().exec(unxzCommand);
+    	        	p.waitFor();
+    	        	
+    	        	String deleteCommand = "rm -f " + downloadDirectory;
+    	        	p = Runtime.getRuntime().exec(deleteCommand);
     	        	p.waitFor();
     			}
     			
