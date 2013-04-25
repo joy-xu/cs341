@@ -16,10 +16,10 @@ public class Bootstrap {
 		
 		options.putAll(CommandLineUtils.simpleCommandLineParser(args));
 		
-		System.out.println("Bootstrap Options");
+		/*System.out.println("Bootstrap Options");
 		for (Map.Entry<String, String> entry: options.entrySet()) {
 			System.out.printf("  %s: %s%n", entry.getKey(), entry.getValue());
-		}
+		}*/
 		
 		if (!options.containsKey("-indexLocation"))
 			PrintUsageAndExit();
@@ -32,6 +32,11 @@ public class Bootstrap {
 		int withinWords = 1;
 		if (options.containsKey("-withinWords")) {
 			withinWords = Integer.parseInt(options.get("-withinWords"));
+		}
+		
+		int numResults = Integer.MAX_VALUE;
+		if (options.containsKey("-numResults")) {
+			numResults = Integer.parseInt(options.get("-numResults"));
 		}
     	
     	String workingDirectory = "";
@@ -49,6 +54,7 @@ public class Bootstrap {
     	boolean doBootstrap = false;
     	String sentenceOutput = null;
     	String documentOutput = null;
+    	String bootstrapInput = null;
     	
     	if (options.containsKey("-getSentences"))
     	{
@@ -64,26 +70,17 @@ public class Bootstrap {
     	if (options.containsKey("-includeNER"))
     		includeNER = true;
     	
-    	if (options.containsKey("-bootstrap"))
+    	if (options.containsKey("-bootstrap")) {
     		doBootstrap = true;
+    		bootstrapInput = options.get("-bootstrap");
+    	}
     	
     	Properties props = new Properties();
 		props.put("annotators", "tokenize, ssplit, pos, lemma, parse");
 		StanfordCoreNLP processor = new StanfordCoreNLP(props, false);
-    	
-    	List<Pair<String, String>> bootstrapList = new ArrayList<Pair<String, String>>();
-    	bootstrapList.add(new Pair<String, String>("Bill Gates", "Microsoft"));
-    	bootstrapList.add(new Pair<String, String>("Steve Jobs", "Apple"));
-    	bootstrapList.add(new Pair<String, String>("Larry Page", "Google"));
-    	bootstrapList.add(new Pair<String, String>("Sergey Brin", "Google"));
-    	bootstrapList.add(new Pair<String, String>("Narayana Murthy", "Infosys"));
-    	bootstrapList.add(new Pair<String, String>("Hugh Hefner", "Playboy"));
-    	bootstrapList.add(new Pair<String, String>("Marcus Goldman", "Goldman Sachs"));
-    	bootstrapList.add(new Pair<String, String>("Samuel Sachs", "Goldman Sachs"));
-    	bootstrapList.add(new Pair<String, String>("James Simons", "Renaissance Technologies"));
-    	bootstrapList.add(new Pair<String, String>("Kenneth Griffin", "Citadel LLC"));
-    	bootstrapList.add(new Pair<String, String>("Emanuel Lehman", "Lehman Brothers"));
-    	bootstrapList.add(new Pair<String, String>("Henry Lehman", "Lehman Brothers"));
+			
+    	List<Pair<String, String>> bootstrapList = getBootstrapInput(bootstrapInput);
+
     	// Use return variable sentences for all the sentences
     	
     	if (getSentences) {
@@ -91,22 +88,42 @@ public class Bootstrap {
     		for(Pair<String, String> pair:bootstrapList) {
 	    		String first = pair.getFirst();
 	    		String second = pair.getSecond();
-	    		String queryString = null;
-	    		if (second != null)
-	    			queryString = "#uw" + withinWords + "(#1(" + first + ") #1(" + second + "))";
-	    		else
-	    			queryString = "#1(" + first + ")";
+	    		
+	    		String queryString = QueryBuilder.buildOrderedQuery(first, second, withinWords);
 	    		
 	    		System.out.println("Querying Index for " + queryString + "...");
 	    		
 	    		ExtractRelation er = new ExtractRelation(processor);
-	    		er.findRelations(QueryRetreiver.executeQuery(indexLoc, queryString, first, second, workingDirectory), first, second);
-    	   	}
+	    		er.findRelations(QueryRetreiver.executeQuery(indexLoc, queryString, numResults, first, second, workingDirectory), first, second);
+	    		System.out.println(ExtractRelation.relationCounter);
+    		}
+    		
     		System.out.println(ExtractRelation.relationCounter);
 		}
 
     	System.out.println("Done!");
     	return;
+	}
+	
+	private static List<Pair<String, String>> getBootstrapInput(String fileName) {
+		List<Pair<String, String>> bootstrapList = new ArrayList<Pair<String, String>>();
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(fileName));
+			String line = null;
+			try {
+				while((line=reader.readLine())!=null) {
+					String[] splits = line.split("\t");
+					bootstrapList.add(new Pair<String, String>(splits[0], splits[1]));
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return bootstrapList;
 	}
 
 	private static void PrintUsageAndExit()

@@ -98,8 +98,10 @@ public class ThriftReader {
     	        		p.waitFor();
     	        	}
     	        	
-    	        	 
-    	        	String decryptCommand = "gpg -o " + decryptedFile + 
+    	        	File decryptF = new File(decryptedFile);
+    	        	if (!decryptF.exists())
+    	        	{
+    	        		String decryptCommand = "gpg -o " + decryptedFile + 
     	        							" -d " + downloadDirectory;
     	        	
     	        	
@@ -107,6 +109,7 @@ public class ThriftReader {
     	        	p = Runtime.getRuntime().exec(decryptCommand);
     	        	
     	        	p.waitFor();
+    	        	}
     	        	
     	        	String unxzCommand = "unxz " + decryptedFile;
     	        	
@@ -235,6 +238,7 @@ public class ThriftReader {
 	{
 		List<String> returnString = new ArrayList<String>();
 		BufferedWriter buf = new BufferedWriter(new FileWriter(workingDirectory + outputFile));
+		//System.out.println(mapOfSentences.keySet().size());
 		buf.write("<DOCS>");
 		Iterator<String> it = mapOfSentences.keySet().iterator();
 		while(it.hasNext())
