@@ -86,8 +86,9 @@ public class Bootstrap {
     	if (getSentences) {
     		
     		Query q = new Query(indexLoc);
-    		HashMap<String, Double> totalNormalizedCounts = new HashMap<String, Double>();
+    		HashMap<String, Double> totalNormalizedCounts = new HashMap<String, Double>(), minShare = new HashMap<String, Double>();
     		IntCounter<String> numAppearances = new IntCounter<String>();
+ 
     		for(Pair<String, String> pair:bootstrapList) {
 	    		String first = pair.getFirst();
 	    		String second = pair.getSecond();
@@ -105,12 +106,23 @@ public class Bootstrap {
 	    				totalNormalizedCounts.put(key, totalNormalizedCounts.get(key) + normalizedCounts.get(key));
 	    			else
 	    				totalNormalizedCounts.put(key, normalizedCounts.get(key));
+	    			if(minShare.containsKey(key)) {
+	    				if(minShare.get(key) > normalizedCounts.get(key)) {
+	    					minShare.put(key, normalizedCounts.get(key));
+	    				}
+	    			}
+	    			else
+	    				minShare.put(key, normalizedCounts.get(key));
 	    		}
     		}
+    		
+    		System.out.println("Relations found");
     		for(String key:totalNormalizedCounts.keySet()) {
-    			totalNormalizedCounts.put(key, totalNormalizedCounts.get(key) * numAppearances.getCount(key));
+    			totalNormalizedCounts.put(key, (totalNormalizedCounts.get(key) - minShare.get(key) ) * (numAppearances.getCount(key) -1) );
+    			if(totalNormalizedCounts.get(key) >0 )
+    				System.out.println(key + " : " + totalNormalizedCounts.get(key));
     		}
-    		System.out.println(totalNormalizedCounts);
+    		//System.out.println(totalNormalizedCounts);
 		}
 
     	System.out.println("Done!");
@@ -160,3 +172,5 @@ public class Bootstrap {
 		System.exit(0);
 	}
 }
+//Do ner tags for bootstrapping entities
+//Better seed set.

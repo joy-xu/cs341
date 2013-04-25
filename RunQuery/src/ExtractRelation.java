@@ -60,7 +60,7 @@ public class ExtractRelation {
             	String sentence = sentences.get(sentenceCounter);
             	System.out.println("\n\n" + sentence);
             	
-            	if(sentence.length() > 400) {
+            	if(sentence.length() > 500) {
             		System.out.println("Sentence too long.");
             		continue;
             	}	
@@ -89,9 +89,12 @@ public class ExtractRelation {
 		try {
 			Annotation document = new Annotation(sentence);
 			processor.annotate(document);
-			CoreMap sentenceMap = document.get(SentencesAnnotation.class).get(0);
-			SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
-			return findRelation(graph, findWordsInSemanticGraph(graph, ent1), findWordsInSemanticGraph(graph, ent2));
+			List<String> relations = new ArrayList<String>();
+			for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
+				SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
+				relations.addAll(findRelation(graph, findWordsInSemanticGraph(graph, ent1), findWordsInSemanticGraph(graph, ent2)));
+			}
+			return relations;
 		}
 		catch(Exception ex) {
 			
@@ -116,7 +119,7 @@ public class ExtractRelation {
 		for(IndexedWord w1: words1) {
 			for(IndexedWord w2: words2) {
 				List<IndexedWord> current = graph.getShortestUndirectedPathNodes(w1, w2);
-				List<SemanticGraphEdge> edges = graph.getShortestUndirectedPathEdges(w1, w2);
+				//List<SemanticGraphEdge> edges = graph.getShortestUndirectedPathEdges(w1, w2);
 				current.remove(w1); current.remove(w2);
 				if(shortestPath.size() == 0 ||shortestPath.size() > current.size())
 					shortestPath = current; 
@@ -142,7 +145,9 @@ public class ExtractRelation {
 			return relationsFound;
 		}
 		else {
-			System.out.println("Not returning anything from findRelation - " + shortestPath);
+			//System.out.println("Not returning anything from findRelation - " + shortestPath);
+			for(IndexedWord w:shortestPath)
+				relationsFound.add(w.originalText());
 			return relationsFound;
 		}
 	}
