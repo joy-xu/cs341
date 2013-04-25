@@ -26,7 +26,6 @@ import edu.stanford.nlp.util.StringUtils;
 
 public class ExtractSlot {
 	StanfordCoreNLP processor;
-	IntCounter<String> slotValCounter = new IntCounter<String>();
 	String serializedClassifier;
 	AbstractSequenceClassifier<CoreLabel> classifier;
 	
@@ -55,7 +54,7 @@ public class ExtractSlot {
 		return newSentence;
 	}
 	
-	public void findSlotVals(List<String> sentences, String ent1, String ent2, boolean notUseStanNER){
+	public void findSlotVals(List<String> sentences, String ent1, String ent2, boolean notUseStanNER, IntCounter<String> slotValCounter){
 		  Map<String, String> nerMap = new HashMap<String,String>();
 		  String sentence;
 		  for(int sentenceCounter = 0; sentenceCounter < sentences.size(); sentenceCounter++) {
@@ -67,8 +66,7 @@ public class ExtractSlot {
     				slotValCounter.incrementCount(slotVal);
     			}
             }
-          System.out.println(slotValCounter);
-	}
+    }
 	
 	public List<String> findSlotVal(String sentence, String ent1, String ent2, Map<String, String> nerMap) {
 		try {
