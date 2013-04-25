@@ -2,6 +2,7 @@ import java.util.*;
 import java.io.*;
 
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.stats.IntCounter;
 
 import util.*;
 public class Bootstrap {
@@ -80,11 +81,13 @@ public class Bootstrap {
 		StanfordCoreNLP processor = new StanfordCoreNLP(props, false);
 			
     	List<Pair<String, String>> bootstrapList = getBootstrapInput(bootstrapInput);
-
     	// Use return variable sentences for all the sentences
     	
     	if (getSentences) {
+    		
     		Query q = new Query(indexLoc);
+    		HashMap<String, Double> totalNormalizedCounts = new HashMap<String, Double>();
+    		IntCounter<String> numAppearances = new IntCounter<String>();
     		for(Pair<String, String> pair:bootstrapList) {
 	    		String first = pair.getFirst();
 	    		String second = pair.getSecond();
@@ -94,11 +97,20 @@ public class Bootstrap {
 	    		System.out.println("Querying Index for " + queryString + "...");
 	    		
 	    		ExtractRelation er = new ExtractRelation(processor);
-	    		er.findRelations(QueryRetreiver.executeQuery(indexLoc, queryString, numResults, first, second, workingDirectory), first, second);
-	    		System.out.println(ExtractRelation.relationCounter);
+	    		HashMap<String, Double> normalizedCounts = er.findRelations(QueryRetreiver.executeQuery(indexLoc, queryString, numResults, first, second, workingDirectory), first, second);
+	    		System.out.println(normalizedCounts);
+	    		for(String key:normalizedCounts.keySet()) {
+	    			numAppearances.incrementCount(key);
+	    			if(totalNormalizedCounts.containsKey(key))
+	    				totalNormalizedCounts.put(key, totalNormalizedCounts.get(key) + normalizedCounts.get(key));
+	    			else
+	    				totalNormalizedCounts.put(key, normalizedCounts.get(key));
+	    		}
     		}
-    		
-    		System.out.println(ExtractRelation.relationCounter);
+    		for(String key:totalNormalizedCounts.keySet()) {
+    			totalNormalizedCounts.put(key, totalNormalizedCounts.get(key) * numAppearances.getCount(key));
+    		}
+    		System.out.println(totalNormalizedCounts);
 		}
 
     	System.out.println("Done!");

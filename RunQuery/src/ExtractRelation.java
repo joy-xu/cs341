@@ -2,6 +2,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -24,7 +25,6 @@ import edu.stanford.nlp.util.StringUtils;
 
 public class ExtractRelation {
 	StanfordCoreNLP processor;
-	public static IntCounter<String> relationCounter = new IntCounter<String>();
 	
 	public ExtractRelation(StanfordCoreNLP processor) {
 		this.processor = processor;
@@ -41,7 +41,7 @@ public class ExtractRelation {
 		    return asciiEncoder.canEncode(v);
 		  }	
 	
-	public void findRelations(List<String> sentences, String ent1, String ent2){
+	public HashMap<String, Double> findRelations(List<String> sentences, String ent1, String ent2){
 		/*org.w3c.dom.Document document;
         // Make an  instance of the DocumentBuilderFactory
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -55,6 +55,7 @@ public class ExtractRelation {
             NodeList sentenceList = document.getElementsByTagName("SENTENCE");
             System.out.println(String.format("%d sentences found matching '%s' and '%s'.", sentenceList.getLength(),
             								ent1, ent2));// item(0).getTextContent());*/
+		    IntCounter<String> relationCounter = new IntCounter<String>();
             for(int sentenceCounter = 0; sentenceCounter < sentences.size(); sentenceCounter++) {
             	String sentence = sentences.get(sentenceCounter);
             	System.out.println("\n\n" + sentence);
@@ -73,6 +74,11 @@ public class ExtractRelation {
     				relationCounter.incrementCount(relation.toLowerCase());
     			}
             }
+            double total = relationCounter.totalCount();
+            HashMap<String, Double> normalizedCounts = new HashMap<String, Double>();
+            for(String key:relationCounter.keySet())
+            	normalizedCounts.put(key, relationCounter.getCount(key) / total);
+            return normalizedCounts;
         /*}
         catch(Exception ex) {
         	
