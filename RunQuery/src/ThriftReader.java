@@ -64,7 +64,7 @@ public class ThriftReader {
     		}
     	}
 		
-
+    	    	
         Iterator<String> folderIT = folderToFiles.keySet().iterator();
     	while(folderIT.hasNext())
     	{
