@@ -7,11 +7,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.w3c.dom.NodeList;
-
+import edu.stanford.nlp.ie.AbstractSequenceClassifier;
+import edu.stanford.nlp.ie.crf.CRFClassifier;
+import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.pipeline.Annotation;
@@ -27,33 +25,43 @@ import edu.stanford.nlp.util.StringUtils;
 public class ExtractSlot {
 	StanfordCoreNLP processor;
 	IntCounter<String> slotValCounter = new IntCounter<String>();
+	String serializedClassifier;
+	AbstractSequenceClassifier<CoreLabel> classifier;
 	
 	public ExtractSlot() {
 		Properties props = new Properties();
 		props.put("annotators", "tokenize, ssplit, pos, lemma, parse");
 		processor = new StanfordCoreNLP(props, false);
+		serializedClassifier = "lib/english.all.3class.distsim.crf.ser.gz";
+		classifier = CRFClassifier.getClassifierNoExceptions(serializedClassifier);
 	}
 	
-	public String createNERMap(String sentence, Map<String, String> nerMap) {
+	public String createNERMap(String sentence, Map<String, String> nerMap, boolean notUseStanNER) {
+		String separator = "__";
+		if(!notUseStanNER) {
+			separator = "/";
+			sentence = classifier.classifyToString(sentence);
+		}
 		String[] words = sentence.split(" ");
 		String newSentence = "";
-		
+			
 		for(String word: words) {
-			String[] wordNERPair = word.split("__");
+			String[] wordNERPair = word.split(separator);
 			newSentence += " " + wordNERPair[0];
 			nerMap.put(wordNERPair[0], wordNERPair[1]);
 		}
 		return newSentence;
 	}
 	
-	public void findSlotVals(List<String> sentences, String ent1, String ent2){
+	public void findSlotVals(List<String> sentences, String ent1, String ent2, boolean notUseStanNER){
 		  Map<String, String> nerMap = new HashMap<String,String>();
+		  String sentence;
 		  for(int sentenceCounter = 0; sentenceCounter < sentences.size(); sentenceCounter++) {
-            	String sentence = sentences.get(sentenceCounter);
+            	sentence = sentences.get(sentenceCounter);
             	nerMap.clear();
-            	sentence = createNERMap(sentence, nerMap);
-            	System.out.println(sentence);
-    		    List<String> slotvals = findSlotVal(sentence, ent1, ent2, nerMap);
+            	sentence = createNERMap(sentence, nerMap, notUseStanNER);
+            	
+            	List<String> slotvals = findSlotVal(sentence, ent1, ent2, nerMap);
     			for(String slotVal:slotvals) {
     				slotValCounter.incrementCount(slotVal);
     			}
@@ -84,9 +92,7 @@ public class ExtractSlot {
 		List<String> slotValsFound = new ArrayList<String>();
 		List<IndexedWord> children = new ArrayList<IndexedWord>();
 		Set<IndexedWord> patternSet = new HashSet<IndexedWord>();
-		
 		int ancestorDistance;
-		System.out.println(nerMap.toString());
 		
 		for(IndexedWord w1: pattern) {
 			for(SemanticGraphEdge edge:graph.getIncomingEdgesSorted(w1)) {
@@ -102,15 +108,13 @@ public class ExtractSlot {
 		
 		//if entity is ancestor of pattern, emit all children of pattern which are ORGs
 		for(IndexedWord w1: patternSet) {
-			System.out.println(w1.originalText());
 			for(IndexedWord w2: entity) {
 				ancestorDistance = graph.isAncestor(w1, w2);
 				if ( ancestorDistance == 1 || ancestorDistance == 2) {
 					children = graph.getChildList(w1);
 					for(IndexedWord child: children) {
 						String childText = child.originalText();
-						System.out.println(nerMap.get(childText));
-						if(nerMap.get(childText).equals("ORG"))
+						if(nerMap.get(childText).startsWith("ORG"))
 							slotValsFound.add(childText);
 					}
 				}

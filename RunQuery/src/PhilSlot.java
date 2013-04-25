@@ -110,7 +110,7 @@ public class PhilSlot {
     			}
                 if (doPhilSlot) {
                 	ExtractSlot es = new ExtractSlot();
-                	es.findSlotVals(sentences, first, second);
+                	es.findSlotVals(sentences, first, second, includeNER);
                 }
     		}
     	
