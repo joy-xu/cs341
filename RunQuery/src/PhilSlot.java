@@ -4,135 +4,123 @@ import java.io.*;
 import util.*;
 public class PhilSlot {
 
+	static String indexLoc, first, second;
+    static int withinWords;
 	/**
 	 * @param args
 	 */
+
+	public static void parseArgs(Map<String, String> options) {
+		System.out.println("Bootstrap Options");
+                for (Map.Entry<String, String> entry: options.entrySet()) {
+                        System.out.printf("  %s: %s%n", entry.getKey(), entry.getValue());
+                }
+
+
+                if (!options.containsKey("-indexLocation"))
+                        PrintUsageAndExit();
+                indexLoc = options.get("-indexLocation");
+
+                if (!options.containsKey("-numTerms"))
+                        PrintUsageAndExit();
+                if (Integer.parseInt(options.get("-numTerms")) != 2)
+                        PrintUsageAndExit();
+
+                if (!options.containsKey("-getSentences") && !options.containsKey("-getCompleteDocument"))
+                        PrintUsageAndExit();
+
+                first = null;
+                second = null;
+                if (!options.containsKey("-q1") || !options.containsKey("-q2"))
+                        PrintUsageAndExit();
+                first = options.get("-q1");
+                second = options.get("-q2");
+                withinWords = 1;
+		if (options.containsKey("-withinWords"))
+                        withinWords = Integer.parseInt(options.get("-withinWords"));	
+	}
+
 	public static void main(String[] args) throws IOException{
 		// TODO Auto-generated method stub
 		Map<String, String> options = new HashMap<String, String>();
 		
-		
 		options.putAll(CommandLineUtils.simpleCommandLineParser(args));
 		
-		System.out.println("Bootstrap Options");
-		for (Map.Entry<String, String> entry: options.entrySet()) {
-			System.out.printf("  %s: %s%n", entry.getKey(), entry.getValue());
-		}
-		
-		if (!options.containsKey("-indexLocation"))
-			PrintUsageAndExit();
-		
-		if (!options.containsKey("-numTerms"))
-			PrintUsageAndExit();
-		
-		
-		
-		String indexLoc = options.get("-indexLocation");
-		
-		int numQueryTerms = Integer.parseInt(options.get("-numTerms"));
-		if (numQueryTerms < 0 || numQueryTerms > 2)
-			PrintUsageAndExit();
-		
-		if (!options.containsKey("-getSentences") && !options.containsKey("-getCompleteDocument"))
-			PrintUsageAndExit();
-		
-		String first = null;
-		String second = null;
-		if (numQueryTerms == 1)
-		{
-			if (!options.containsKey("-q1"))
-				PrintUsageAndExit();
-			first = options.get("-q1");
-		}
-		if (numQueryTerms == 2)
-		{
-			if (!options.containsKey("-q1") || !options.containsKey("-q2"))
-				PrintUsageAndExit();
-			first = options.get("-q1");
-			second = options.get("-q2");
-		}
-		int withinWords = 1;
-		if (options.containsKey("-withinWords"))
-		{
-			withinWords = Integer.parseInt(options.get("-withinWords"));
-			if (numQueryTerms == 1)
-				System.out.println("Ignoring withinWords argument for a single term query...");
-		}
+		parseArgs(options);
 		
 		String queryString = null;
-		if (second != null)
-			queryString = "#od" + withinWords + "(#1(" + first + ") #1(" + second + "))";
-		else
-			queryString = "#1(" + first + ")";
+		queryString = "#od" + withinWords + "(#1(" + first + ") #1(" + second + "))";
 		
 		System.out.println("Querying Index for " + queryString + "...");
 		Query q = new Query(indexLoc);
-    	List<String> queryResults = q.queryIndex(queryString);
+    		List<String> queryResults = q.queryIndex(queryString);
     	
-    	System.out.println("Retreiving documents...");
+    		System.out.println("Retreiving documents...");
     	
-    	String workingDirectory = "";
-    	if (options.containsKey("-downloadDirectory"))
-    	{
-    		workingDirectory = options.get("-downloadDirectory");
-    		if (workingDirectory == null)
-    			workingDirectory = "";
-    		if (workingDirectory.charAt(workingDirectory.length()-1) != '/')
-    			workingDirectory = workingDirectory + "/";
-    	}
-    	ThriftReader tr = new ThriftReader(queryResults,workingDirectory);
-    	
-    	boolean getSentences = false;
-    	boolean getCompleteDocument = false;
-    	boolean includeNER = false;
-    	boolean doBootstrap = false;
-    	String sentenceOutput = null;
-    	String documentOutput = null;
-    	
-    	if (options.containsKey("-getSentences"))
-    	{
-    		getSentences = true;
-    		sentenceOutput = options.get("-getSentences");
-    	}
-    	
-    	if (options.containsKey("-getCompleteDocument"))
-    	{
-    		getCompleteDocument = true;
-    		documentOutput = options.get("-getCompleteDocument");
-    	}
-    	if (options.containsKey("-includeNER"))
-    		includeNER = true;
-    	
-    	if (options.containsKey("-bootstrap"))
-    		doBootstrap = true;
-    	
-    	// Use return variable sentences for all the sentences
-    	if (getSentences)
-    	{
-    		System.out.println("Printing sentences...");
-    		List<String> sentences = new ArrayList<String>();
-    		if (numQueryTerms == 1)
-    		{
-    			sentences = tr.getSentences(first, includeNER, sentenceOutput);
+  	  	String workingDirectory = "";
+    		if (options.containsKey("-downloadDirectory"))
+	    	{
+    			workingDirectory = options.get("-downloadDirectory");
+    			if (workingDirectory == null)
+    				workingDirectory = "";
+    			if (workingDirectory.charAt(workingDirectory.length()-1) != '/')
+    				workingDirectory = workingDirectory + "/";
     		}
-    		if (numQueryTerms == 2)
+
+	    	ThriftReader tr = new ThriftReader(queryResults,workingDirectory);
+    	
+    		boolean getSentences = false;
+    		boolean getCompleteDocument = false;
+    		boolean includeNER = false;
+	    	boolean doBootstrap = false;
+            boolean doPhilSlot= false;
+    		String sentenceOutput = null;
+	    	String documentOutput = null;
+    	
+	    	if (options.containsKey("-getSentences"))
     		{
+    			getSentences = true;
+	    		sentenceOutput = options.get("-getSentences");
+	    	}
+    	
+	    	if (options.containsKey("-getCompleteDocument"))
+    		{
+    			getCompleteDocument = true;
+	    		documentOutput = options.get("-getCompleteDocument");
+    		}
+	    	if (options.containsKey("-includeNER"))
+    			includeNER = true;
+    	
+	    	if (options.containsKey("-bootstrap"))
+    			doBootstrap = true;
+    	
+	    	if (options.containsKey("-philslot"))
+    			doPhilSlot = true;
+    	
+	    	// Use return variable sentences for all the sentences
+    		if (getSentences)
+    		{
+    			System.out.println("Printing sentences...");
+    			List<String> sentences = new ArrayList<String>();
     			sentences = tr.getSentences(first,second,includeNER, sentenceOutput);
     			if (doBootstrap)
     			{
     				ExtractRelation er = new ExtractRelation();
     				er.findRelations(sentences, first, second);
     			}
+                if (doPhilSlot) {
+                	ExtractSlot es = new ExtractSlot();
+                	es.findSlotVals(sentences, first, second);
+                }
     		}
-    	}
     	
-    	if (getCompleteDocument)
-    	{
-    		System.out.println("Printing complete document...");
-    		tr.getCompleteDocument(includeNER, documentOutput);
-    	}
-    	System.out.println("Done!");
-    	return;
+    		if (getCompleteDocument)
+    		{
+    			System.out.println("Printing complete document...");
+	    		tr.getCompleteDocument(includeNER, documentOutput);
+    		}
+    		System.out.println("Done!");
+    		return;
 	}
 
 	private static void PrintUsageAndExit()
