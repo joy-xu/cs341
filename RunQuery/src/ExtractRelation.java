@@ -145,9 +145,9 @@ public class ExtractRelation {
 			return relationsFound;
 		}
 		else {
-			//System.out.println("Not returning anything from findRelation - " + shortestPath);
-			for(IndexedWord w:shortestPath)
-				relationsFound.add(w.originalText());
+			System.out.println("Not returning anything from findRelation - " + shortestPath);
+			//for(IndexedWord w:shortestPath)
+				//relationsFound.add(w.originalText());
 			return relationsFound;
 		}
 	}
