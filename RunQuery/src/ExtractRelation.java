@@ -65,10 +65,10 @@ public class ExtractRelation {
             		continue;
             	}	
             	
-            	if(!isPureAscii(sentence)) {
-            		System.out.println("Contains non-ascii characters. Aborting.");
-            		continue;
-            	}
+            	//if(!isPureAscii(sentence)) {
+            	//	System.out.println("Contains non-ascii characters. Aborting.");
+            	//	continue;
+            	//}
     			List<String> relations = findRelation(sentence, ent1, ent2);
     			for(String relation:relations) {
     				relationCounter.incrementCount(relation.toLowerCase());

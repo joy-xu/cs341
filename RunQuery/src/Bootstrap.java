@@ -118,11 +118,13 @@ public class Bootstrap {
     		
     		System.out.println("Relations found");
     		for(String key:totalNormalizedCounts.keySet()) {
-    			totalNormalizedCounts.put(key, (totalNormalizedCounts.get(key) - minShare.get(key) ) * (numAppearances.getCount(key) -1) );
-    			if(totalNormalizedCounts.get(key) >0 )
-    				System.out.println(key + " : " + totalNormalizedCounts.get(key));
+    			//totalNormalizedCounts.put(key, (totalNormalizedCounts.get(key) - minShare.get(key) ) * (numAppearances.getCount(key) -1) );
+    			totalNormalizedCounts.put(key, (totalNormalizedCounts.get(key) ) *  Math.pow(numAppearances.getCount(key),2) );
+    			//if(totalNormalizedCounts.get(key) >0 )
+    			//	System.out.println(key + " : " + totalNormalizedCounts.get(key));
+    			System.out.println();
     		}
-    		//System.out.println(totalNormalizedCounts);
+    		System.out.println(totalNormalizedCounts);
 		}
 
     	System.out.println("Done!");
