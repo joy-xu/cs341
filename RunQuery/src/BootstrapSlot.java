@@ -95,7 +95,7 @@ public class BootstrapSlot{
 	    		List<String> queryOutput = QueryRetreiver.executeQuery(indexLoc, queryString, numResults, term, workingDirectory);
 	    		
 	    		//To Do: Add the extraction function
-	    		//er.findEntityPair(queryOutput);
+	    		er.findEntityPairs(queryOutput, term);
 	    		System.out.println(ExtractRelation.relationCounter);
     		}
     		
