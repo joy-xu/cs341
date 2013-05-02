@@ -117,11 +117,15 @@ public class Bootstrap {
     		}
     		
     		System.out.println("Relations found");
+    		BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt"));
     		for(String key:totalNormalizedCounts.keySet()) {
-    			totalNormalizedCounts.put(key, (totalNormalizedCounts.get(key) - minShare.get(key) ) * (numAppearances.getCount(key) -1) );
-    			if(totalNormalizedCounts.get(key) >0 )
-    				System.out.println(key + " : " + totalNormalizedCounts.get(key));
+    			//totalNormalizedCounts.put(key, (totalNormalizedCounts.get(key) - minShare.get(key) ) * (numAppearances.getCount(key) -1) );
+    			totalNormalizedCounts.put(key, (totalNormalizedCounts.get(key) ) *  numAppearances.getCount(key));
+    			//if(totalNormalizedCounts.get(key) >0 )
+    			System.out.println(key + " : " + totalNormalizedCounts.get(key));
+    			writer.write(key + " : " + totalNormalizedCounts.get(key) + "\n");
     		}
+    		writer.close();
     		//System.out.println(totalNormalizedCounts);
 		}
 
