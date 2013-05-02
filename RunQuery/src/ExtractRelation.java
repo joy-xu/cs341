@@ -68,7 +68,7 @@ public class ExtractRelation {
             								ent1, ent2));// item(0).getTextContent());*/
 		    IntCounter<String> relationCounter = new IntCounter<String>();
             for(int sentenceCounter = 0; sentenceCounter < sentences.size(); sentenceCounter++) {
-            	String sentence = sentences.get(sentenceCounter);
+            	String sentence = sentences.get(sentenceCounter).replace("-", "");
             	System.out.println("\n\n" + sentence);
             	
             	if(sentence.length() > 500) {
@@ -102,7 +102,7 @@ public class ExtractRelation {
 		
 		for (int i = 0;i<queryOutput.size();i++)
 		{
-			String sentence = queryOutput.get(i);
+			String sentence = queryOutput.get(i).replace("-", "");
 			System.out.println("\n\n" + sentence);
         	
         	if(sentence.length() > 400) {
@@ -280,7 +280,7 @@ public class ExtractRelation {
 	}
 	
 	public List<String> findRelation(SemanticGraph graph, List<IndexedWord> words1, List<IndexedWord> words2) {
-		List<String> relationsFound = new ArrayList<String>();
+		List<IndexedWord> andRelations = new ArrayList<IndexedWord>();
 		List<IndexedWord> shortestPath = new ArrayList<IndexedWord>();
 		for(IndexedWord w1: words1) {
 			for(IndexedWord w2: words2) {
@@ -291,30 +291,81 @@ public class ExtractRelation {
 					shortestPath = current; 
 			}
 		}
-		
+		List<IndexedWord> relationNodes = new ArrayList<IndexedWord>();
+		HashMap<IndexedWord, List<String>> edges = new HashMap<IndexedWord, List<String>>();
 		if(shortestPath.size() == 1 && !words1.contains(shortestPath.get(0))
 				&& !words2.contains(shortestPath.get(0))) {
-			relationsFound.add(shortestPath.get(0).originalText());
+			relationNodes.add(shortestPath.get(0));
+			
 			for(SemanticGraphEdge edge:graph.getIncomingEdgesSorted(shortestPath.get(0))) {
+				IndexedWord source = edge.getSource(), target = edge.getTarget();
 				if(edge.getRelation().toString().equals("conj_and")&& !words1.contains(edge.getTarget())
 						&& !words2.contains(edge.getTarget()))
-					relationsFound.add(edge.getSource().originalText());
+					andRelations.add(edge.getSource());
+				if(words1.contains(source) || words2.contains(source)) {
+					if(!edges.containsKey(shortestPath.get(0))) 
+						edges.put(shortestPath.get(0), new ArrayList<String>());
+					edges.get(shortestPath.get(0)).add(edge.getRelation() + ":v");
 					
+				}
+				//System.out.println(edge.getSource().originalText() + ":" + edge.getRelation()  + ":" + edge.getTarget().originalText());
+				if(words1.contains(target) || words2.contains(target)) {
+					if(!edges.containsKey(shortestPath.get(0))) 
+						edges.put(shortestPath.get(0), new ArrayList<String>());
+					edges.get(shortestPath.get(0)).add(edge.getRelation() + ":^");
+				}	
 			}
 			for(SemanticGraphEdge edge:graph.getOutEdgesSorted(shortestPath.get(0))) {
+				IndexedWord source = edge.getSource(), target = edge.getTarget();
 				if(edge.getRelation().toString().equals("conj_and") && !words1.contains(edge.getTarget())
 						&& !words2.contains(edge.getTarget()))
-					relationsFound.add(edge.getTarget().originalText());
+					andRelations.add(edge.getTarget());
+				//System.out.println(edge.getSource().originalText() + ":" + edge.getRelation() + ":" + edge.getTarget().originalText());
+				if(words1.contains(source) || words2.contains(source)) {
+					if(!edges.containsKey(shortestPath.get(0))) 
+						edges.put(shortestPath.get(0), new ArrayList<String>());
+					edges.get(shortestPath.get(0)).add(edge.getRelation() + ":v");
 					
+				}
+				//System.out.println(edge.getSource().originalText() + ":" + edge.getRelation()  + ":" + edge.getTarget().originalText());
+				if(words1.contains(target) || words2.contains(target)) {
+					if(!edges.containsKey(shortestPath.get(0))) 
+						edges.put(shortestPath.get(0), new ArrayList<String>());
+					edges.get(shortestPath.get(0)).add(edge.getRelation() + ":^");
+				}	
 			}
-			System.out.println("Returning relations - " + relationsFound);
-			return relationsFound;
+			for(IndexedWord rel:andRelations) {
+				edges.put(rel, new ArrayList<String>());
+				for(String res:edges.get(shortestPath.get(0))) {
+					edges.get(rel).add(res);
+				}
+			}
+			System.out.println(edges);
+			System.out.println("Returning relations - " + relationStrings(edges));
+			return relationStrings(edges);
 		}
 		else {
 			System.out.println("Not returning anything from findRelation - " + shortestPath);
 			//for(IndexedWord w:shortestPath)
 				//relationsFound.add(w.originalText());
-			return relationsFound;
+			return relationStrings(edges);
 		}
+	}
+	
+	private List<String> relationStrings(HashMap<IndexedWord, List<String>> edges) {
+		List<String> ret = new ArrayList<String>();
+		for(IndexedWord w:edges.keySet()) {
+			StringBuilder builder = new StringBuilder();
+			builder.append(w.originalText()+ "|");
+			List<String> rels = edges.get(w);
+			if(rels.get(0).compareTo(rels.get(1)) > 0) {
+				builder.append(rels.get(1) + "|" + rels.get(0));
+			}
+			else {
+				builder.append(rels.get(0) + "|" + rels.get(1));
+			}
+			ret.add(builder.toString());
+		}
+		return ret;
 	}
 }
