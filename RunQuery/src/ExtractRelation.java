@@ -53,47 +53,25 @@ public class ExtractRelation {
 		  }	
 	
 	public HashMap<String, Double> findRelations(List<String> sentences, String ent1, String ent2){
-		/*org.w3c.dom.Document document;
-        // Make an  instance of the DocumentBuilderFactory
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        try {
-            // use the factory to take an instance of the document builder
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            // parse using the builder to get the DOM mapping of the    
-            // XML file
-            document = db.parse(fileName);
-
-            NodeList sentenceList = document.getElementsByTagName("SENTENCE");
-            System.out.println(String.format("%d sentences found matching '%s' and '%s'.", sentenceList.getLength(),
-            								ent1, ent2));// item(0).getTextContent());*/
-		    IntCounter<String> relationCounter = new IntCounter<String>();
-            for(int sentenceCounter = 0; sentenceCounter < sentences.size(); sentenceCounter++) {
-            	String sentence = sentences.get(sentenceCounter).replace("-", "");
-            	System.out.println("\n\n" + sentence);
-            	
-            	if(sentence.length() > 500) {
-            		System.out.println("Sentence too long.");
-            		continue;
-            	}	
-            	
-            	//if(!isPureAscii(sentence)) {
-            	//	System.out.println("Contains non-ascii characters. Aborting.");
-            	//	continue;
-            	//}
-    			List<String> relations = findRelation(sentence, ent1, ent2);
-    			for(String relation:relations) {
-    				relationCounter.incrementCount(relation.toLowerCase());
-    			}
-            }
-            double total = relationCounter.totalCount();
-            HashMap<String, Double> normalizedCounts = new HashMap<String, Double>();
-            for(String key:relationCounter.keySet())
-            	normalizedCounts.put(key, relationCounter.getCount(key) / total);
-            return normalizedCounts;
-        /*}
-        catch(Exception ex) {
+	    IntCounter<String> relationCounter = new IntCounter<String>();
+        for(int sentenceCounter = 0; sentenceCounter < sentences.size(); sentenceCounter++) {
+        	String sentence = sentences.get(sentenceCounter).replace("-", "").replace("]", "").replace("[", "");
+        	System.out.println("\n\n" + sentence);
         	
-        }*/
+        	if(sentence.length() > 500) {
+        		System.out.println("Sentence too long.");
+        		continue;
+        	}	
+			List<String> relations = findRelation(sentence, ent1, ent2);
+			for(String relation:relations) {
+				relationCounter.incrementCount(relation.toLowerCase());
+			}
+        }
+        double total = relationCounter.totalCount();
+        HashMap<String, Double> normalizedCounts = new HashMap<String, Double>();
+        for(String key:relationCounter.keySet())
+        	normalizedCounts.put(key, relationCounter.getCount(key) / total);
+        return normalizedCounts;
 	}
 	
 	public void findEntityPairs(List<String> queryOutput, String term)

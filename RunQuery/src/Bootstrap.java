@@ -57,6 +57,8 @@ public class Bootstrap {
     	String documentOutput = null;
     	String bootstrapInput = null;
     	
+    	boolean findSentences = true;
+    	
     	if (options.containsKey("-getSentences"))
     	{
     		getSentences = true;
@@ -84,7 +86,7 @@ public class Bootstrap {
     	// Use return variable sentences for all the sentences
     	
     	if (getSentences) {
-    		
+    		System.out.println(workingDirectory);
     		Query q = new Query(indexLoc);
     		HashMap<String, Double> totalNormalizedCounts = new HashMap<String, Double>(), minShare = new HashMap<String, Double>();
     		IntCounter<String> numAppearances = new IntCounter<String>();
@@ -119,16 +121,27 @@ public class Bootstrap {
     		System.out.println("Relations found");
     		BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt"));
     		for(String key:totalNormalizedCounts.keySet()) {
-    			//totalNormalizedCounts.put(key, (totalNormalizedCounts.get(key) - minShare.get(key) ) * (numAppearances.getCount(key) -1) );
-    			totalNormalizedCounts.put(key, (totalNormalizedCounts.get(key) ) *  numAppearances.getCount(key));
-    			//if(totalNormalizedCounts.get(key) >0 )
-    			System.out.println(key + " : " + totalNormalizedCounts.get(key));
-    			writer.write(key + " : " + totalNormalizedCounts.get(key) + "\n");
+    			totalNormalizedCounts.put(key, (totalNormalizedCounts.get(key) - minShare.get(key) ) * (numAppearances.getCount(key) -1) );
+    			//totalNormalizedCounts.put(key, (totalNormalizedCounts.get(key) ) *  numAppearances.getCount(key));
+    			if(totalNormalizedCounts.get(key) >0 ) {
+	    			System.out.println(key + " : " + totalNormalizedCounts.get(key));
+	    			writer.write(key + " : " + totalNormalizedCounts.get(key) + "\n");
+    			}
     		}
     		writer.close();
     		//System.out.println(totalNormalizedCounts);
 		}
 
+		if(findSentences) {
+			HashMap<String, String> map = new HashMap<String, String>();
+			FindSentences fs = new FindSentences();
+			String entity = "Bronfman";
+			String queryString = QueryBuilder.buildSingleTermQuery(entity);
+			List<String> lst = QueryRetreiver.executeQuery(indexLoc, queryString, numResults, entity, workingDirectory);
+			System.out.println(lst.size());
+			fs.createNERMap("Bob and Marley were friends", map, false);
+			System.out.println(map);
+		}
     	System.out.println("Done!");
     	return;
 	}
