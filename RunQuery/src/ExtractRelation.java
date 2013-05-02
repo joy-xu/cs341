@@ -26,6 +26,7 @@ import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.BasicDependenciesAnnotation;
 import edu.stanford.nlp.semgraph.SemanticGraphEdge;
+import edu.stanford.nlp.ie.ner.*;
 import edu.stanford.nlp.stats.IntCounter;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.StringUtils;
@@ -103,20 +104,21 @@ public class ExtractRelation {
 		for (int i = 0;i<queryOutput.size();i++)
 		{
 			String sentence = queryOutput.get(i);
-			System.out.println("\n\n" + sentence);
+			
         	
         	if(sentence.length() > 400) {
-        		System.out.println("Sentence too long.");
+        		//System.out.println("Sentence too long.");
         		continue;
         	}	
         	
         	if(!isPureAscii(sentence)) {
-        		System.out.println("Contains non-ascii characters. Aborting.");
+        		//System.out.println("Contains non-ascii characters. Aborting.");
         		continue;
         	}
-			Pair<String, String> relations = findEntities(sentence, term);
-			
-			entityPairCounter.incrementCount(relations);
+        	System.out.println("\n\n" + sentence);
+			List<Pair<String, String>> relations = findEntities(sentence, term);
+			for (Pair<String,String> p:relations)
+				entityPairCounter.incrementCount(p);
 			
 		}
 		
@@ -124,28 +126,58 @@ public class ExtractRelation {
 	}
 	
 	
-	public Pair<String,String> findEntities(String sentence, String term)
+	public List<Pair<String,String>> findEntities(String sentence, String term)
 	{
+		List<Pair<String,String>> outputList = new ArrayList<Pair<String,String>>();
 		try {
 			Annotation document = new Annotation(sentence);
 			processor.annotate(document);
-			CoreMap sentenceMap = document.get(SentencesAnnotation.class).get(0);
+			List<CoreMap> sentenceMap = document.get(SentencesAnnotation.class);
+			boolean found = false;
+			SemanticGraph ccgraph = new SemanticGraph();
+			IndexedWord head = new IndexedWord();
+			for (int ss = 0;ss < sentenceMap.size();ss++)
+			{
+			//SemanticGraph basicgraph = sentenceMap.get(BasicDependenciesAnnotation.class);
+				ccgraph = sentenceMap.get(ss).get(CollapsedCCProcessedDependenciesAnnotation.class);
 			
-			SemanticGraph basicgraph = sentenceMap.get(BasicDependenciesAnnotation.class);
-			SemanticGraph ccgraph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
-			
-			IndexedWord head = findHeadNode(basicgraph, term);
+			//System.out.println("term: " + term);
+			//IndexedWord head = findHeadNode(basicgraph, term);
+			//System.out.println("head: " + head.originalText());
+				head = new IndexedWord(ccgraph.getFirstRoot());
+				for (IndexedWord word:ccgraph.vertexSet())
+				{
+					if (word.originalText().equals(term))
+					{
+						head = word;
+						found = true;
+						break;
+					}
+				}
+				if (!found)
+					continue;
 			
 			List<IndexedWord> children = ccgraph.getChildList(head);
+			
+			
 			Pair<IndexedWord, IndexedWord> entityRoots = findEntityPairs(ccgraph, head, children);
-			String first = findChildPhrase(ccgraph,entityRoots.getFirst());
-			String second = findChildPhrase(ccgraph,entityRoots.getSecond());
-			return new Pair<String,String>(first,second);
+			IndexedWord firstIndex = entityRoots.getFirst();
+			IndexedWord secondIndex = entityRoots.getSecond();
+			if (firstIndex.word() == null || secondIndex.word() == null)
+				continue;
+			
+			String first = findChildPhrase(ccgraph,firstIndex);
+			String second = findChildPhrase(ccgraph,secondIndex);
+			System.out.println("Child phrases: ");
+			System.out.println(first);
+			System.out.println(second);
+			outputList.add(new Pair<String,String>(first,second));
+			}
 		}
 		catch(Exception ex) {
 			
 		}
-		return new Pair<String,String>("","");
+		return outputList;
 	}
 	
 	public String findChildPhrase(SemanticGraph graph, IndexedWord root)
@@ -154,7 +186,7 @@ public class ExtractRelation {
 		
 		Queue<IndexedWord> parents = new LinkedList<IndexedWord>();
 		parents.add(root);
-		
+		children.add(root);
 		while(!parents.isEmpty())
 		{
 			IndexedWord current = parents.poll();
@@ -183,23 +215,36 @@ public class ExtractRelation {
 		Collections.sort(children);
 		for (int i = 0;i<children.size();i++)
 		{
+			
 			IndexedWord first = children.get(i);
 			for (int j = i+1;j<children.size();j++)
 			{
+			
 				IndexedWord second = children.get(j);
-				if ((first.sentIndex() - head.sentIndex())*(second.sentIndex()-head.sentIndex()) >= 0)
+				if ((first.index() - head.index())*(second.index()-head.index()) >= 0)
 					continue;
 				
-				SemanticGraphEdge firstEdge = graph.getEdge(first, head);
-				SemanticGraphEdge secondEdge = graph.getEdge(second,head);
+				SemanticGraphEdge firstEdge = graph.getEdge(head,first);
+				SemanticGraphEdge secondEdge = graph.getEdge(head,second);
+				
 				
 				String firstRelation = firstEdge.getRelation().toString();
 				String secondRelation = secondEdge.getRelation().toString();
 				
-				if ((firstRelation.equals("prep_at") && secondRelation.equals("nsubj"))
-					|| (firstRelation.equals("nsubj") && secondRelation.equals("prep_at")))
-					return new Pair<IndexedWord,IndexedWord>(first,second);
+				if (first.tag().equals("CD") || second.tag().equals("CD"))
+					//|| first.ner().equals("Time") || 
+						//second.ner().equals("Time") || first.ner().equals("Number") || second.ner().equals("Number"))
+					continue;
 				
+				if ((firstRelation.equals("prep_at") && secondRelation.contains("nsubj"))
+					|| (firstRelation.contains("nsubj") && secondRelation.equals("prep_at")))
+				{
+					System.out.println("first: " + first.lemma() + " " + first.tag() + " " + first.ner());
+					System.out.println("second: " + second.lemma() + " " + second.tag() + " " + second.ner());
+					System.out.println("head: "  + head.lemma() + " " + head.tag() + " " + head.ner());
+					System.out.println("Found entity pair");
+					return new Pair<IndexedWord,IndexedWord>(first,second);
+				}
 			}
 		}
 		return new Pair<IndexedWord, IndexedWord>(new IndexedWord(), new IndexedWord());

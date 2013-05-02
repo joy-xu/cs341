@@ -5,7 +5,17 @@ import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TIOStreamTransport;
 import org.apache.thrift.transport.TTransport;
 
+import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.LemmaAnnotation;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
+import edu.stanford.nlp.util.CoreMap;
+
 import streamcorpus.*;
+
 public class ThriftReader {
 
 	public List<String> queryResults;
@@ -158,6 +168,7 @@ public class ThriftReader {
                     		StringBuilder nbuf = new StringBuilder();
                     		for (int t = 0;t<tList.size();t++)
                     		{
+                    			
                     			sbuf.append(tList.get(t).token);
                     			sbuf.append(" ");
                     			nbuf.append(tList.get(t).entity_type);
@@ -176,6 +187,63 @@ public class ThriftReader {
             e.printStackTrace();
         }
 	}
+	
+	public List<String> getSentencesWithLemma(String first, StanfordCoreNLP processor)
+	{
+		Annotation doc = new Annotation(first);
+		processor.annotate(doc);
+		CoreMap s = doc.get(SentencesAnnotation.class).get(0);
+		CoreLabel t = s.get(TokensAnnotation.class).get(0);
+		String givenLemma = t.get(LemmaAnnotation.class);
+		
+		List<String> returnString = new ArrayList<String>();
+		Iterator<String> it = mapOfSentences.keySet().iterator();
+		while(it.hasNext())
+		{
+			String absFileName = it.next();
+			List<String> currentAllSentences = mapOfSentences.get(absFileName);
+						
+			
+			for (int j = 0;j<currentAllSentences.size();j++)
+			{
+				String currentSentence = currentAllSentences.get(j);
+				
+				if (!ExtractRelation.isPureAscii(currentSentence))
+					continue;
+				
+				if(currentSentence.length() > 400) {
+	        		//System.out.println("Sentence too long.");
+	        		continue;
+	        	}
+				
+				System.out.println("Processing: " + currentSentence);
+				Annotation document = new Annotation(currentSentence);
+				processor.annotate(document);
+				List<CoreMap> sentenceMap = document.get(SentencesAnnotation.class);
+				for (int ss = 0;ss < sentenceMap.size();ss++)
+				{
+					boolean added = false;
+					List<CoreLabel> allTokens = sentenceMap.get(ss).get(TokensAnnotation.class);
+					for (int tt = 0;tt < allTokens.size();tt++)
+					{
+						String lemma = allTokens.get(tt).get(LemmaAnnotation.class);
+						if (lemma.equalsIgnoreCase(givenLemma))
+						{
+							returnString.add(currentSentence);
+							System.out.println("adding");
+							added = true;
+							break;
+						}
+					}
+					if (added)
+						break;
+				}
+			}
+		}
+				
+		return returnString;
+	}
+	
 	
 	
 	public List<String> getSentences(String first, Boolean includeNER, String outputFile) throws IOException
