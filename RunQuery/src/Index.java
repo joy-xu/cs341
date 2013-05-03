@@ -10,11 +10,10 @@ public class Index {
 			index.setStemmer("krovetz");
 			index.setIndexedFields(fields);
 			index.setMemory(1000000);
-			index.open(indexLocation);
 			index.create(indexLocation);
 			index.close();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
+			System.out.println(e.getMessage());
 			e.printStackTrace();
 		}
 	}
