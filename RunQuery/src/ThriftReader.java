@@ -40,36 +40,28 @@ public class ThriftReader {
     	{
     		String fullName = queryResults.get(i);
     		
-    		String[] a = fullName.split("_");
-    		String docName = a[0];
-    		String localFileName = a[1];
-    		String[] b = localFileName.split("/");
-    		String s3fileName = b[b.length-1];
+    		CorpusFileName cf = new CorpusFileName(fullName);
     		
-    		String timeStamp = a[2];
-    		String timeTokens[] = timeStamp.split("T");
-    		String folder = timeTokens[0] + "-" + timeTokens[1].substring(0,2);
-    		
-    		if (folderToFiles.containsKey(folder))
+    		if (folderToFiles.containsKey(cf.folder))
     		{
-    			folderToFiles.get(folder).add(s3fileName);
+    			folderToFiles.get(cf.folder).add(cf.filename);
     		}
     		else
     		{
     			Set<String> s = new HashSet<String>();
-    			s.add(s3fileName);
-    			folderToFiles.put(folder, s);
+    			s.add(cf.filename);
+    			folderToFiles.put(cf.folder, s);
     		}
     		
-    		String absFileName = folder + "_" + s3fileName;
+    		String absFileName = cf.folder + "_" + cf.filename;
     		if (fileToDocID.containsKey(absFileName))
     		{
-    			fileToDocID.get(absFileName).add(docName);
+    			fileToDocID.get(absFileName).add(cf.streamID);
     		}
     		else
     		{
     			Set<String> s = new HashSet<String>();
-    			s.add(docName);
+    			s.add(cf.streamID);
     			fileToDocID.put(absFileName,s);
     		}
     	}
