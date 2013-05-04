@@ -2,6 +2,7 @@ import java.util.*;
 import java.io.*;
 
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import fig.basic.LogInfo;
 
 import util.*;
 public class QueryRetreiver {
@@ -37,6 +38,7 @@ public class QueryRetreiver {
 			sentences = tr.getSentences(first, false, "results.txt");
 		} 
     	catch (IOException e) {
+    		LogInfo.logs(e.getMessage());
 			e.printStackTrace();
 		}
     	return sentences;

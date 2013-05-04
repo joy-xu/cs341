@@ -28,6 +28,7 @@ public class FindSentences {
 				LogInfo.logs("\t Querying " + expansion);	
 				String queryString = QueryBuilder.buildSingleTermQuery(expansion);
 				List<String> lst = QueryRetreiver.executeQuery(indexLoc, queryString, numResults, expansion, workingDirectory);
+				LogInfo.logs("Found " + lst.size() + " results.");
 				for(String s:lst)
 					LogInfo.logs("\t\t" + s);
 			}
@@ -42,8 +43,9 @@ public class FindSentences {
 		
 		
 			String line = "";
-
+			
 			while((line=reader.readLine()) != null) {
+				System.out.println(line);
 				String splits[] = line.split("##");
 				System.out.println(splits[1].split("\\$").length);
 				String expansions[] = splits[1].split("\\$");

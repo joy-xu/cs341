@@ -14,12 +14,12 @@ import util.*;
 public class Bootstrap implements Runnable {
 	
 	@Option(gloss="index Location") public String indexLocation;
-	@Option(gloss="working Directory") public String workingDirectory;
 	@Option(gloss="within Words") public int withinWords;
 	@Option(gloss="num Results") public int numResults;
 	@Option(gloss="downloadDirectory") public String downloadDirectory;
 	@Option(gloss="getsentences") public String getsentences;
 	@Option(gloss="bootstrap") public String bootstrap;
+	@Option(gloss="expansionFile") public String expansionFile;
 	static String[] a;
 	public static void main(String[] args) {
 		Execution.run(args, "Main", new Bootstrap());
@@ -37,7 +37,7 @@ public class Bootstrap implements Runnable {
     	    	
     	if(findSentences) {
 			FindSentences fs = new FindSentences();
-			fs.findAssociateOf("src/seedSet/expansions.txt", indexLocation, workingDirectory);
+			fs.findAssociateOf(expansionFile, indexLocation, downloadDirectory);
 			
 			//Index.buildIndex("/home/aju/Stanford/cs341/data/new/", "/home/aju/Stanford/cs341/data/expanded/");
 		}
@@ -76,7 +76,7 @@ public class Bootstrap implements Runnable {
 			
     	List<Pair<String, String>> bootstrapList = getBootstrapInput(bootstrap);
 
-		System.out.println(workingDirectory);
+		System.out.println(downloadDirectory);
 		Query q = new Query(indexLocation);
 		HashMap<String, Double> totalNormalizedCounts = new HashMap<String, Double>(), minShare = new HashMap<String, Double>();
     	IntCounter<String> numAppearances = new IntCounter<String>();
@@ -90,7 +90,7 @@ public class Bootstrap implements Runnable {
 	    	System.out.println("Querying Index for " + queryString + "...");
 	
 	    	ExtractRelation er = new ExtractRelation(processor);
-	    	HashMap<String, Double> normalizedCounts = er.findRelations(QueryRetreiver.executeQuery(indexLocation, queryString, numResults, first, second, workingDirectory), first, second);
+	    	HashMap<String, Double> normalizedCounts = er.findRelations(QueryRetreiver.executeQuery(indexLocation, queryString, numResults, first, second, downloadDirectory), first, second);
 	    	System.out.println(normalizedCounts);
 	    	for(String key:normalizedCounts.keySet()) {
 	    		numAppearances.incrementCount(key);
