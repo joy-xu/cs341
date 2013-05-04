@@ -92,14 +92,14 @@ public class BootstrapSlot{
 	    		System.out.println("Querying Index for " + queryString + "...");
 	    		
 	    		ExtractRelation er = new ExtractRelation(processor);
-	    		List<String> queryOutput = QueryRetreiver.executeQuery(indexLoc, queryString, numResults, term, workingDirectory);
+	    		List<String> queryOutput = QueryRetreiver.executeQueryWithLemma(processor, indexLoc, queryString, numResults, term, workingDirectory);
 	    		
 	    		//To Do: Add the extraction function
 	    		er.findEntityPairs(queryOutput, term);
-	    		System.out.println(ExtractRelation.relationCounter);
+	    		System.out.println(ExtractRelation.entityPairCounter);
     		}
     		
-    		System.out.println(ExtractRelation.relationCounter);
+    		System.out.println(ExtractRelation.entityPairCounter);
 		}
 
     	System.out.println("Done!");
