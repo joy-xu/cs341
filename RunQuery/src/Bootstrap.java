@@ -1,148 +1,50 @@
 import java.util.*;
+import fig.basic.LogInfo;
+import fig.exec.Execution;
+import fig.basic.Option;
+
 import java.io.*;
 
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.stats.IntCounter;
 
 import util.*;
-public class Bootstrap {
 
+
+public class Bootstrap implements Runnable {
+	
+	@Option(gloss="index Location") public String indexLocation;
+	@Option(gloss="within Words") public int withinWords;
+	@Option(gloss="num Results") public int numResults;
+	@Option(gloss="downloadDirectory") public String downloadDirectory;
+	@Option(gloss="getsentences") public String getsentences;
+	@Option(gloss="bootstrap") public String bootstrap;
+	@Option(gloss="expansionFile") public String expansionFile;
+	static String[] a;
+	public static void main(String[] args) {
+		Execution.run(args, "Main", new Bootstrap());
+	}
+	
 	/**
 	 * @param args
 	 */
-	public static void main(String[] args) throws IOException{
+	@Override
+	public void run(){
 		// TODO Auto-generated method stub
-		Map<String, String> options = new HashMap<String, String>();
-		
-		
-		options.putAll(CommandLineUtils.simpleCommandLineParser(args));
-		
-		/*System.out.println("Bootstrap Options");
-		for (Map.Entry<String, String> entry: options.entrySet()) {
-			System.out.printf("  %s: %s%n", entry.getKey(), entry.getValue());
-		}*/
-		
-		if (!options.containsKey("-indexLocation"))
-			PrintUsageAndExit();
-		
-		String indexLoc = options.get("-indexLocation");
-		
-		if (!options.containsKey("-getSentences") && !options.containsKey("-getCompleteDocument"))
-			PrintUsageAndExit();
-		
-		int withinWords = 1;
-		if (options.containsKey("-withinWords")) {
-			withinWords = Integer.parseInt(options.get("-withinWords"));
-		}
-		
-		int numResults = Integer.MAX_VALUE;
-		if (options.containsKey("-numResults")) {
-			numResults = Integer.parseInt(options.get("-numResults"));
-		}
-    	
-    	String workingDirectory = "";
-    	if (options.containsKey("-downloadDirectory")) {
-    		workingDirectory = options.get("-downloadDirectory");
-    		if (workingDirectory == null)
-    			workingDirectory = "";
-    		if (workingDirectory.charAt(workingDirectory.length()-1) != '/')
-    			workingDirectory = workingDirectory + "/";
-    	}
-    	    	
-    	boolean getSentences = false;
-    	boolean getCompleteDocument = false;
-    	boolean includeNER = false;
-    	boolean doBootstrap = false;
-    	String sentenceOutput = null;
-    	String documentOutput = null;
-    	String bootstrapInput = null;
+		LogInfo.begin_track("Main");
     	
     	boolean findSentences = true;
-    	
-    	if (options.containsKey("-getSentences"))
-    	{
-    		getSentences = true;
-    		sentenceOutput = options.get("-getSentences");
-    	}
-    	
-    	if (options.containsKey("-getCompleteDocument"))
-    	{
-    		getCompleteDocument = true;
-    		documentOutput = options.get("-getCompleteDocument");
-    	}
-    	if (options.containsKey("-includeNER"))
-    		includeNER = true;
-    	
-    	if (options.containsKey("-bootstrap")) {
-    		doBootstrap = true;
-    		bootstrapInput = options.get("-bootstrap");
-    	}
-    	
-    	Properties props = new Properties();
-		props.put("annotators", "tokenize, ssplit, pos, lemma, parse");
-		StanfordCoreNLP processor = new StanfordCoreNLP(props, false);
-			
-    	List<Pair<String, String>> bootstrapList = getBootstrapInput(bootstrapInput);
-    	// Use return variable sentences for all the sentences
-    	
-    	if (getSentences) {
-    		System.out.println(workingDirectory);
-    		Query q = new Query(indexLoc);
-    		HashMap<String, Double> totalNormalizedCounts = new HashMap<String, Double>(), minShare = new HashMap<String, Double>();
-    		IntCounter<String> numAppearances = new IntCounter<String>();
- 
-    		for(Pair<String, String> pair:bootstrapList) {
-	    		String first = pair.getFirst();
-	    		String second = pair.getSecond();
-	    		
-	    		String queryString = QueryBuilder.buildOrderedQuery(first, second, withinWords);
-	    		
-	    		System.out.println("Querying Index for " + queryString + "...");
-	    		
-	    		ExtractRelation er = new ExtractRelation(processor);
-	    		HashMap<String, Double> normalizedCounts = er.findRelations(QueryRetreiver.executeQuery(indexLoc, queryString, numResults, first, second, workingDirectory), first, second);
-	    		System.out.println(normalizedCounts);
-	    		for(String key:normalizedCounts.keySet()) {
-	    			numAppearances.incrementCount(key);
-	    			if(totalNormalizedCounts.containsKey(key))
-	    				totalNormalizedCounts.put(key, totalNormalizedCounts.get(key) + normalizedCounts.get(key));
-	    			else
-	    				totalNormalizedCounts.put(key, normalizedCounts.get(key));
-	    			if(minShare.containsKey(key)) {
-	    				if(minShare.get(key) > normalizedCounts.get(key)) {
-	    					minShare.put(key, normalizedCounts.get(key));
-	    				}
-	    			}
-	    			else
-	    				minShare.put(key, normalizedCounts.get(key));
-	    		}
-    		}
-    		
-    		System.out.println("Relations found");
-    		BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt"));
-    		for(String key:totalNormalizedCounts.keySet()) {
-    			totalNormalizedCounts.put(key, (totalNormalizedCounts.get(key) - minShare.get(key) ) * (numAppearances.getCount(key) -1) );
-    			//totalNormalizedCounts.put(key, (totalNormalizedCounts.get(key) ) *  numAppearances.getCount(key));
-    			if(totalNormalizedCounts.get(key) >0 ) {
-	    			System.out.println(key + " : " + totalNormalizedCounts.get(key));
-	    			writer.write(key + " : " + totalNormalizedCounts.get(key) + "\n");
-    			}
-    		}
-    		writer.close();
-    		//System.out.println(totalNormalizedCounts);
-		}
-
-		if(findSentences) {
-			HashMap<String, String> map = new HashMap<String, String>();
+    	    	
+    	if(findSentences) {
 			FindSentences fs = new FindSentences();
-			String entity = "Bronfman";
-			String queryString = QueryBuilder.buildSingleTermQuery(entity);
-			List<String> lst = QueryRetreiver.executeQuery(indexLoc, queryString, numResults, entity, workingDirectory);
-			System.out.println(lst.size());
-			fs.createNERMap("Bob and Marley were friends", map, false);
-			System.out.println(map);
+			fs.findAssociateOf(expansionFile, indexLocation, downloadDirectory);
+			
+			//Index.buildIndex("/home/aju/Stanford/cs341/data/new/", "/home/aju/Stanford/cs341/data/expanded/");
 		}
+    	else
+    		runBootstrap();
     	System.out.println("Done!");
+    	LogInfo.end_track();	
     	return;
 	}
 	
@@ -167,26 +69,61 @@ public class Bootstrap {
 		return bootstrapList;
 	}
 
-	private static void PrintUsageAndExit()
-	{
-		System.out.println("QueryRetreiver Usage:");
-		System.out.println("java -jar QueryRetreiver.jar");
+	private void runBootstrap() {
+		Properties props = new Properties();
+		props.put("annotators", "tokenize, ssplit, pos, lemma, parse");
+		StanfordCoreNLP processor = new StanfordCoreNLP(props, false);
+			
+    	List<Pair<String, String>> bootstrapList = getBootstrapInput(bootstrap);
+
+		System.out.println(downloadDirectory);
+		Query q = new Query(indexLocation);
+		HashMap<String, Double> totalNormalizedCounts = new HashMap<String, Double>(), minShare = new HashMap<String, Double>();
+    	IntCounter<String> numAppearances = new IntCounter<String>();
+ 
+    	for(Pair<String, String> pair:bootstrapList) {
+	    	String first = pair.getFirst();
+	    	String second = pair.getSecond();
+	    		
+	    	String queryString = QueryBuilder.buildOrderedQuery(first, second, withinWords);
+	    		
+	    	System.out.println("Querying Index for " + queryString + "...");
+	
+	    	ExtractRelation er = new ExtractRelation(processor);
+	    	HashMap<String, Double> normalizedCounts = er.findRelations(QueryRetreiver.executeQuery(indexLocation, queryString, numResults, first, second, downloadDirectory), first, second);
+	    	System.out.println(normalizedCounts);
+	    	for(String key:normalizedCounts.keySet()) {
+	    		numAppearances.incrementCount(key);
+	    		if(totalNormalizedCounts.containsKey(key))
+	    			totalNormalizedCounts.put(key, totalNormalizedCounts.get(key) + normalizedCounts.get(key));
+	    		else
+	    			totalNormalizedCounts.put(key, normalizedCounts.get(key));
+	    		if(minShare.containsKey(key)) {
+	    			if(minShare.get(key) > normalizedCounts.get(key)) {
+	    				minShare.put(key, normalizedCounts.get(key));
+	    			}
+	    		}
+	    		else
+	    			minShare.put(key, normalizedCounts.get(key));
+	    	}
+    	}
 		
-		System.out.println("-indexLocation absolutePathNameOfIndexDirectory");
-		System.out.println("-numTerms numberOfTermsInYourQuery(1 or 2, where each can be multiple words)");
-		System.out.println("-q1 firstQueryTerm [-q2 secondQueryTerm]");
-		System.out.println("-withinWords numberOfWordsWithinWhichTheQueryTermsShouldAppear");
-		System.out.println("-downloadDirectory directoryForRetreivedDocuments");
-		System.out.println("-getSentences outputFile (If you want to get concerned sentences only");
-		System.out.println("-getCompleteDocument outputFile (If you want the entire document, with NER tags");
-		System.out.println("At least one of the above two options must be enabled");
-		System.out.println("-includeNER NER Tags will be printed if this argument is present");
-		System.out.println("Example Usage:");
-		System.out.println("java -jar QueryRetreiver.jar " +
-				"-indexLocation /home/ubuntu/chunk -numTerms 2 -q1 EMET -q2 \"Clifford May\"" +
-				" -withinWords 10 -getSentences retreivedSentences_Cliff -getCompleteDocument retreivedDoc_Cliff" +
-				" -downloadDirectory /home/ubuntu/testing/");
-		System.exit(0);
+		System.out.println("Relations found");
+		try {
+		BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt"));
+		for(String key:totalNormalizedCounts.keySet()) {
+			totalNormalizedCounts.put(key, (totalNormalizedCounts.get(key) - minShare.get(key) ) * (numAppearances.getCount(key) -1) );
+			//totalNormalizedCounts.put(key, (totalNormalizedCounts.get(key) ) *  numAppearances.getCount(key));
+			if(totalNormalizedCounts.get(key) >0 ) {
+				System.out.println(key + " : " + totalNormalizedCounts.get(key));
+				writer.write(key + " : " + totalNormalizedCounts.get(key) + "\n");
+			}
+		}
+		writer.close();
+		}
+		catch(Exception ex) {
+			System.out.println(ex.getMessage());
+		}
 	}
 }
 //Do ner tags for bootstrapping entities
