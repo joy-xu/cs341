@@ -75,7 +75,7 @@ public class HighRecallFilter{
 		}
 		System.out.println("Done downloading!");
 		
-		FilteredFileBuilder.createFiles(output, filteredIndexFiles);
+		FilteredFileBuilder.createFiles(output, workingDirectory,filteredIndexFiles);
 		
 	}
 
@@ -98,6 +98,50 @@ public static class HRF implements Runnable{
 		output.addAll(queryResults);
 	}
 	
+	public static List<String> getEquivalents(String entity)
+	{
+		List<String> equivalents = new ArrayList<String>();
+		String[] terms = entity.split("[_.,()]");
+		List<String> qterms = new ArrayList<String>();
+		for (int i = 0;i<terms.length;i++)
+			if (terms[i].length() > 0)
+				qterms.add(terms[i]);
+		
+		int numterms = qterms.size();
+		if (numterms <= 2)
+		{
+			StringBuffer sbuf = new StringBuffer();
+			for (String t:qterms)
+			{
+				sbuf.append(t);
+				sbuf.append(" ");
+			}
+			sbuf.deleteCharAt(sbuf.length()-1);
+			equivalents.add(sbuf.toString());
+			if (numterms==2)
+			{
+    			sbuf = new StringBuffer();
+    			for (int i = numterms-1;i>=0;i--)
+    			{
+    				sbuf.append(qterms.get(i));
+    				sbuf.append(" ");
+    			}
+    			sbuf.deleteCharAt(sbuf.length()-1);
+    			equivalents.add(sbuf.toString());
+			}
+		}
+		else
+		{
+			for (int i = 0;i<numterms-1;i++)
+			{   				
+				StringBuffer sbuf = new StringBuffer();
+				sbuf.append(qterms.get(i) + " ");
+				sbuf.append(qterms.get(i+1));
+				equivalents.add(sbuf.toString());
+			}
+		}	
+		return equivalents;
+	}
 	public void run() 
 	{    	
 	    	String[] searchTerms = entity.split("\\$");
@@ -106,46 +150,8 @@ public static class HRF implements Runnable{
 	    	for (String s:searchTerms)
 	    	{
 	    		//System.out.println("Processing: " + entityName);
-	    		List<String> equivalents = new ArrayList<String>();
-	    		String[] terms = s.split("[_.,()]");
-	    		List<String> qterms = new ArrayList<String>();
-	    		for (int i = 0;i<terms.length;i++)
-	    			if (terms[i].length() > 0)
-	    				qterms.add(terms[i]);
+	    		List<String> equivalents = getEquivalents(s);
 	    		
-	    		int numterms = qterms.size();
-	    		if (numterms <= 2)
-	    		{
-	    			StringBuffer sbuf = new StringBuffer();
-	    			for (String t:qterms)
-	    			{
-	    				sbuf.append(t);
-	    				sbuf.append(" ");
-	    			}
-	    			sbuf.deleteCharAt(sbuf.length()-1);
-	    			equivalents.add(sbuf.toString());
-	    			if (numterms==2)
-	    			{
-		    			sbuf = new StringBuffer();
-		    			for (int i = numterms-1;i>=0;i--)
-		    			{
-		    				sbuf.append(qterms.get(i));
-		    				sbuf.append(" ");
-		    			}
-		    			sbuf.deleteCharAt(sbuf.length()-1);
-		    			equivalents.add(sbuf.toString());
-	    			}
-	    		}
-	    		else
-	    		{
-	    			for (int i = 0;i<numterms-1;i++)
-	    			{   				
-	    				StringBuffer sbuf = new StringBuffer();
-	    				sbuf.append(qterms.get(i) + " ");
-	    				sbuf.append(qterms.get(i+1));
-	    				equivalents.add(sbuf.toString());
-	    			}
-	    		}
 	    		String queryString = QueryBuilder.buildOrQuery(equivalents);
 	    		
 	    		System.out.println("Querying Index for " + queryString + "...");

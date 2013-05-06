@@ -10,7 +10,7 @@ import streamcorpus.*;
 public class FilteredFileBuilder {
 
 
-	public static void createFiles(Set<String> queryResult, String workingDirectoryInput)
+	public static void createFiles(Set<String> queryResult, String workingDirectoryInput, String writeDirectory)
 	{
 		try {
 		List<String> queryResults = new ArrayList<String>();
@@ -25,6 +25,7 @@ public class FilteredFileBuilder {
     		String fullName = queryResults.get(i);
     		
     		CorpusFileName cf = new CorpusFileName(fullName);
+    		cf.setlocalfilename(workingDirectory+cf.filename);
     		cf.downloadfile();
     		//String localFile = workingDirectory + cf.localfilename;
     		if (filesToStreamIDs.containsKey(cf.localfilename))
@@ -58,7 +59,7 @@ public class FilteredFileBuilder {
                 Set<String> added = new HashSet<String>();
                 String[] all = currentFile.split("/");
                 String absFileName = all[all.length-1];
-                BufferedWriter buf = new BufferedWriter(new FileWriter(workingDirectory+absFileName));
+                BufferedWriter buf = new BufferedWriter(new FileWriter(writeDirectory+absFileName));
                  
                 while (true) 
                 {
