@@ -105,7 +105,7 @@ Map<String, String> options = new HashMap<String, String>();
 	    		System.out.println("Querying Index for " + queryString + "...");
 	    		
 	    		ExtractRelation er = new ExtractRelation(processor);
-	    		er.findRelations(QueryRetreiver.executeQuery(indexLoc, queryString, first, second, workingDirectory), first, second);
+	    		er.findRelations(QueryRetreiver.executeQuery(indexLoc, queryString, 1000, first, second, workingDirectory), first, second);
     	   	}
     		System.out.println(ExtractRelation.relationCounter);
 		}
