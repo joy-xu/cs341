@@ -43,7 +43,7 @@ public class FilteredFileBuilder {
     	while(fileIT.hasNext())
     	{
     			String currentFile = fileIT.next();
-    			
+    			System.out.println("Processing: " + currentFile);
     			Set<String> streamIDs = filesToStreamIDs.get(currentFile);
     			
     			String downloadDirectory = currentFile;
@@ -73,8 +73,10 @@ public class FilteredFileBuilder {
                     
                     if (streamIDs.contains(item.stream_id))
                     {
-                    	
+                    	System.out.println(item.stream_id);
                     	added.add(item.stream_id);
+                    	if (item.body == null || item.body.clean_visible == null)
+                    		continue;
                     	buf.write("<DOC>");
             			buf.newLine();
             	
@@ -101,6 +103,7 @@ public class FilteredFileBuilder {
                     	buf.flush();
                     }
                 }
+                buf.close();
     		}
     	
 		} catch (Exception e) {
