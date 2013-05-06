@@ -41,7 +41,7 @@ public class ThriftReader {
     		String fullName = queryResults.get(i);
     		
     		CorpusFileName cf = new CorpusFileName(fullName);
-    		
+    		cf.downloadfile();
     		if (folderToFiles.containsKey(cf.folder))
     		{
     			folderToFiles.get(cf.folder).add(cf.filename);
@@ -82,7 +82,7 @@ public class ThriftReader {
     			String downloadDirectory = workingDirectory + currentFile;
             	String decryptedFile = downloadDirectory.substring(0,downloadDirectory.length()-4);
             	String fileInput = decryptedFile.substring(0, decryptedFile.length()-3);
-    			
+    			/*
             	File f = new File(fileInput);
     			if (!f.exists())
     			{
@@ -123,7 +123,7 @@ public class ThriftReader {
     	        	p = Runtime.getRuntime().exec(deleteCommand);
     	        	p.waitFor();
     			}
-    			
+    			*/
     			TTransport transport = new TIOStreamTransport(
                 		new BufferedInputStream(
                 				new FileInputStream(fileInput)));

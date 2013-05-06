@@ -14,8 +14,9 @@ public class HighRecallFilter {
 
 	/**
 	 * @param args
+	 * @throws InterruptedException 
 	 */
-	public static void main(String[] args) throws IOException{
+	public static void main(String[] args) throws IOException, InterruptedException{
 		// TODO Auto-generated method stub
 		
 		String entity  = args[2];
@@ -87,6 +88,13 @@ public class HighRecallFilter {
     		
 		}
     	writeResultsToFile(workingDirectory,entityName,output);	
+    	for (String result:output)
+    	{
+    		CorpusFileName cf = new CorpusFileName(result);
+    		cf.setlocalfilename(workingDirectory+cf.filename);
+    		cf.downloadfile();
+    	}
+    	
     	System.out.println("Done!");
     	return;
 	}
