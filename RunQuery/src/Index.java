@@ -5,6 +5,7 @@ public class Index {
 	public static void buildIndex(String indexLocation, String corpusLocation) {
 		IndexEnvironment index = new IndexEnvironment();
 		try {
+			
 			String[] fields = {"Time", "Text"};
 			index.setDocumentRoot(corpusLocation);
 			index.setStemmer("krovetz");
