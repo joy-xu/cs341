@@ -8,27 +8,24 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import edu.stanford.nlp.dcoref.CoNLL2011DocumentReader.CorefMentionAnnotation;
 import edu.stanford.nlp.dcoref.CorefChain;
 import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
 import edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefChainAnnotation;
 import edu.stanford.nlp.dcoref.Dictionaries.MentionType;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
-import edu.stanford.nlp.ie.crf.CRFClassifier;
 import edu.stanford.nlp.ling.CoreAnnotations.NamedEntityTagAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
 import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
+import edu.stanford.nlp.parser.lexparser.NoSuchParseException;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
-import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations;
-import edu.stanford.nlp.trees.TreeCoreAnnotations.TreeAnnotation;
 import edu.stanford.nlp.util.CoreMap;
 
 public class NLPUtils {
@@ -75,46 +72,58 @@ public class NLPUtils {
 	
 	public Map<String, Set<String>> getCorefMap(String sentence) {
 		Map<String, Set<String>> corefMap = new HashMap<String, Set<String>>();
-		Annotation document = new Annotation(sentence);
-		processor.annotate(document);
 		
-		Map<Integer, CorefChain> coref = document.get(CorefChainAnnotation.class);
-		
-		for(Map.Entry<Integer, CorefChain> entry : coref.entrySet()) {
-            CorefChain c = entry.getValue();
-            //this is because it prints out a lot of self references which aren't that useful
-            if(c.getMentionMap().size() <= 1)
-                continue;
-            
-            CorefMention cm = c.getRepresentativeMention();
-            String clust = "";
-            List<CoreLabel> tks = document.get(SentencesAnnotation.class).get(cm.sentNum-1).get(TokensAnnotation.class);
-            for(int i = cm.startIndex-1; i < cm.endIndex-1; i++)
-                clust += tks.get(i).get(TextAnnotation.class) + " ";
-            clust = clust.trim();
-           
-            Set<String> mentions = new HashSet<String>();
-        	for(Set<CorefMention> s : c.getMentionMap().values()){
-            	for(CorefMention m: s) {
-            		String clust2 = "";
-                    tks = document.get(SentencesAnnotation.class).get(m.sentNum-1).get(TokensAnnotation.class);
-                    for(int i = m.startIndex-1; i < m.endIndex-1; i++)
-                        clust2 += tks.get(i).get(TextAnnotation.class) + " ";
-                    clust2 = clust2.trim();
-                    //don't need the self mention
-                    if(clust.equals(clust2))
-                        continue;
-                    mentions.add(clust2);
-                }
-            }
-        	corefMap.put(clust, mentions);
-        }
-		return corefMap;
+		try {
+			Annotation document = new Annotation(sentence);
+			processor.annotate(document);
+			
+			Map<Integer, CorefChain> coref = document.get(CorefChainAnnotation.class);
+			
+			for(Map.Entry<Integer, CorefChain> entry : coref.entrySet()) {
+	            CorefChain c = entry.getValue();
+	            CorefMention cm = c.getRepresentativeMention();
+	            String clust = "";
+	            List<CoreLabel> tks = document.get(SentencesAnnotation.class).get(cm.sentNum-1).get(TokensAnnotation.class);
+	            for(int i = cm.startIndex-1; i < cm.endIndex-1; i++)
+	                clust += tks.get(i).get(TextAnnotation.class) + " ";
+	            clust = clust.trim();
+	           
+	            Set<String> mentions = new HashSet<String>();
+	        	for(Set<CorefMention> s : c.getMentionMap().values()){
+	            	for(CorefMention m: s) {
+	            		String clust2 = "";
+	                    tks = document.get(SentencesAnnotation.class).get(m.sentNum-1).get(TokensAnnotation.class);
+	                    for(int i = m.startIndex-1; i < m.endIndex-1; i++)
+	                        clust2 += tks.get(i).get(TextAnnotation.class) + " ";
+	                    clust2 = clust2.trim();
+	                    //don't need the self mention
+	                    if(clust.equals(clust2))
+	                        continue;
+	                    mentions.add(clust2);
+	                }
+	            }
+	        	if(!mentions.isEmpty())
+	        		corefMap.put(clust, mentions);
+	        }
+			return corefMap;
+		}
+		catch (NoSuchParseException e) {
+			return corefMap;
+		}
 	}
 
-	public String getCorefHead(String sentence, String ref) {
+	public boolean containsTokens(String s2, String s1) {
+		for(String token: s1.split(" ")) {
+			if(!s2.contains(token))
+				return false;
+		}
+		return true;
+	}
+	
+	public Set<String> getCorefs(String sentence, String head) {
 		Annotation document = new Annotation(sentence);
 		processor.annotate(document);
+		Set<String> corefs = new HashSet<String>();
 		
 		Map<Integer, CorefChain> coref = document.get(CorefChainAnnotation.class);
 		
@@ -141,12 +150,12 @@ public class NLPUtils {
                     //don't need the self mention
                     if(clust.equals(clust2))
                         continue;
-                    if(ref.equals(clust2) && !m.mentionType.equals(MentionType.valueOf("PRONOMINAL")))
-                    	return clust;
+                    if(containsTokens(clust, head) && !m.mentionType.equals(MentionType.valueOf("PRONOMINAL")))
+                    	corefs.add(clust2);
                 }
             }
         }
-		return "-1";
+		return corefs;
 	}
 	
 	public List<SemanticGraph> getCollapsedCCSemanticGraphs(String sentence) {

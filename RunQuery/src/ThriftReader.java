@@ -94,7 +94,7 @@ public class ThriftReader {
     	        	File downloadF = new File(downloadDirectory);
     	        	if (!downloadF.exists())
     	        	{
-    	        		String downloadCommand = "wget -O " + downloadDirectory + " " + downloadURL;
+    	        		String downloadCommand = "/usr/local/bin/wget -O " + downloadDirectory + " " + downloadURL;
     	        		System.out.println(downloadCommand);
     	        		p = Runtime.getRuntime().exec(downloadCommand);
     	        		p.waitFor();
@@ -103,7 +103,7 @@ public class ThriftReader {
     	        	File decryptF = new File(decryptedFile);
     	        	if (!decryptF.exists())
     	        	{
-    	        		String decryptCommand = "gpg -o " + decryptedFile + 
+    	        		String decryptCommand = "/usr/local/bin/gpg -o " + decryptedFile + 
     	        							" -d " + downloadDirectory;
     	        	
     	        	
@@ -113,7 +113,7 @@ public class ThriftReader {
     	        	p.waitFor();
     	        	}
     	        	
-    	        	String unxzCommand = "unxz " + decryptedFile;
+    	        	String unxzCommand = "/usr/local/bin/unxz " + decryptedFile;
     	        	
     	        	//System.out.println(unxzCommand);
     	        	p = Runtime.getRuntime().exec(unxzCommand);
@@ -263,8 +263,7 @@ public class ThriftReader {
 			for (int j = 0;j<currentAllSentences.size();j++)
 			{
 				String currentSentence = currentAllSentences.get(j);
-				
-				if (currentSentence.indexOf(first.toLowerCase()) != -1)
+				if (currentSentence.toLowerCase().contains(first.toLowerCase()))
 				{
 					StringBuilder sbuf = new StringBuilder();
 					String[] words = currentSentence.split(" ");
