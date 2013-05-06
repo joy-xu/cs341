@@ -1,4 +1,4 @@
-package retriewin.Indexer;
+package retrieWin.Indexer;
 
 public class Indexer {
 

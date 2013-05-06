@@ -1,4 +1,4 @@
-package retriewin.Indexer;
+package retrieWin.Indexer;
 
 public class TrecTextDocument {
 	public final String docNumber;
