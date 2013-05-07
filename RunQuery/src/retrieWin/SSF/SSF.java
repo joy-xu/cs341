@@ -53,16 +53,14 @@ public class SSF {
 				System.out.println(ex.getMessage());
 			}
 		}
-		for(Entity e:entities) {
+		/* for(Entity e:entities) {
 			System.out.println(e.getName());
 			System.out.println(e.getTargetID());
 			System.out.println(e.getGroup());
 			System.out.println(e.getEntityType());
 			System.out.println(e.getExpansions());
 			System.out.println(e.getDisambiguations());
-		}
-		
-		FileUtils.writeFile(entities, entitiesSerilizedFile);
+		} */
 	}
 	
 	public List<String> getDisambiguations(String entity) {
@@ -130,9 +128,9 @@ public class SSF {
 				System.out.println(e.getMessage());
 			}
 		}
-		for(Slot slot: slots)
+		/* for(Slot slot: slots)
 			System.out.println(slot.getName() + "," + slot.getEntityType() + "," + slot.getSourceNERTypes() + "," + slot.getTargetNERTypes() + "," + slot.getThreshold());
-		//System.out.println(slots);
+		//System.out.println(slots); */
 	}
 	
 	public void runSSF() {
