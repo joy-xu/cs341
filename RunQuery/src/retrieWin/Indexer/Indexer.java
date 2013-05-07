@@ -14,6 +14,9 @@ public class Indexer {
 	public static void createIndex(String folder, String tmpdirLocation, String filteredIndexLocation,
 			List<Entity> allEntities)
 	{
+		System.out.println(folder);
+		if (!folder.endsWith("/"))
+			folder = folder + "/";
 		String filesLocation = tmpdirLocation + "allFiles/";
 		String indexFolder = tmpdirLocation + "index/";
 		String filteredFilesLocation = tmpdirLocation + "filteredFiles/";
@@ -29,6 +32,7 @@ public class Indexer {
 		filteredFilesDir.mkdirs();
 		
 		ThriftReader.GetFolder(folder, filesLocation);
+		
 		IndriIndexBuilder.buildIndex(indexFolder, filesLocation);
 		ExecuteQuery queryExecutor = new ExecuteQuery(indexFolder);
 		
@@ -52,7 +56,7 @@ public class Indexer {
 		}
 		ThriftReader.WriteTrecTextDocumentToFile(allResults, "filtered", filteredFilesLocation);
 		IndriIndexBuilder.buildIndex(filteredIndexLocation, filteredFilesLocation);
-		
+		/*
 		try{
 		Process p;
 		String deleteCommand = "rm -rf " + tmpdirLocation;
@@ -63,6 +67,7 @@ public class Indexer {
 		{
 			System.out.println("Failed to delete temporary files");
 		}
+		*/
 	}
 	
 	public static class parallelQuerier implements Runnable{

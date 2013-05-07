@@ -147,7 +147,7 @@ public class SSF {
 		//for(Slot slot: slots)
 		//System.out.println(slot.getName() + "," + slot.getEntityType() + "," + slot.getSourceNERTypes() + "," + slot.getTargetNERTypes() + "," + slot.getThreshold());
 		//System.out.println(slots);
-		
-		new SSF(args[1]).runSSF();
+		System.out.println(args[0]);
+		new SSF(args[0]).runSSF();
 	}
 }

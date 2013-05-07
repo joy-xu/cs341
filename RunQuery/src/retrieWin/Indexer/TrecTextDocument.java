@@ -19,7 +19,7 @@ public class TrecTextDocument implements Serializable{
 	public TrecTextDocument(String dn, String txt, String tm, List<String> sentencesIn)
 	{
 		docNumber = dn;
-		text = tm;
+		text = txt;
 		time = tm;
 		sentences = sentencesIn;
 	}
@@ -46,25 +46,25 @@ public class TrecTextDocument implements Serializable{
 			BufferedWriter buf = new BufferedWriter(new FileWriter(workingDirectory+filename,true));					
 			buf.write("<DOC>");
 			buf.newLine();
-			buf.write("<DOCNO>\n");
+			buf.write("<DOCNO>");
 			buf.newLine();
 			buf.write(docNumber);
 			buf.newLine();
 			buf.write("</DOCNO>");
 			buf.newLine();
-			buf.write("<TIME>\n");
+			buf.write("<TIME>");
 			buf.newLine();
 			buf.write(time);
 			buf.newLine();
-			buf.write("</TIME>\n");
+			buf.write("</TIME>");
 			buf.newLine();
-			buf.write("<TEXT>\n");
+			buf.write("<TEXT>");
 			buf.newLine();
 			buf.write(text);
 			buf.newLine();
-			buf.write("</TEXT>\n");
+			buf.write("</TEXT>");
 			buf.newLine();
-			buf.write("</DOC\n>");
+			buf.write("</DOC>");
 			buf.newLine();
 			buf.flush();
 			
