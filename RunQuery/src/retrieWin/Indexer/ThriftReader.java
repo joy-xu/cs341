@@ -116,7 +116,7 @@ public class ThriftReader {
             	if (item.body == null || item.body.clean_visible == null || 
             			item.body.sentences == null || !item.body.sentences.containsKey("lingpipe"))
             	{
-            		System.out.println("null");
+            		//System.out.println("null");
             		continue;
             	}
 	            	
