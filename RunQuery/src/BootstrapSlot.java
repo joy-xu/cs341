@@ -1,9 +1,10 @@
 import java.util.*;
 import java.io.*;
 
+import retrieWin.Utils.*;
+
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 
-import util.*;
 public class BootstrapSlot{
 
 	/**

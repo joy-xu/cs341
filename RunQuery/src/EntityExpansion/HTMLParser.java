@@ -41,7 +41,7 @@ public class HTMLParser {
 					counts.put(currentAnchor,1);
 			}
 		}
-		util.PriorityQueue<String> pq = new util.PriorityQueue<String>();
+		retrieWin.Utils.PriorityQueue<String> pq = new retrieWin.Utils.PriorityQueue<String>();
 		
 		Iterator<String> it = counts.keySet().iterator();
 		while(it.hasNext())
@@ -85,7 +85,7 @@ public class HTMLParser {
 					counts.put(currentAnchor,1);
 			}
 		}
-		util.PriorityQueue<String> pq = new util.PriorityQueue<String>();
+		retrieWin.Utils.PriorityQueue<String> pq = new retrieWin.Utils.PriorityQueue<String>();
 		
 		Iterator<String> it = counts.keySet().iterator();
 		while(it.hasNext())

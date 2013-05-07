@@ -8,7 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
-import util.NLPUtils;
+import retrieWin.Utils.NLPUtils;
+
 
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
 import edu.stanford.nlp.ie.crf.CRFClassifier;

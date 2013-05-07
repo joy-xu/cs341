@@ -5,10 +5,12 @@ import fig.basic.Option;
 
 import java.io.*;
 
+import retrieWin.Utils.*;
+
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.stats.IntCounter;
+import edu.stanford.nlp.util.Pair;
 
-import util.*;
 
 
 public class Bootstrap implements Runnable {
@@ -82,8 +84,8 @@ public class Bootstrap implements Runnable {
     	IntCounter<String> numAppearances = new IntCounter<String>();
  
     	for(Pair<String, String> pair:bootstrapList) {
-	    	String first = pair.getFirst();
-	    	String second = pair.getSecond();
+	    	String first = pair.first();
+	    	String second = pair.second();
 	    		
 	    	String queryString = QueryBuilder.buildOrderedQuery(first, second, withinWords);
 	    		

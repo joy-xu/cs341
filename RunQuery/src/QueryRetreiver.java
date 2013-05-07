@@ -1,10 +1,11 @@
 import java.util.*;
 import java.io.*;
 
+import retrieWin.Utils.*;
+
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import fig.basic.LogInfo;
 
-import util.*;
 public class QueryRetreiver {
 
 	/**

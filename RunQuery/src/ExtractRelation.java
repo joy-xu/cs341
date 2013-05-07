@@ -1,5 +1,6 @@
 import java.nio.charset.Charset;
 import java.nio.charset.CharsetEncoder;
+import edu.stanford.nlp.util.Pair;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -30,7 +31,6 @@ import edu.stanford.nlp.ie.ner.*;
 import edu.stanford.nlp.stats.IntCounter;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.StringUtils;
-import util.Pair;
 
 public class ExtractRelation {
 	StanfordCoreNLP processor;
@@ -141,8 +141,8 @@ public class ExtractRelation {
 			
 			
 			Pair<IndexedWord, IndexedWord> entityRoots = findEntityPairs(ccgraph, head, children);
-			IndexedWord firstIndex = entityRoots.getFirst();
-			IndexedWord secondIndex = entityRoots.getSecond();
+			IndexedWord firstIndex = entityRoots.first();
+			IndexedWord secondIndex = entityRoots.second();
 			if (firstIndex.word() == null || secondIndex.word() == null)
 				continue;
 			
