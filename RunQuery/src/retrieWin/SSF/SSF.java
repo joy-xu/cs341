@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import retrieWin.Indexer.Indexer;
+import retrieWin.Indexer.IndriIndexBuilder;
 import retrieWin.SSF.Constants.EntityType;
 import util.FileUtils;
 import util.Utils;
@@ -25,11 +26,11 @@ public class SSF {
 	public void initialize(String timestamp) {
 		readEntities();
 		readSlots();
-		File tempDir = new File("temp");
+		/*File tempDir = new File("temp");
 		// if the directory does not exist, create it
 		if (!tempDir.exists())
 		    tempDir.mkdir(); 
-		Indexer.createIndex(timestamp, "temp/", Constants.indexLocation, entities);
+		Indexer.createIndex(timestamp, "temp/", Constants.indexLocation, entities);*/
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -139,6 +140,9 @@ public class SSF {
 	}
 	
 	public void runSSF() {
+		System.out.println("Inside");
+		IndriIndexBuilder.buildIndex("/home/aju/cs341/data/doc/smallIndex", "/home/aju/cs341/data/doc");
+		System.out.println("Done");
 	}
 	
 	public static void main(String[] args) {
