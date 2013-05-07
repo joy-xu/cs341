@@ -29,7 +29,7 @@ public class SSF {
 		// if the directory does not exist, create it
 		if (!tempDir.exists())
 		    tempDir.mkdir(); 
-		Indexer.createIndex(timestamp, "temp/", Constants.indexLocation, entities);
+		Indexer.createIndex(timestamp, "temp/", Constants.indexLocation, Constants.entitiesSerilizedFile,entities);
 	}
 	
 	@SuppressWarnings("unchecked")

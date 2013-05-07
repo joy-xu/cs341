@@ -24,6 +24,11 @@ public class TrecTextDocument implements Serializable{
 		sentences = sentencesIn;
 	}
 	
+	public static void serializeFile(List<TrecTextDocument> results,String serializedFileLocation)
+	{
+		FileUtils.writeFile(results, serializedFileLocation);
+	}
+	
 	public static List<TrecTextDocument> getFromStoredFile(List<String> queryResults, String filteredFileName)
 	{
 		@SuppressWarnings("unchecked")
