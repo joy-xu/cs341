@@ -19,13 +19,13 @@ public class Constants  implements Serializable {
 		LOCATION,
 		ORGANIZATION,
 		DATE,
+		TIME,
 		NONE
 	}
 	
 	public enum SlotName{
 		Founded_By,
 		Founder_Of,
-		Associate_Of,
 		Affiliate_Of,
 		Cause_Of_Death,
 		Date_Of_Death,
@@ -33,7 +33,8 @@ public class Constants  implements Serializable {
 		Contact_Meet_Place_Time,
 		Employee_Of,
 		Contact_Meet_Entity,
-		Awards_Won
+		Awards_Won,
+		Titles
 	}
 	
 	public enum EdgeDirection {
