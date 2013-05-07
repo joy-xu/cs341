@@ -1,14 +1,14 @@
 package retrieWin.Indexer;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
+
 import java.io.InputStreamReader;
 import java.io.FileInputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
-import java.io.FileWriter;
+
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TIOStreamTransport;
 import org.apache.thrift.transport.TTransport;
@@ -97,41 +97,14 @@ public class ThriftReader {
 		return output;
 	}
 	
-	private static void WriteTrecTextDocumentToFile(List<TrecTextDocument> documentList, String file, String downloadDirectory)
+	public static void WriteTrecTextDocumentToFile(List<TrecTextDocument> documentList,String filename,String downloadDirectory)
 	{
-		try{
-			BufferedWriter buf = new BufferedWriter(new FileWriter(downloadDirectory+file));
-			for (TrecTextDocument t:documentList)
-			{
-				buf.write("<DOC>");
-				buf.newLine();
-				buf.write("<DOCNO>\n");
-				buf.newLine();
-				buf.write(t.docNumber);
-				buf.newLine();
-				buf.write("</DOCNO>");
-				buf.newLine();
-				buf.write("<TIME>\n");
-				buf.newLine();
-				buf.write(t.time);
-				buf.newLine();
-				buf.write("</TIME>\n");
-				buf.newLine();
-				buf.write("<TEXT>\n");
-				buf.newLine();
-				buf.write(t.text);
-				buf.newLine();
-				buf.write("</TEXT>\n");
-				buf.newLine();
-				buf.write("</DOC\n>");
-				buf.newLine();
-				buf.flush();
-			}
-			buf.close();
-		}
-		catch (Exception e)
-		{}
+		for (TrecTextDocument t:documentList)
+		{
+			t.writeToFile(filename,downloadDirectory);
+		}			
 	}
+	
 	public static void GetFolder(String folder, String downloadDirectory)
 	{
 		List<String> filenames = new ArrayList<String>();

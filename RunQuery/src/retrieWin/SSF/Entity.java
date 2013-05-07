@@ -45,4 +45,9 @@ public class Entity  implements Serializable {
 		disambiguate(results);
 		return results;
 	}
+	
+	public List<String> getExpansions()
+	{
+		return expansions;
+	}
 }
