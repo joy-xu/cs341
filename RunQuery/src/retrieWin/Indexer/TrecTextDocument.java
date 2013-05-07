@@ -2,17 +2,18 @@ package retrieWin.Indexer;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
-
+import java.util.List;
 public class TrecTextDocument {
 	public final String docNumber;
 	public final String text;
 	public final String time;
-	
-	public TrecTextDocument(String dn, String txt, String tm)
+	public final List<String> sentences;
+	public TrecTextDocument(String dn, String txt, String tm, List<String> sentencesIn)
 	{
 		docNumber = dn;
 		text = tm;
 		time = tm;
+		sentences = sentencesIn;
 	}
 	
 	public void writeToFile(String filename,String workingDirectory)
