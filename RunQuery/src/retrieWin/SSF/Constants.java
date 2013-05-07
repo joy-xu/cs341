@@ -7,7 +7,7 @@ public class Constants  implements Serializable {
 
 	final static String slotsSerializedFile = "data/slots.ser", entitiesSerilizedFile = "data/entities.ser";
 	final static String indexLocation = "index";
-	
+	final static String trecTextSerializedFile = "filteredSerialized";
 	public enum EntityType {
 		PER,
 		ORG,

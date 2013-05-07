@@ -44,6 +44,12 @@ public class ExecuteQuery {
 		return queryIndex(query, Integer.MAX_VALUE);
 	}
 
+	public List<TrecTextDocument> executeQueryFromStoredFile(String query, int numResults, String filteredFileLocation)
+	{
+		List<String> queryResults = queryIndex(query, numResults);
+		return TrecTextDocument.getFromStoredFile(queryResults,filteredFileLocation);
+	}
+	
 	public List<TrecTextDocument> executeQuery(String query, int numResults, String workingDirectory) {
     	List<String> queryResults = queryIndex(query, numResults);
     	Map<String, Set<String>> fileMap = new HashMap<String, Set<String>>();

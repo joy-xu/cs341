@@ -11,7 +11,7 @@ import retrieWin.SSF.*;
 import retrieWin.Querying.*;
 public class Indexer {
 
-	public static void createIndex(String folder, String tmpdirLocation, String filteredIndexLocation,
+	public static void createIndex(String folder, String tmpdirLocation, String filteredIndexLocation, String serializedFileLocation,
 			List<Entity> allEntities)
 	{
 		System.out.println(folder);
@@ -56,6 +56,7 @@ public class Indexer {
 		}
 		ThriftReader.WriteTrecTextDocumentToFile(allResults, "filtered", filteredFilesLocation);
 		IndriIndexBuilder.buildIndex(filteredIndexLocation, filteredFilesLocation);
+		TrecTextDocument.serializeFile(allResults,serializedFileLocation);
 		/*
 		try{
 		Process p;
