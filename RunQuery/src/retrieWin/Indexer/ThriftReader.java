@@ -17,14 +17,34 @@ import org.apache.thrift.transport.TIOStreamTransport;
 import org.apache.thrift.transport.TTransport;
 
 
+import streamcorpus.Sentence;
 import streamcorpus.StreamItem;
+import streamcorpus.Token;
 
 public class ThriftReader {
 	
 	private static TrecTextDocument populateTrecTextDocument(StreamItem item, String filename)
 	{
 		String docNumber = item.stream_id + "_" + filename + "_" + item.stream_time.zulu_timestamp;
-		return new TrecTextDocument(docNumber,item.body.clean_visible,Double.toString(item.stream_time.epoch_ticks));		
+		List<Sentence> s = item.body.sentences.get("lingpipe");
+        
+    	List<String> allSentences = new ArrayList<String>();
+    	
+    	for (int n = 0;n<s.size();n++)
+    	{
+    		List<Token> tList = s.get(n).getTokens();
+    		StringBuilder sbuf = new StringBuilder();
+    		
+    		for (int t = 0;t<tList.size();t++)
+    		{
+    			
+    			sbuf.append(tList.get(t).token);
+    			sbuf.append(" ");
+    		}
+    		allSentences.add(sbuf.toString());
+    		
+    	}
+		return new TrecTextDocument(docNumber,item.body.clean_visible,Double.toString(item.stream_time.epoch_ticks),allSentences);		
 	}
 	
 	private static TBinaryProtocol openBinaryProtocol(String inputFile) throws Exception
@@ -60,7 +80,8 @@ public class ThriftReader {
             if (streamIDs.contains(item.stream_id))
             {
             	added.add(item.stream_id);
-            	if (item.body == null || item.body.clean_visible == null)
+            	if (item.body == null || item.body.clean_visible == null || 
+            			item.body.sentences == null || !item.body.sentences.containsKey("lingpipe"))
             		continue;
             	output.add(populateTrecTextDocument(item,file));
             }
@@ -87,7 +108,8 @@ public class ThriftReader {
 	            final StreamItem item = new StreamItem(); 
 	            item.read(protocol);  
 	            
-	            if (item.body == null || item.body.clean_visible == null)
+            	if (item.body == null || item.body.clean_visible == null || 
+            			item.body.sentences == null || !item.body.sentences.containsKey("lingpipe"))
 	            	continue;
 	            output.add(populateTrecTextDocument(item,file));
 	            
