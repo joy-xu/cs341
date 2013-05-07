@@ -8,6 +8,7 @@ public class IndriIndexBuilder {
 		try {
 			String[] fields = {"TIME", "TEXT"};
 			Specification spec = index.getFileClassSpec("trectext");
+			
 			index.addFileClass(spec);
 			index.setDocumentRoot(corpusLocation);
 			index.setStoreDocs(false);
