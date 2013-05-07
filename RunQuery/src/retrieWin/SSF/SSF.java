@@ -47,6 +47,7 @@ public class SSF {
 							Utils.getEquivalents(splits[3].replace("\"", "")), getDisambiguations(name));
 					entities.add(entity);
 				}
+				reader.close();
 			}
 			catch (Exception ex) {
 				System.out.println(ex.getMessage());
@@ -78,6 +79,7 @@ public class SSF {
 				while((line = reader.readLine()) != null) {
 					disambiguations.add(line.trim());
 				}
+				reader.close();
 			}
 		}
 		catch (Exception ex) {
