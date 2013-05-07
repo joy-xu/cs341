@@ -8,7 +8,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import util.FileUtils;
+import retrieWin.Utils.FileUtils;
+
 public class TrecTextDocument implements Serializable{
 	
 	private static final long serialVersionUID = 1L;

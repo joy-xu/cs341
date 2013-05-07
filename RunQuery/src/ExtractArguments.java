@@ -4,8 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import util.CommandLineUtils;
-import util.Pair;
+import retrieWin.Utils.CommandLineUtils;
+
+import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 
 
@@ -94,8 +95,8 @@ Map<String, String> options = new HashMap<String, String>();
     	if (getSentences) {
     		Query q = new Query(indexLoc);
     		for(Pair<String, String> pair:bootstrapList) {
-	    		String first = pair.getFirst();
-	    		String second = pair.getSecond();
+	    		String first = pair.first();
+	    		String second = pair.second();
 	    		String queryString = null;
 	    		if (second != null)
 	    			queryString = "#uw" + withinWords + "(#1(" + first + ") #1(" + second + "))";

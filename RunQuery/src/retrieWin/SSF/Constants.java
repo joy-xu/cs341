@@ -10,6 +10,7 @@ public class Constants  implements Serializable {
 	final static String workingDirectory = "downloads";
 	final static String trecTextSerializedFile = "filteredSerialized";
 	final static String indriBuildIndexParamFile = "data/buildIndexParams.xml";
+
 	public enum EntityType {
 		PER,
 		ORG,

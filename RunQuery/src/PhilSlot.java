@@ -1,9 +1,10 @@
 import java.util.*;
 import java.io.*;
 
+import retrieWin.Utils.*;
+
 import edu.stanford.nlp.stats.IntCounter;
 
-import util.*;
 public class PhilSlot {
 
 	static String indexLoc, entity, slot, workingDirectory = "", sentenceOutput;

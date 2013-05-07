@@ -21,6 +21,9 @@ public class Slot implements Serializable {
 	private List<NERType> targetNERTypes;
 	private boolean applyPatternAfterCoreference;
 	
+	public List<String> normalize(List<String> vals) {
+		throw new NoSuchElementException();
+	}
 	public List<String> extractSlotVals(Entity ent, Map<TrecTextDocument, Double> docs) {
 		throw new NoSuchElementException();
 	}

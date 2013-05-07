@@ -11,10 +11,10 @@ import java.util.Map;
 import retrieWin.Indexer.Indexer;
 import retrieWin.Indexer.TrecTextDocument;
 import retrieWin.SSF.Constants.EntityType;
-import util.FileUtils;
-import util.Utils;
 import retrieWin.SSF.Constants.NERType;
 import retrieWin.SSF.Constants.SlotName;
+import retrieWin.Utils.FileUtils;
+import retrieWin.Utils.Utils;
 
 public class SSF {
 	List<Slot> slots;
