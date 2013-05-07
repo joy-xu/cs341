@@ -82,7 +82,7 @@ public class Entity  implements Serializable {
 		this.group = group;
 	}
 
-	List<String> getExpansions() {
+	public List<String> getExpansions() {
 		return expansions;
 	}
 

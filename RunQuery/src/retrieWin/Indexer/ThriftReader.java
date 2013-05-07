@@ -1,17 +1,21 @@
 package retrieWin.Indexer;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
+
 import java.io.InputStreamReader;
 import java.io.FileInputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Set;
-import java.io.FileWriter;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.thrift.protocol.TBinaryProtocol;
 import org.apache.thrift.transport.TIOStreamTransport;
 import org.apache.thrift.transport.TTransport;
+
 
 import streamcorpus.StreamItem;
 
@@ -97,41 +101,14 @@ public class ThriftReader {
 		return output;
 	}
 	
-	private static void WriteTrecTextDocumentToFile(List<TrecTextDocument> documentList, String file, String downloadDirectory)
+	public static void WriteTrecTextDocumentToFile(List<TrecTextDocument> documentList,String filename,String downloadDirectory)
 	{
-		try{
-			BufferedWriter buf = new BufferedWriter(new FileWriter(downloadDirectory+file));
-			for (TrecTextDocument t:documentList)
-			{
-				buf.write("<DOC>");
-				buf.newLine();
-				buf.write("<DOCNO>\n");
-				buf.newLine();
-				buf.write(t.docNumber);
-				buf.newLine();
-				buf.write("</DOCNO>");
-				buf.newLine();
-				buf.write("<TIME>\n");
-				buf.newLine();
-				buf.write(t.time);
-				buf.newLine();
-				buf.write("</TIME>\n");
-				buf.newLine();
-				buf.write("<TEXT>\n");
-				buf.newLine();
-				buf.write(t.text);
-				buf.newLine();
-				buf.write("</TEXT>\n");
-				buf.newLine();
-				buf.write("</DOC\n>");
-				buf.newLine();
-				buf.flush();
-			}
-			buf.close();
-		}
-		catch (Exception e)
-		{}
+		for (TrecTextDocument t:documentList)
+		{
+			t.writeToFile(filename,downloadDirectory);
+		}			
 	}
+	
 	public static void GetFolder(String folder, String downloadDirectory)
 	{
 		List<String> filenames = new ArrayList<String>();
@@ -146,15 +123,45 @@ public class ThriftReader {
 			{
 			    filenames.add(line);
 			}
+			
+			ExecutorService e = Executors.newFixedThreadPool(16);
+			
 			for (String file:filenames)
 			{
-				List<TrecTextDocument> documentList = GetAllFiles(folder,file,downloadDirectory);
-				WriteTrecTextDocumentToFile(documentList,file.substring(0,file.length()-10),downloadDirectory);
+				e.execute(new parallelWriter(folder,file,downloadDirectory));
+			}
+			e.shutdown();
+			while(true)
+			{
+				try {
+					if (e.awaitTermination(1, TimeUnit.MINUTES))
+						break;
+					System.out.println("Waiting");
+				}
+				catch(InterruptedException ie){
+					System.out.println("Waiting - Thread interrupted");
+				}
 			}
 		}
 		catch (Exception e)
 		{
 			return;
+		}
+	}
+	
+	public static class parallelWriter implements Runnable
+	{
+		String folder, file, downloadDirectory;
+		public parallelWriter(String folderIn, String fileIn, String dwndIn)
+		{
+			folder = folderIn;
+			file = fileIn;
+			downloadDirectory = dwndIn;
+		}
+		public void run()
+		{
+			List<TrecTextDocument> documentList = GetAllFiles(folder,file,downloadDirectory);
+			WriteTrecTextDocumentToFile(documentList,file.substring(0,file.length()-10),downloadDirectory);
 		}
 	}
 }
