@@ -1,0 +1,21 @@
+<parameters>
+     <stemmer>    
+       <name>krovetz</name>
+     </stemmer>
+
+     <corpus>
+       <class>trectext</class>
+     </corpus>
+
+     <field><name>TEXT</name></field>
+     <field><name>TIME</name><numeric>true</numeric><parserName>DateFieldAnnotator</parserName></field> 
+     
+  		<query>
+    <type>indri</type>
+    <number>751</number>
+    <text>
+      #combine( popular scrabble players )
+    </text>
+  </query>
+
+</parameters>
