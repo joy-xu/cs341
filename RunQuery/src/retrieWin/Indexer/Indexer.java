@@ -1,4 +1,5 @@
 package retrieWin.Indexer;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -10,9 +11,23 @@ import retrieWin.SSF.*;
 import retrieWin.Querying.*;
 public class Indexer {
 
-	public static void createIndex(String folder, String indexFolder, String filesLocation, String filteredIndexLocation, String filteredFilesLocation,
-			List<retrieWin.SSF.Entity> allEntities)
+	public static void createIndex(String folder, String tmpdirLocation, String filteredIndexLocation,
+			List<Entity> allEntities)
 	{
+		String filesLocation = tmpdirLocation + "allFiles/";
+		String indexFolder = tmpdirLocation + "index/";
+		String filteredFilesLocation = tmpdirLocation + "filteredFiles/";
+		
+		File tmpdir = new File(tmpdirLocation);
+		File filesDir = new File(filesLocation);
+		File indexDir = new File(indexFolder);
+		File filteredFilesDir = new File(filteredFilesLocation);
+		
+		tmpdir.mkdirs();
+		filesDir.mkdirs();
+		indexDir.mkdirs();
+		filteredFilesDir.mkdirs();
+		
 		ThriftReader.GetFolder(folder, filesLocation);
 		IndriIndexBuilder.buildIndex(indexFolder, filesLocation);
 		ExecuteQuery queryExecutor = new ExecuteQuery(indexFolder);
@@ -37,6 +52,17 @@ public class Indexer {
 		}
 		ThriftReader.WriteTrecTextDocumentToFile(allResults, "filtered", filteredFilesLocation);
 		IndriIndexBuilder.buildIndex(filteredIndexLocation, filteredFilesLocation);
+		
+		try{
+		Process p;
+		String deleteCommand = "rm -rf " + tmpdirLocation;
+		p = Runtime.getRuntime().exec(deleteCommand);
+		p.waitFor();
+		}
+		catch (Exception exc)
+		{
+			System.out.println("Failed to delete temporary files");
+		}
 	}
 	
 	public static class parallelQuerier implements Runnable{
