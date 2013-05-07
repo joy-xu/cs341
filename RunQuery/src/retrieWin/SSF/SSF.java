@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import retrieWin.Indexer.Indexer;
 import retrieWin.SSF.Constants.EntityType;
 import util.FileUtils;
 import util.Utils;
@@ -14,22 +15,26 @@ import retrieWin.SSF.Constants.NERType;
 import retrieWin.SSF.Constants.SlotName;
 
 public class SSF {
-	final String slotsSerializedFile = "data/slots.ser", entitiesSerilizedFile = "data/entities.ser";
 	List<Slot> slots;
 	List<Entity> entities;
 	
-	public SSF() {
-		initialize();
+	public SSF(String timestamp) {
+		initialize(timestamp);
 	}
 	
-	public void initialize() {
+	public void initialize(String timestamp) {
 		readEntities();
 		readSlots();
+		File tempDir = new File("temp");
+		// if the directory does not exist, create it
+		if (!tempDir.exists())
+		    tempDir.mkdir(); 
+		Indexer.createIndex(timestamp, "temp/", Constants.indexLocation, entities);
 	}
 	
 	@SuppressWarnings("unchecked")
 	public void readEntities() {
-		File file = new File(entitiesSerilizedFile);
+		File file = new File(Constants.entitiesSerilizedFile);
 		if(file.exists()) {
 			entities = (List<Entity>)FileUtils.readFile(file.getAbsolutePath().toString());
 		}
@@ -88,7 +93,7 @@ public class SSF {
 	
 	@SuppressWarnings("unchecked")
 	public void readSlots() {
-		File file = new File(slotsSerializedFile);
+		File file = new File(Constants.slotsSerializedFile);
 		if(file.exists()) {
 			slots = (List<Slot>)FileUtils.readFile(file.getAbsolutePath().toString());
 		}
@@ -122,7 +127,7 @@ public class SSF {
 						slots.add(slot);
 					}
 					reader.close();
-					FileUtils.writeFile(slots, slotsSerializedFile);
+					FileUtils.writeFile(slots, Constants.slotsSerializedFile);
 			}
 			catch (Exception e) {
 				System.out.println(e.getMessage());
@@ -143,6 +148,6 @@ public class SSF {
 		//System.out.println(slot.getName() + "," + slot.getEntityType() + "," + slot.getSourceNERTypes() + "," + slot.getTargetNERTypes() + "," + slot.getThreshold());
 		//System.out.println(slots);
 		
-		new SSF().runSSF();
+		new SSF(args[1]).runSSF();
 	}
 }
