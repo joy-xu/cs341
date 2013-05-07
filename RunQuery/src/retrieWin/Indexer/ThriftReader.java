@@ -66,7 +66,7 @@ public class ThriftReader {
 		
 		List<TrecTextDocument> output = new ArrayList<TrecTextDocument>();
 		try {
-		
+
 		TBinaryProtocol protocol = openBinaryProtocol(downloadedFile);
         Set<String> added = new HashSet<String>();
         
@@ -106,8 +106,13 @@ public class ThriftReader {
 			while (true) 
 	        {
 	            final StreamItem item = new StreamItem(); 
+	            try {
 	            item.read(protocol);  
-	            
+	            }
+	            catch (Exception transportException)
+	            {
+	            	break;
+	            }
             	if (item.body == null || item.body.clean_visible == null || 
             			item.body.sentences == null || !item.body.sentences.containsKey("lingpipe"))
 	            	continue;
@@ -118,8 +123,18 @@ public class ThriftReader {
 		catch (Exception e)
 			{
 				System.out.println("Thrift Error");
+				e.printStackTrace();
 			}
-		
+		Process p;
+		try{
+		String deleteCommand = "rm -f " + downloadedFile;
+		p = Runtime.getRuntime().exec(deleteCommand);
+		p.waitFor();
+		}
+		catch (Exception e)
+		{
+			System.out.println("Trouble deleting file");
+		}
 		return output;
 	}
 	
@@ -143,7 +158,12 @@ public class ThriftReader {
 			String line;
 			while ((line = input.readLine()) != null) 
 			{
-			    filenames.add(line);
+			    String[] components = line.split("\\t");
+			    String nameOnly = components[components.length-1];
+			    String[] pathComponents = nameOnly.split("/");
+			    String relName = pathComponents[pathComponents.length-1];
+			    if (relName.endsWith(".gpg"))
+			    	filenames.add(relName);
 			}
 			
 			ExecutorService e = Executors.newFixedThreadPool(16);
@@ -164,6 +184,7 @@ public class ThriftReader {
 					System.out.println("Waiting - Thread interrupted");
 				}
 			}
+			
 		}
 		catch (Exception e)
 		{

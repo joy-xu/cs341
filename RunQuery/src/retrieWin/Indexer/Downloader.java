@@ -18,9 +18,9 @@ public class Downloader {
 		
 		String downloadURL = 
     			"http://s3.amazonaws.com/aws-publicdatasets/trec/kba/kba-streamcorpus-2013-v0_2_0-english-and-unknown-language/"
-    			+ folder + "/" + filename;
+    			+ folder + filename;
     	
-	
+		
     	Process p;
     	
 		String downloadCommand = "wget -O " + downloadfile + " " + downloadURL;
@@ -33,17 +33,20 @@ public class Downloader {
 		p.waitFor();
 		
 		// Decryption
+		
 		String decryptCommand = "gpg --yes -o " + decryptedfile + 
 							" -d " + downloadfile;
 		p = Runtime.getRuntime().exec(decryptCommand);
 		p.waitFor();
 		
 		// UnXZ
+
     	String unxzCommand = "unxz " + decryptedfile;
     	p = Runtime.getRuntime().exec(unxzCommand);
 		p.waitFor();
 		
     	// Deleting downloaded file
+		
     	String deleteCommand = "rm -f " + downloadfile;
 		p = Runtime.getRuntime().exec(deleteCommand);
 		p.waitFor();

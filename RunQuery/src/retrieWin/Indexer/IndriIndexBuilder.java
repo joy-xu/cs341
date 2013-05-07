@@ -1,11 +1,14 @@
 package retrieWin.Indexer;
 import lemurproject.indri.IndexEnvironment;
+import lemurproject.indri.Specification;
 
 public class IndriIndexBuilder {
 	public static void buildIndex(String indexLocation, String corpusLocation) {
 		IndexEnvironment index = new IndexEnvironment();
 		try {
 			String[] fields = {"TIME", "TEXT"};
+			Specification spec = index.getFileClassSpec("trectext");
+			index.addFileClass(spec);
 			index.setDocumentRoot(corpusLocation);
 			index.setStoreDocs(false);
 			index.setStemmer("krovetz");
