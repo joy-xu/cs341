@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import retrieWin.Indexer.Indexer;
 import retrieWin.SSF.Constants.EntityType;
 import util.FileUtils;
 import util.Utils;
@@ -14,22 +15,26 @@ import retrieWin.SSF.Constants.NERType;
 import retrieWin.SSF.Constants.SlotName;
 
 public class SSF {
-	final String slotsSerializedFile = "data/slots.ser", entitiesSerilizedFile = "data/entities.ser";
 	List<Slot> slots;
 	List<Entity> entities;
 	
-	public SSF() {
-		initialize();
+	public SSF(String timestamp) {
+		initialize(timestamp);
 	}
 	
-	public void initialize() {
+	public void initialize(String timestamp) {
 		readEntities();
 		readSlots();
+		File tempDir = new File("temp");
+		// if the directory does not exist, create it
+		if (!tempDir.exists())
+		    tempDir.mkdir(); 
+		Indexer.createIndex(timestamp, "temp/", Constants.indexLocation, entities);
 	}
 	
 	@SuppressWarnings("unchecked")
 	public void readEntities() {
-		File file = new File(entitiesSerilizedFile);
+		File file = new File(Constants.entitiesSerilizedFile);
 		if(file.exists()) {
 			entities = (List<Entity>)FileUtils.readFile(file.getAbsolutePath().toString());
 		}
@@ -53,16 +58,14 @@ public class SSF {
 				System.out.println(ex.getMessage());
 			}
 		}
-		for(Entity e:entities) {
+		/* for(Entity e:entities) {
 			System.out.println(e.getName());
 			System.out.println(e.getTargetID());
 			System.out.println(e.getGroup());
 			System.out.println(e.getEntityType());
 			System.out.println(e.getExpansions());
 			System.out.println(e.getDisambiguations());
-		}
-		
-		FileUtils.writeFile(entities, entitiesSerilizedFile);
+		} */
 	}
 	
 	public List<String> getDisambiguations(String entity) {
@@ -90,7 +93,7 @@ public class SSF {
 	
 	@SuppressWarnings("unchecked")
 	public void readSlots() {
-		File file = new File(slotsSerializedFile);
+		File file = new File(Constants.slotsSerializedFile);
 		if(file.exists()) {
 			slots = (List<Slot>)FileUtils.readFile(file.getAbsolutePath().toString());
 		}
@@ -124,15 +127,15 @@ public class SSF {
 						slots.add(slot);
 					}
 					reader.close();
-					FileUtils.writeFile(slots, slotsSerializedFile);
+					FileUtils.writeFile(slots, Constants.slotsSerializedFile);
 			}
 			catch (Exception e) {
 				System.out.println(e.getMessage());
 			}
 		}
-		for(Slot slot: slots)
+		/* for(Slot slot: slots)
 			System.out.println(slot.getName() + "," + slot.getEntityType() + "," + slot.getSourceNERTypes() + "," + slot.getTargetNERTypes() + "," + slot.getThreshold());
-		//System.out.println(slots);
+		//System.out.println(slots); */
 	}
 	
 	public void runSSF() {
@@ -145,6 +148,6 @@ public class SSF {
 		//System.out.println(slot.getName() + "," + slot.getEntityType() + "," + slot.getSourceNERTypes() + "," + slot.getTargetNERTypes() + "," + slot.getThreshold());
 		//System.out.println(slots);
 		
-		new SSF().runSSF();
+		new SSF(args[1]).runSSF();
 	}
 }

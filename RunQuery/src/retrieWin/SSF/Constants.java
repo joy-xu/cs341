@@ -3,11 +3,11 @@ package retrieWin.SSF;
 import java.io.Serializable;
 
 public class Constants  implements Serializable {
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
+	final static String slotsSerializedFile = "data/slots.ser", entitiesSerilizedFile = "data/entities.ser";
+	final static String indexLocation = "index";
+	
 	public enum EntityType {
 		PER,
 		ORG,
