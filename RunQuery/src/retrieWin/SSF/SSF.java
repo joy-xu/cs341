@@ -27,6 +27,7 @@ public class SSF {
 		readSlots();
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void readEntities() {
 		File file = new File(entitiesSerilizedFile);
 		if(file.exists()) {
