@@ -2,8 +2,10 @@ package retrieWin.SSF;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
+import retrieWin.Indexer.TrecTextDocument;
 import retrieWin.SSF.Constants.EntityType;
 import retrieWin.SSF.Constants.NERType;
 import retrieWin.SSF.Constants.SlotName;
@@ -19,7 +21,7 @@ public class Slot implements Serializable {
 	private List<NERType> targetNERTypes;
 	private boolean applyPatternAfterCoreference;
 	
-	public List<String> extractSlotVals(Entity ent) {
+	public List<String> extractSlotVals(Entity ent, Map<TrecTextDocument, Double> docs) {
 		throw new NoSuchElementException();
 	}
 

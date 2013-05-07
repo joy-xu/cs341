@@ -6,9 +6,10 @@ import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import retrieWin.Indexer.Indexer;
-import retrieWin.Indexer.IndriIndexBuilder;
+import retrieWin.Indexer.TrecTextDocument;
 import retrieWin.SSF.Constants.EntityType;
 import util.FileUtils;
 import util.Utils;
@@ -138,11 +139,24 @@ public class SSF {
 		/*System.out.println("Inside");
 		IndriIndexBuilder.buildIndex("/home/aju/cs341/data/smallIndex", "/home/aju/cs341/data/doc");
 		System.out.println("Done");*/
+		/** create index for the current hour */
 		File tempDir = new File("temp");
 		// if the directory does not exist, create it
 		if (!tempDir.exists())
 		    tempDir.mkdir(); 
 		Indexer.createIndex(timestamp, "temp/", Constants.indexLocation, Constants.entitiesSerilizedFile,entities); 
+	
+		for(Entity ent: entities) {
+			Map<TrecTextDocument,Double> docs= ent.getRelevantDocuments(Constants.indexLocation, Constants.workingDirectory);
+			for(Slot slot: slots) {
+				List<String> candidateVals = slot.extractSlotVals(ent, docs);
+				List<String> updatedVals = ent.updateSlot(slot, candidateVals);
+				if(!updatedVals.isEmpty())
+					System.out.println(slot.getName() + " updated with " + updatedVals);
+				else
+					System.out.println(slot.getName() + " not updated");
+			}
+		}
 	}
 	
 	public static void main(String[] args) {
