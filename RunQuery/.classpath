@@ -5,11 +5,12 @@
 	<classpathentry kind="lib" path="lib/slf4j-api-1.7.2.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-simple-1.7.2.jar"/>
 	<classpathentry kind="lib" path="lib/libthrift-0.9.0.jar"/>
-	<classpathentry kind="lib" path="lib/stanford-corenlp-1.3.4-javadoc.jar"/>
-	<classpathentry kind="lib" path="lib/stanford-corenlp-1.3.4-models.jar"/>
-	<classpathentry kind="lib" path="lib/stanford-corenlp-1.3.4.jar"/>
-	<classpathentry kind="lib" path="lib/stanford-eventparser-2011-08-02.jar"/>
 	<classpathentry kind="lib" path="lib/xom.jar"/>
+	<classpathentry kind="lib" path="lib/stanford-corenlp-1.3.5-models.jar"/>
+	<classpathentry kind="lib" path="lib/joda-time.jar"/>
+	<classpathentry kind="lib" path="lib/stanford-corenlp-1.3.5.jar"/>
+	<classpathentry kind="lib" path="lib/fig.jar"/>
+	<classpathentry kind="lib" path="lib/jollyday.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
