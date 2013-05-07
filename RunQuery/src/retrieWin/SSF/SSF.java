@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import retrieWin.Indexer.Indexer;
+import retrieWin.Indexer.IndriIndexBuilder;
 import retrieWin.SSF.Constants.EntityType;
 import util.FileUtils;
 import util.Utils;
@@ -18,18 +19,13 @@ public class SSF {
 	List<Slot> slots;
 	List<Entity> entities;
 	
-	public SSF(String timestamp) {
-		initialize(timestamp);
+	public SSF() {
+		initialize();
 	}
 	
-	public void initialize(String timestamp) {
+	public void initialize() {
 		readEntities();
 		readSlots();
-		File tempDir = new File("temp");
-		// if the directory does not exist, create it
-		if (!tempDir.exists())
-		    tempDir.mkdir(); 
-		Indexer.createIndex(timestamp, "temp/", Constants.indexLocation, Constants.entitiesSerilizedFile,entities);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -138,7 +134,15 @@ public class SSF {
 		//System.out.println(slots); */
 	}
 	
-	public void runSSF() {
+	public void runSSF(String timestamp) {
+		/*System.out.println("Inside");
+		IndriIndexBuilder.buildIndex("/home/aju/cs341/data/smallIndex", "/home/aju/cs341/data/doc");
+		System.out.println("Done");*/
+		File tempDir = new File("temp");
+		// if the directory does not exist, create it
+		if (!tempDir.exists())
+		    tempDir.mkdir(); 
+		Indexer.createIndex(timestamp, "temp/", Constants.indexLocation, Constants.entitiesSerilizedFile,entities); 
 	}
 	
 	public static void main(String[] args) {
@@ -148,6 +152,6 @@ public class SSF {
 		//System.out.println(slot.getName() + "," + slot.getEntityType() + "," + slot.getSourceNERTypes() + "," + slot.getTargetNERTypes() + "," + slot.getThreshold());
 		//System.out.println(slots);
 		System.out.println(args[0]);
-		new SSF(args[0]).runSSF();
+		new SSF().runSSF(args[0]);
 	}
 }

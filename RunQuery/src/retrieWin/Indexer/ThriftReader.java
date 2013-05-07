@@ -115,7 +115,11 @@ public class ThriftReader {
 	            }
             	if (item.body == null || item.body.clean_visible == null || 
             			item.body.sentences == null || !item.body.sentences.containsKey("lingpipe"))
-	            	continue;
+            	{
+            		System.out.println("null");
+            		continue;
+            	}
+	            	
 	            output.add(populateTrecTextDocument(item,file));
 	            
 	        }
@@ -166,8 +170,8 @@ public class ThriftReader {
 			    	filenames.add(relName);
 			}
 			
-			ExecutorService e = Executors.newFixedThreadPool(16);
-			
+			ExecutorService e = Executors.newFixedThreadPool(8);
+			System.out.println(filenames.size());
 			for (String file:filenames)
 			{
 				e.execute(new parallelWriter(folder,file,downloadDirectory));
