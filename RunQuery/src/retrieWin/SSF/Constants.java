@@ -7,13 +7,13 @@ public class Constants  implements Serializable {
 
 	public final static String slotsSerializedFile = "data/slots.ser", entitiesSerilizedFile = "data/entities.ser";
 	public final static String indexLocation = "index";
-	public final static String trecTextSerializedFile = "filteredSerialized";
+	public final static String trecTextSerializedFile = "data/filteredSerialized.ser";
 	public final static String indriBuildIndexParamFile = "data/buildIndexParams.xml";
 	public enum EntityType {
 		PER,
 		ORG,
 		FAC
-	}
+	}	
 
 	public enum NERType {
 		PERSON,

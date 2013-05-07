@@ -53,6 +53,7 @@ public class SSF {
 			catch (Exception ex) {
 				System.out.println(ex.getMessage());
 			}
+			FileUtils.writeFile(entities, Constants.entitiesSerilizedFile);
 		}
 		/* for(Entity e:entities) {
 			System.out.println(e.getName());
@@ -142,7 +143,7 @@ public class SSF {
 		// if the directory does not exist, create it
 		if (!tempDir.exists())
 		    tempDir.mkdir(); 
-		Indexer.createIndex(timestamp, "temp/", Constants.indexLocation, Constants.entitiesSerilizedFile,entities); 
+		Indexer.createIndex(timestamp, "temp/", Constants.indexLocation, Constants.trecTextSerializedFile, entities); 
 	}
 	
 	public static void main(String[] args) {
