@@ -12,12 +12,32 @@ public class QueryBuilder {
 		return queryString;
 	}
 	
+	public static String buildOrderedQuery(String phrase, int withinWords) {
+		String[] words = phrase.split(" ");
+		String queryString = "#od" + withinWords + "(";
+		for(String word: words) {
+			queryString += "#1(" + word + ")";
+		}
+		queryString += ")";
+		return queryString;
+	}
+	
 	public static String buildUnorderedQuery(String first, String second, int withinWords) {
 		String queryString = null;
 		if (second != null)
 			queryString = "#uw" + withinWords + "(#1(" + first + ") #1(" + second + "))";
 		else
 			queryString = "#1(" + first + ")";
+		return queryString;
+	}
+	
+	public static String buildUnorderedQuery(String phrase, int withinWords) {
+		String[] words = phrase.split(" ");
+		String queryString = "#uw" + withinWords + "(";
+		for(String word: words) {
+			queryString += "#1(" + word + ")";
+		}
+		queryString += ")";
 		return queryString;
 	}
 	

@@ -1,7 +1,6 @@
 package retrieWin.Querying;
 
 import java.util.*;
-import java.io.*;
 
 import retrieWin.Indexer.ThriftReader;
 import retrieWin.Indexer.TrecTextDocument;
@@ -11,10 +10,6 @@ import lemurproject.indri.QueryRequest;
 import lemurproject.indri.QueryResult;
 import lemurproject.indri.QueryResults;
 
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
-import fig.basic.LogInfo;
-
-import util.*;
 public class ExecuteQuery {
 	
 	final String INDEX_LOCATION;
@@ -40,7 +35,6 @@ public class ExecuteQuery {
 				results.add(result.documentName);
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		return results;
@@ -50,10 +44,7 @@ public class ExecuteQuery {
 		return queryIndex(query, Integer.MAX_VALUE);
 	}
 
-	/**
-	 * @param args
-	 */
-	public List<String> executeQuery(String indexLoc, String query, int numResults, String first, String second, String workingDirectory) {
+	public List<TrecTextDocument> executeQuery(String query, int numResults, String workingDirectory) {
     	List<String> queryResults = queryIndex(query, numResults);
     	Map<String, Set<String>> fileMap = new HashMap<String, Set<String>>();
     	Map<String, Set<String>> streamIDMap = new HashMap<String, Set<String>>();
@@ -67,8 +58,6 @@ public class ExecuteQuery {
 			
 			String timeStamp = a[2];
 			String timeTokens[] = timeStamp.split("T");
-			String date = timeTokens[0];
-			String time = timeTokens[1];
 			String folder = timeTokens[0] + "-" + timeTokens[1].substring(0,2);
 			
 			if(!fileMap.keySet().contains(folder)) {
@@ -94,6 +83,6 @@ public class ExecuteQuery {
 				result.addAll(ThriftReader.GetFilteredFiles(folder, file, workingDirectory, streamIDMap.get(file)));
     		}
     	}
-    	return null;
+    	return result;
 	}
 }
