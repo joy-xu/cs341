@@ -208,34 +208,46 @@ public class NLPUtils {
 		Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
 		
 		//Checking rule1
-		Set<IndexedWord> rule1Set = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(0));
+		Set<IndexedWord> rule1Set = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(0), graph);
 		for(IndexedWord w1:words1) {
 			if(rule1Set.contains(w1)) {
-				tempSet.addAll(getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(1)));
+				tempSet.addAll(getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(1), graph));
 			}
 		}
 		
 		//Checking rule2
-		Set<IndexedWord> rule2Set = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(1));
+		Set<IndexedWord> rule2Set = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(1), graph);
 		for(IndexedWord w1:words1) {
 			if(rule2Set.contains(w1)) {
-				tempSet.addAll(getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(0)));
+				tempSet.addAll(getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(0), graph));
 			}
 		}
 		
 		for(IndexedWord w: tempSet) 
 			ansSet.addAll(getConjAndNeighbours(graph, w));
 		
+		Map<String, String> nerMap = createNERMap(sentence);
+		for(IndexedWord w: ansSet) {
+			String phrase = findExpandedEntity(sentence, w.originalText());
+			for(String tok: phrase.split(" "))
+				if(targetNERTypes.contains(NERType.valueOf(nerMap.get(tok)))) {
+					ans.add(phrase);
+					break;
+				}	
+		}
 		
-		for(IndexedWord w: ansSet) 
-			ans.add(findExpandedEntity(sentence, w.originalText()));
-		
-		//restrict to targetNER types
 		return ans;
 	}
 	
-	private Set<IndexedWord> getWordsSatisfyingPattern(Set<IndexedWord> words, Rule rule) {
-		return null;
+	private Set<IndexedWord> getWordsSatisfyingPattern(Set<IndexedWord> words, Rule rule, SemanticGraph graph) {
+		Set<IndexedWord> ans = new HashSet<IndexedWord>();
+		for(IndexedWord word: words)
+			if(rule.direction == EdgeDirection.In)
+				ans.addAll(graph.getParentsWithReln(word, GrammaticalRelation.valueOf(rule.edgeType)));
+			else
+				ans.addAll(graph.getChildrenWithReln(word, GrammaticalRelation.valueOf(rule.edgeType)));
+
+		return ans;
 	}
 
 	private static String findExpandedEntity(CoreMap sentence, String str) {
@@ -276,6 +288,16 @@ public class NLPUtils {
 	      }
 	    }
 		return nerMap;
+	}
+	
+	public Map<String, String> createNERMap(CoreMap sentence) {
+		Map<String, String> nerMap = new HashMap<String, String>();
+		for (CoreLabel token: sentence.get(TokensAnnotation.class)) {
+	      String word = token.get(TextAnnotation.class);
+	      String ner = token.get(NamedEntityTagAnnotation.class);           
+	      nerMap.put(word, ner);
+	    }
+	    return nerMap;
 	}
 	
 	public Map<String, Set<String>> getCorefMap(String sentence) {
