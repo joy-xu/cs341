@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import retrieWin.Indexer.Indexer;
 import retrieWin.Indexer.TrecTextDocument;
@@ -137,21 +139,24 @@ public class SSF {
 		//System.out.println(slots); */
 	}
 	
-	public void runSSF(String timestamp) {
-		/*System.out.println("Inside");
-		IndriIndexBuilder.buildIndex("/home/aju/cs341/data/smallIndex", "/home/aju/cs341/data/doc");
-		System.out.println("Done");*/
-		/** create index for the current hour */
-		/*File tempDir = new File("temp");
-		// if the directory does not exist, create it
-		if (!tempDir.exists())
-		    tempDir.mkdir(); 
-
-		Indexer.createIndex(timestamp, Constants.workingDirectory, Constants.indexLocation, Constants.trecTextSerializedFile, entities); 
 	
 
+	
+	public void runSSF(String timestamp) {
+		/** create index for the current hour */
+		String baseFolder = timestamp + "/";
+		String indexLocation = baseFolder + "index/";
+		String workingDirectory = baseFolder + "temp/";
+		String trecTextSerializedFile = baseFolder + "filteredSerialized.ser";
+		// if the directory does not exist, create it
+		File baseDir = new File(baseFolder);
+		if (!baseDir.exists())
+			baseDir.mkdirs();
+
+		Indexer.createIndex(timestamp, workingDirectory, indexLocation, trecTextSerializedFile, entities); 
+	
 		for(Entity ent: entities) {
-			Map<TrecTextDocument,Double> docs= ent.getRelevantDocuments(Constants.indexLocation);
+			Map<TrecTextDocument,Double> docs= ent.getRelevantDocuments(indexLocation,trecTextSerializedFile);
 
 			for(Slot slot: slots) {
 				List<String> candidateVals = slot.extractSlotVals(ent, docs);
@@ -161,11 +166,14 @@ public class SSF {
 				else
 					System.out.println(slot.getName() + " not updated");
 			}
-		}*/NLPUtils utils = new NLPUtils();
+		}
+		
+		/*NLPUtils utils = new NLPUtils();
 		String sent = "Bill Gates millionaire and founder of Microsoft was diagnosed with Aspergers.";
 		List<SlotPattern> patterns = utils.findSlotPattern(sent, "Bill Gate", "Microsoft");
 		System.out.println(patterns);
-		System.out.println(utils.findSlotValue(sent, "Bill Gates", patterns.get(0), null));
+		System.out.println(utils.findSlotValue(sent, "Bill Gates", patterns.get(0), null));*/
+		
 	}
 	
 	public static void main(String[] args) {

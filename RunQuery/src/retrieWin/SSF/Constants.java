@@ -6,11 +6,12 @@ public class Constants  implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	public final static String slotsSerializedFile = "data/slots.ser", entitiesSerilizedFile = "data/entities.ser";
-	public final static String indexLocation = "index";
-	public final static String trecTextSerializedFile = "data/filteredSerialized.ser";
+	
+	
 	public final static String indriBuildIndexParamFile = "data/buildIndexParams.xml";
-	public final static String workingDirectory = "temp/";
-
+	
+	public final static String s3directory = "/mnt/s3fs/";
+	
 	public enum EntityType {
 		PER,
 		ORG,

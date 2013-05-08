@@ -16,7 +16,11 @@ import edu.stanford.nlp.stats.IntCounter;
  * @author Dan Klein
  */
 public class PriorityQueue <E> implements Iterator<E>, Serializable, Cloneable {
-  int size;
+  /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+int size;
   int capacity;
   List<E> elements;
   double[] priorities;
