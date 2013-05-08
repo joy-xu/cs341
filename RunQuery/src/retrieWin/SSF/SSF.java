@@ -14,6 +14,7 @@ import retrieWin.SSF.Constants.EntityType;
 import retrieWin.SSF.Constants.NERType;
 import retrieWin.SSF.Constants.SlotName;
 import retrieWin.Utils.FileUtils;
+import retrieWin.Utils.NLPUtils;
 import retrieWin.Utils.Utils;
 
 public class SSF {
@@ -141,7 +142,7 @@ public class SSF {
 		IndriIndexBuilder.buildIndex("/home/aju/cs341/data/smallIndex", "/home/aju/cs341/data/doc");
 		System.out.println("Done");*/
 		/** create index for the current hour */
-		File tempDir = new File("temp");
+		/*File tempDir = new File("temp");
 		// if the directory does not exist, create it
 		if (!tempDir.exists())
 		    tempDir.mkdir(); 
@@ -160,7 +161,11 @@ public class SSF {
 				else
 					System.out.println(slot.getName() + " not updated");
 			}
-		}
+		}*/NLPUtils utils = new NLPUtils();
+		String sent = "Bill Gates millionaire and founder of Microsoft was diagnosed with Aspergers.";
+		List<SlotPattern> patterns = utils.findSlotPattern(sent, "Bill Gate", "Microsoft");
+		System.out.println(patterns);
+		System.out.println(utils.findSlotValue(sent, "Bill Gates", patterns.get(0), null));
 	}
 	
 	public static void main(String[] args) {
