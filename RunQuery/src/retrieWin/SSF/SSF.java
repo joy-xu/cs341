@@ -147,7 +147,7 @@ public class SSF {
 		Indexer.createIndex(timestamp, "temp/", Constants.indexLocation, Constants.entitiesSerilizedFile,entities); 
 	
 		for(Entity ent: entities) {
-			Map<TrecTextDocument,Double> docs= ent.getRelevantDocuments(Constants.indexLocation, Constants.workingDirectory);
+			Map<TrecTextDocument,Double> docs= ent.getRelevantDocuments(Constants.indexLocation);
 			for(Slot slot: slots) {
 				List<String> candidateVals = slot.extractSlotVals(ent, docs);
 				List<String> updatedVals = ent.updateSlot(slot, candidateVals);
