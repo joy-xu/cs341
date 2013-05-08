@@ -1,14 +1,15 @@
 package retrieWin.SSF;
 
+import fig.basic.*;
+import fig.exec.Execution;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import retrieWin.Indexer.Indexer;
 import retrieWin.Indexer.TrecTextDocument;
@@ -18,8 +19,14 @@ import retrieWin.SSF.Constants.SlotName;
 import retrieWin.Utils.FileUtils;
 import retrieWin.Utils.NLPUtils;
 import retrieWin.Utils.Utils;
+import sun.security.jgss.LoginConfigImpl;
 
-public class SSF {
+public class SSF implements Runnable{
+	@Option(gloss="index Location") public String indexLocation;
+	@Option(gloss="working Directory") public String workingDirectory;
+	@Option(gloss="mode") public String mode;
+	@Option(gloss="download Hour") public String downloadHour;
+	
 	List<Slot> slots;
 	List<Entity> entities;
 	
@@ -139,12 +146,9 @@ public class SSF {
 		//System.out.println(slots); */
 	}
 	
-	
-
-	
 	public void runSSF(String timestamp) {
 		/** create index for the current hour */
-		String baseFolder = timestamp + "/";
+		String baseFolder = workingDirectory + timestamp + "/";
 		String indexLocation = baseFolder + "index/";
 		String workingDirectory = baseFolder + "temp/";
 		String trecTextSerializedFile = baseFolder + "filteredSerialized.ser";
@@ -177,12 +181,43 @@ public class SSF {
 	}
 	
 	public static void main(String[] args) {
-		//createSlotsFromFile("data/Slots.csv", "data/SlotPatterns");
-		//List<Slot> slots = (List<Slot>) FileUtils.readFile("data/SlotPatterns");
-		//for(Slot slot: slots)
-		//System.out.println(slot.getName() + "," + slot.getEntityType() + "," + slot.getSourceNERTypes() + "," + slot.getTargetNERTypes() + "," + slot.getThreshold());
-		//System.out.println(slots);
-		System.out.println(args[0]);
-		new SSF().runSSF(args[0]);
+		Execution.run(args, "Main", new SSF());
+	}
+
+	@Override
+	public void run() {
+		boolean terminate = false;
+		if(workingDirectory == null || workingDirectory.isEmpty()) {
+			LogInfo.logs("Working directory cannot be empty. Set the -workingDirectory option.");
+			terminate = true;
+		}
+		if(mode == null || mode.isEmpty()) {
+			LogInfo.logs("Mode cannot be empty. Set the -mode option.");
+			terminate = true;
+		}
+		if(downloadHour == null || downloadHour.isEmpty()) {
+			LogInfo.logs("Download hour cannot be empty. Set the -downloadHour option.");
+			terminate = true;
+		}
+		if(terminate) {
+			LogInfo.logs("Terminating execution!");
+			return;
+		}
+		if(!workingDirectory.endsWith("/"))
+			workingDirectory += "/";
+		
+		LogInfo.begin_track("run()");
+		LogInfo.logs(String.format("Running mode      : %s", mode));
+		LogInfo.logs(String.format("Download hour     : %s", downloadHour));
+		LogInfo.logs(String.format("Working directory : %s", workingDirectory));
+		
+		switch(mode.toLowerCase()) {
+		case "bootstrap":
+			break;
+		case "ssf":
+			runSSF(downloadHour);
+			break;
+		}
+		LogInfo.end_track();
 	}
 }
