@@ -4,13 +4,15 @@ import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import retrieWin.Utils.FileUtils;
 
-public class TrecTextDocument implements Serializable{
+public class TrecTextDocument implements Serializable, Comparable<TrecTextDocument>{
 	
 	private static final long serialVersionUID = 1L;
 	public final String docNumber;
@@ -27,20 +29,28 @@ public class TrecTextDocument implements Serializable{
 	
 	public static void serializeFile(List<TrecTextDocument> results,String serializedFileLocation)
 	{
-		FileUtils.writeFile(results, serializedFileLocation);
+		Map<String, TrecTextDocument> hmap = new HashMap<String,TrecTextDocument>();
+		for (TrecTextDocument t:results)
+		{
+			String docNo = t.docNumber;
+			hmap.put(docNo,t);
+		}
+		FileUtils.writeFile(hmap, serializedFileLocation);
 	}
 	
 	public static List<TrecTextDocument> getFromStoredFile(List<String> queryResults, String filteredFileName)
 	{
 		@SuppressWarnings("unchecked")
-		List<TrecTextDocument> storedFiles = (List<TrecTextDocument>)FileUtils.readFile(filteredFileName);
+		Map<String,TrecTextDocument> storedFiles = (Map<String,TrecTextDocument>)FileUtils.readFile(filteredFileName);
 		List<TrecTextDocument> output = new ArrayList<TrecTextDocument>();
 		Set<String> queryResultsSet = new HashSet<String>(queryResults);
 		
-		for (TrecTextDocument candidate:storedFiles)
+		for (String docNo:queryResultsSet)
 		{
-			if (queryResultsSet.contains(candidate.docNumber))
-				output.add(candidate);
+			if (storedFiles.containsKey(docNo))
+				output.add(storedFiles.get(docNo));
+			else
+				System.out.println("File not found. You are definitely doing something wrong");
 		}
 		return output;
 	}
@@ -78,5 +88,12 @@ public class TrecTextDocument implements Serializable{
 		}
 		catch (Exception e)
 		{}
+	}
+
+	@Override
+	public int compareTo(TrecTextDocument other) {
+		
+		return (this.docNumber.compareTo(other.docNumber));
+		
 	}
 }

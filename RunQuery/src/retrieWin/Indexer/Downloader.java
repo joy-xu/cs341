@@ -1,6 +1,8 @@
 package retrieWin.Indexer;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 
 
 public class Downloader {
@@ -14,7 +16,9 @@ public class Downloader {
 		File f = new File(unxzfile);
 		
 		if (f.exists())	
+		{
 			return unxzfile;
+		}	
 		
 		String downloadURL = 
     			"http://s3.amazonaws.com/aws-publicdatasets/trec/kba/kba-streamcorpus-2013-v0_2_0-english-and-unknown-language/"
@@ -24,26 +28,35 @@ public class Downloader {
     	Process p;
     	
 		String downloadCommand = "wget -O " + downloadfile + " " + downloadURL;
-		//System.out.println(downloadCommand);
+		
 		
 		try {
 		
-		// wget	
+		//wget	
 		p = Runtime.getRuntime().exec(downloadCommand);
-		p.waitFor();
+		BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		String line;
+		while((line = input.readLine())!=null)
+			System.out.println(line);
 		
 		// Decryption
 		
 		String decryptCommand = "gpg --yes -o " + decryptedfile + 
 							" -d " + downloadfile;
 		p = Runtime.getRuntime().exec(decryptCommand);
-		p.waitFor();
+		input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		
+		while((line = input.readLine())!=null)
+			System.out.println(line);
 		
 		// UnXZ
 
     	String unxzCommand = "unxz " + decryptedfile;
     	p = Runtime.getRuntime().exec(unxzCommand);
-		p.waitFor();
+    	input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		
+		while((line = input.readLine())!=null)
+			System.out.println(line);
 		
     	// Deleting downloaded file
 		
@@ -53,6 +66,8 @@ public class Downloader {
 		}
 		catch (Exception e)
 		{
+			System.out.println("Failed to download");
+			e.printStackTrace();
 			return null;
 		}
     	return unxzfile;

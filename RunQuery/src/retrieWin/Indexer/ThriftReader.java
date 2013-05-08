@@ -2,6 +2,7 @@ package retrieWin.Indexer;
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 
+
 import java.io.InputStreamReader;
 import java.io.FileInputStream;
 import java.util.HashSet;
@@ -59,24 +60,26 @@ public class ThriftReader {
 	
 	public static List<TrecTextDocument> GetFilteredFiles(String folder, String file, String workingDirectory, Set<String> streamIDs)
 	{
+		List<TrecTextDocument> output = new ArrayList<TrecTextDocument>();
 		
 		String downloadedFile = Downloader.downloadfile(folder, file, workingDirectory);
 		
 		if (downloadedFile == null) return new ArrayList<TrecTextDocument>();
 		
-		List<TrecTextDocument> output = new ArrayList<TrecTextDocument>();
+		
 		try {
 
 		TBinaryProtocol protocol = openBinaryProtocol(downloadedFile);
         Set<String> added = new HashSet<String>();
-        
+       
         while (true) 
         {
             final StreamItem item = new StreamItem();
             if (added.equals(streamIDs))
              	break;
             
-            item.read(protocol);  
+            item.read(protocol);
+            
             if (streamIDs.contains(item.stream_id))
             {
             	added.add(item.stream_id);
@@ -87,7 +90,7 @@ public class ThriftReader {
             }
         }
 		} catch (Exception e)
-		{}
+		{e.printStackTrace();}
 		
 		return output;
 	}
@@ -129,28 +132,20 @@ public class ThriftReader {
 				System.out.println("Thrift Error");
 				e.printStackTrace();
 			}
-		Process p;
-		try{
-		String deleteCommand = "rm -f " + downloadedFile;
-		p = Runtime.getRuntime().exec(deleteCommand);
-		p.waitFor();
-		}
-		catch (Exception e)
-		{
-			System.out.println("Trouble deleting file");
-		}
+		
 		return output;
 	}
 	
 	public static void WriteTrecTextDocumentToFile(List<TrecTextDocument> documentList,String filename,String downloadDirectory)
 	{
-		for (TrecTextDocument t:documentList)
+		Set<TrecTextDocument> documentSet = new HashSet<TrecTextDocument>(documentList);
+		for (TrecTextDocument t:documentSet)
 		{
 			t.writeToFile(filename,downloadDirectory);
 		}			
 	}
 	
-	public static void GetFolder(String folder, String downloadDirectory)
+	public static void GetFolder(String folder, String downloadDirectory, String folderToIndex)
 	{
 		List<String> filenames = new ArrayList<String>();
 		try
@@ -170,11 +165,11 @@ public class ThriftReader {
 			    	filenames.add(relName);
 			}
 			
-			ExecutorService e = Executors.newFixedThreadPool(8);
-			System.out.println(filenames.size());
+			ExecutorService e = Executors.newFixedThreadPool(16);
+		
 			for (String file:filenames)
 			{
-				e.execute(new parallelWriter(folder,file,downloadDirectory));
+				e.execute(new parallelWriter(folder,file,downloadDirectory,folderToIndex));
 			}
 			e.shutdown();
 			while(true)
@@ -198,17 +193,18 @@ public class ThriftReader {
 	
 	public static class parallelWriter implements Runnable
 	{
-		String folder, file, downloadDirectory;
-		public parallelWriter(String folderIn, String fileIn, String dwndIn)
+		String folder, file, downloadDirectory, folderToIndex;
+		public parallelWriter(String folderIn, String fileIn, String dwndIn, String folderToIndexIn)
 		{
 			folder = folderIn;
 			file = fileIn;
 			downloadDirectory = dwndIn;
+			folderToIndex = folderToIndexIn;
 		}
 		public void run()
 		{
 			List<TrecTextDocument> documentList = GetAllFiles(folder,file,downloadDirectory);
-			WriteTrecTextDocumentToFile(documentList,file.substring(0,file.length()-10),downloadDirectory);
+			WriteTrecTextDocumentToFile(documentList,file.substring(0,file.length()-10),folderToIndex);
 		}
 	}
 }

@@ -1,7 +1,9 @@
 package retrieWin.Indexer;
 import java.io.File;
 import java.util.ArrayList;
+
 import java.util.List;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -18,26 +20,30 @@ public class Indexer {
 		if (!folder.endsWith("/"))
 			folder = folder + "/";
 		String filesLocation = tmpdirLocation + "allFiles/";
+		String folderToIndex = tmpdirLocation + "Unserialized/";
 		String indexFolder = tmpdirLocation + "index/";
 		String filteredFilesLocation = tmpdirLocation + "filteredFiles/";
 		
 		File tmpdir = new File(tmpdirLocation);
 		File filesDir = new File(filesLocation);
 		File indexDir = new File(indexFolder);
+		File indexinFolder = new File(folderToIndex);
 		File filteredFilesDir = new File(filteredFilesLocation);
 		
 		tmpdir.mkdirs();
 		filesDir.mkdirs();
 		indexDir.mkdirs();
+		indexinFolder.mkdirs();
 		filteredFilesDir.mkdirs();
 		
-		ThriftReader.GetFolder(folder, filesLocation);
+		ThriftReader.GetFolder(folder, filesLocation, folderToIndex);
 		
-		IndriIndexBuilder.buildIndex(indexFolder, filesLocation);
+		IndriIndexBuilder.buildIndex(indexFolder, folderToIndex);
 		ExecuteQuery queryExecutor = new ExecuteQuery(indexFolder);
 		
 		ExecutorService e = Executors.newFixedThreadPool(16);
 		List<TrecTextDocument> allResults = new ArrayList<TrecTextDocument>();
+		
 		for (Entity entity:allEntities)
 		{
 			e.execute(new parallelQuerier(entity,queryExecutor,filesLocation,allResults));
@@ -54,6 +60,7 @@ public class Indexer {
 				System.out.println("Waiting - Thread interrupted");
 			}
 		}
+		
 		ThriftReader.WriteTrecTextDocumentToFile(allResults, "filtered", filteredFilesLocation);
 		IndriIndexBuilder.buildIndex(filteredIndexLocation, filteredFilesLocation);
 		TrecTextDocument.serializeFile(allResults,serializedFileLocation);
@@ -92,7 +99,9 @@ public class Indexer {
 		public void run()
 		{
 			String query = QueryBuilder.buildOrQuery(entity.getExpansions());
+			//System.out.println("Querying for: " + query);
 			List<TrecTextDocument> queryResults = queryExecutor.executeQuery(query, Integer.MAX_VALUE, filesLocation);
+			System.out.println("Query Results for: " + query + " : " + queryResults.size());
 			addToList(queryResults);
 		}
 	}

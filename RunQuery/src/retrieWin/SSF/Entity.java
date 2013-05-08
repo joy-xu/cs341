@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import retrieWin.Querying.ExecuteQuery;
 import retrieWin.Querying.QueryBuilder;
@@ -42,13 +43,17 @@ public class Entity  implements Serializable {
 		}
 	}
 	
+	public List<String> updateSlot(Slot slot, List<String> candidates) {
+		throw new NoSuchElementException();
+	}
+	
 	public Map<TrecTextDocument, Double> getRelevantDocuments(String indexLocation, String workingDirectory) {
 		ExecuteQuery queryExecuter =  new ExecuteQuery(indexLocation);
 		Map<TrecTextDocument, Double> results = new HashMap<TrecTextDocument, Double>();
 		String query;
 		
 		for(String expansion: getExpansions()) {
-			query = QueryBuilder.buildOrderedQuery(expansion, 10);
+			query = QueryBuilder.buildOrderedQuery(expansion, 5);
 			for(TrecTextDocument doc: queryExecuter.executeQuery(query, Integer.MAX_VALUE, workingDirectory)) {
 				results.put(doc, 0.0);
 			}

@@ -56,7 +56,8 @@ public class ExecuteQuery {
     	Map<String, Set<String>> streamIDMap = new HashMap<String, Set<String>>();
     	
     	for(String result:queryResults) {    	
-	    	String[] a = result.split("_");
+	    	
+    		String[] a = result.split("_");
 			String streamID = a[0];
 			String localfilename = a[1];
 			String[] b = localfilename.split("/");
@@ -64,7 +65,7 @@ public class ExecuteQuery {
 			
 			String timeStamp = a[2];
 			String timeTokens[] = timeStamp.split("T");
-			String folder = timeTokens[0] + "-" + timeTokens[1].substring(0,2);
+			String folder = timeTokens[0] + "-" + timeTokens[1].substring(0,2) + "/";
 			
 			if(!fileMap.keySet().contains(folder)) {
 				fileMap.put(folder, new HashSet<String>());
@@ -81,7 +82,6 @@ public class ExecuteQuery {
 			streamIDMap.put(filename, set);
     	}
     	
-    	System.out.println("Retreiving documents...");
     	
     	List<TrecTextDocument> result = new ArrayList<TrecTextDocument>();
     	for(String folder:fileMap.keySet()) {
