@@ -138,64 +138,8 @@ public class SSF {
 		//System.out.println(slots); */
 	}
 	
-	public Boolean VerifyIndexExistence(String timestamp)
-	{
-		String s3IndexFolder = Constants.s3directory + timestamp;
-		File f = new File(s3IndexFolder);
-		if (!f.exists())
-			return false;
-		
-		File[] subdirectories = f.listFiles();
-		Set<String> subdirectoryNames = new HashSet<String>();
-		for (File subdir:subdirectories)
-			subdirectoryNames.add(subdir.getName());
-		return (subdirectoryNames.contains("index") && subdirectoryNames.contains("filteredSerialized.ser"));
-	}
 	
-	public void writeIndexToS3fs(String timestamp,String indexLocation,String trecTextSerializedFile)
-	{
-		try{
-		String s3directory = Constants.s3directory+timestamp + "/";
-		String s3MakeDirectory = String.format("sudo mkdir %s",s3directory);
-		Process p;
-		p = Runtime.getRuntime().exec(s3MakeDirectory);
-		p.waitFor();
-				
-		String s3cmdCommand = String.format("sudo cp -r %s %s",indexLocation,s3directory);
-		System.out.println(s3cmdCommand);
-		
-		p = Runtime.getRuntime().exec(s3cmdCommand);
-		p.waitFor();
-		
-		String s3cmdSerializedFileCopyCommand = String.format("sudo cp %s %s",trecTextSerializedFile,s3directory);
-		System.out.println(s3cmdSerializedFileCopyCommand);
-		p = Runtime.getRuntime().exec(s3cmdSerializedFileCopyCommand);
-		p.waitFor();
-		}
-		catch (Exception e)
-		{
-			System.out.println("Writing to S3 failed");
-			e.printStackTrace();
-		}
-	}
-	
-	public void readIndexFromS3fs(String timestamp, String baseDirectory)
-	{
-		try{
-		String s3directory = Constants.s3directory+timestamp + "/";
-	
-		String s3cmdCommand = String.format("sudo cp -r %s .",s3directory);
-		System.out.println(s3cmdCommand);
-		Process p;
-		p = Runtime.getRuntime().exec(s3cmdCommand);
-		p.waitFor();
-		}
-		catch (Exception e)
-		{
-			System.out.println("Reading from S3 failed");
-			e.printStackTrace();
-		}	
-	}
+
 	
 	public void runSSF(String timestamp) {
 		/*System.out.println("Inside");
@@ -210,20 +154,9 @@ public class SSF {
 		File baseDir = new File(baseFolder);
 		if (!baseDir.exists())
 			baseDir.mkdirs();
-		
-		Boolean doesIndexExist = VerifyIndexExistence(timestamp);
-		if (!doesIndexExist)
-		{
-			File tempDir = new File(workingDirectory);
-			if (!tempDir.exists())
-			    tempDir.mkdirs(); 
-			Indexer.createIndex(timestamp, workingDirectory, indexLocation, trecTextSerializedFile, entities); 
-			writeIndexToS3fs(timestamp,indexLocation,trecTextSerializedFile);
-		}
-		else
-		{
-			readIndexFromS3fs(timestamp,baseFolder);
-		}
+
+		Indexer.createIndex(timestamp, workingDirectory, indexLocation, trecTextSerializedFile, entities); 
+	
 		/*
 		for(Entity ent: entities) {
 			Map<TrecTextDocument,Double> docs= ent.getRelevantDocuments(indexLocation,trecTextSerializedFile);
