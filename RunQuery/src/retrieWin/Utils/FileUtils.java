@@ -23,8 +23,7 @@ public class FileUtils {
 		    }
 	  }
 	  
-	  @SuppressWarnings("unchecked")
-	public static Object readFile(String fileName) {
+	  public static Object readFile(String fileName) {
 		// Read from disk using FileInputStream
 	  try
 	  {

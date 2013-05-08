@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import retrieWin.Indexer.Indexer;
 import retrieWin.Indexer.TrecTextDocument;
@@ -136,6 +138,60 @@ public class SSF {
 		//System.out.println(slots); */
 	}
 	
+	public Boolean VerifyIndexExistence(String timestamp)
+	{
+		String s3IndexFolder = Constants.s3directory + timestamp;
+		File f = new File(s3IndexFolder);
+		if (!f.exists())
+			return false;
+		
+		File[] subdirectories = f.listFiles();
+		Set<String> subdirectoryNames = new HashSet<String>();
+		for (File subdir:subdirectories)
+			subdirectoryNames.add(subdir.getName());
+		return (subdirectoryNames.contains("index") && subdirectoryNames.contains("filteredSerialized.ser"));
+	}
+	
+	public void writeIndexToS3fs(String timestamp)
+	{
+		try{
+		String s3directory = Constants.s3directory+timestamp + "/";
+		String s3cmdCommand = String.format("sudo mkdir %s;sudo cp -r %s %s",s3directory,Constants.indexLocation,s3directory);
+		Process p;
+		p = Runtime.getRuntime().exec(s3cmdCommand);
+		p.waitFor();
+		
+		String s3cmdSerializedFileCopyCommand = String.format("sudo cp %s %s",Constants.trecTextSerializedFile,s3directory);
+		p = Runtime.getRuntime().exec(s3cmdSerializedFileCopyCommand);
+		p.waitFor();
+		}
+		catch (Exception e)
+		{
+			System.out.println("Writing to S3 failed");
+			e.printStackTrace();
+		}
+	}
+	
+	public void readIndexFromS3fs(String timestamp)
+	{
+		try{
+		String s3directory = Constants.s3directory+timestamp + "/";
+		String s3cmdCommand = String.format("sudo cp -r %s%s %s",s3directory,Constants.indexLocation,Constants.indexLocation);
+		Process p;
+		p = Runtime.getRuntime().exec(s3cmdCommand);
+		p.waitFor();
+		
+		String s3cmdSerializedFileCopyCommand = String.format("sudo cp %s%s %s",s3directory,Constants.trecTextSerializedFile,Constants.trecTextSerializedFile);
+		p = Runtime.getRuntime().exec(s3cmdSerializedFileCopyCommand);
+		p.waitFor();
+		}
+		catch (Exception e)
+		{
+			System.out.println("Reading from S3 failed");
+			e.printStackTrace();
+		}	
+	}
+	
 	public void runSSF(String timestamp) {
 		/*System.out.println("Inside");
 		IndriIndexBuilder.buildIndex("/home/aju/cs341/data/smallIndex", "/home/aju/cs341/data/doc");
@@ -145,10 +201,17 @@ public class SSF {
 		// if the directory does not exist, create it
 		if (!tempDir.exists())
 		    tempDir.mkdir(); 
-
-		Indexer.createIndex(timestamp, Constants.workingDirectory, Constants.indexLocation, Constants.trecTextSerializedFile, entities); 
-	
-
+		Boolean doesIndexExist = VerifyIndexExistence(timestamp);
+		if (!doesIndexExist)
+		{
+			Indexer.createIndex(timestamp, Constants.workingDirectory, Constants.indexLocation, Constants.trecTextSerializedFile, entities); 
+			writeIndexToS3fs(timestamp);
+		}
+		else
+		{
+			readIndexFromS3fs(timestamp);
+		}
+		/*
 		for(Entity ent: entities) {
 			Map<TrecTextDocument,Double> docs= ent.getRelevantDocuments(Constants.indexLocation);
 
@@ -161,6 +224,7 @@ public class SSF {
 					System.out.println(slot.getName() + " not updated");
 			}
 		}
+		*/
 	}
 	
 	public static void main(String[] args) {
