@@ -1,0 +1,9 @@
+main() {
+  Execution directory: state/execs/0.exec
+  run() {
+    Running mode      : bootstrap
+    Download hour     : 2011-10-10-10
+    Working directory : /home/aju/cs341/data/expanded/
+  }
+  Execution directory: state/execs/0.exec
+}

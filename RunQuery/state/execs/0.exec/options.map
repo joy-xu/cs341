@@ -1,0 +1,21 @@
+Main.indexLocation	/home/aju/cs341/data/index
+Main.workingDirectory	/home/aju/cs341/data/expanded/
+Main.mode	bootstrap
+Main.downloadHour	2011-10-10-10
+exec.monitor	true
+exec.execDir	
+exec.execPoolDir	state/execs
+exec.overwriteExecDir	false
+exec.printOptionsAndExit	false
+exec.miscOptions	
+exec.addToView	
+exec.charEncoding	
+exec.jarFiles	
+exec.startMainTrack	true
+log.maxIndLevel	10
+log.msPerLine	0
+log.file	state/execs/0.exec/log
+log.stdout	true
+log.note	
+log.forcePrint	false
+log.maxPrintErrors	10000
