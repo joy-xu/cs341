@@ -148,8 +148,10 @@ public class SSF {
 
 		Indexer.createIndex(timestamp, Constants.workingDirectory, Constants.indexLocation, Constants.trecTextSerializedFile, entities); 
 	
-		/*for(Entity ent: entities) {
-			Map<TrecTextDocument,Double> docs= ent.getRelevantDocuments(Constants.indexLocation, Constants.workingDirectory);
+
+		for(Entity ent: entities) {
+			Map<TrecTextDocument,Double> docs= ent.getRelevantDocuments(Constants.indexLocation);
+
 			for(Slot slot: slots) {
 				List<String> candidateVals = slot.extractSlotVals(ent, docs);
 				List<String> updatedVals = ent.updateSlot(slot, candidateVals);
@@ -158,7 +160,7 @@ public class SSF {
 				else
 					System.out.println(slot.getName() + " not updated");
 			}
-		}*/
+		}
 	}
 	
 	public static void main(String[] args) {
