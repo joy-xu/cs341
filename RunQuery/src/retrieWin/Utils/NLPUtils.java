@@ -226,11 +226,16 @@ public class NLPUtils {
 		for(IndexedWord w: tempSet) 
 			ansSet.addAll(getConjAndNeighbours(graph, w));
 		
+		Map<String, String> nerMap = createNERMap(sentence);
+		for(IndexedWord w: ansSet) {
+			String phrase = findExpandedEntity(sentence, w.originalText());
+			for(String tok: phrase.split(" "))
+				if(targetNERTypes.contains(NERType.valueOf(nerMap.get(tok)))) {
+					ans.add(phrase);
+					break;
+				}	
+		}
 		
-		for(IndexedWord w: ansSet) 
-			ans.add(findExpandedEntity(sentence, w.originalText()));
-		
-		//restrict to targetNER types
 		return ans;
 	}
 	
@@ -283,6 +288,16 @@ public class NLPUtils {
 	      }
 	    }
 		return nerMap;
+	}
+	
+	public Map<String, String> createNERMap(CoreMap sentence) {
+		Map<String, String> nerMap = new HashMap<String, String>();
+		for (CoreLabel token: sentence.get(TokensAnnotation.class)) {
+	      String word = token.get(TextAnnotation.class);
+	      String ner = token.get(NamedEntityTagAnnotation.class);           
+	      nerMap.put(word, ner);
+	    }
+	    return nerMap;
 	}
 	
 	public Map<String, Set<String>> getCorefMap(String sentence) {
