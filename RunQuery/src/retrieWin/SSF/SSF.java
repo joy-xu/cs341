@@ -152,16 +152,23 @@ public class SSF {
 		return (subdirectoryNames.contains("index") && subdirectoryNames.contains("filteredSerialized.ser"));
 	}
 	
-	public void writeIndexToS3fs(String timestamp)
+	public void writeIndexToS3fs(String timestamp,String indexLocation,String trecTextSerializedFile)
 	{
 		try{
 		String s3directory = Constants.s3directory+timestamp + "/";
-		String s3cmdCommand = String.format("sudo mkdir %s;sudo cp -r %s %s",s3directory,Constants.indexLocation,s3directory);
+		String s3MakeDirectory = String.format("sudo mkdir %s",s3directory);
 		Process p;
+		p = Runtime.getRuntime().exec(s3MakeDirectory);
+		p.waitFor();
+				
+		String s3cmdCommand = String.format("sudo cp -r %s %s",indexLocation,s3directory);
+		System.out.println(s3cmdCommand);
+		
 		p = Runtime.getRuntime().exec(s3cmdCommand);
 		p.waitFor();
 		
-		String s3cmdSerializedFileCopyCommand = String.format("sudo cp %s %s",Constants.trecTextSerializedFile,s3directory);
+		String s3cmdSerializedFileCopyCommand = String.format("sudo cp %s %s",trecTextSerializedFile,s3directory);
+		System.out.println(s3cmdSerializedFileCopyCommand);
 		p = Runtime.getRuntime().exec(s3cmdSerializedFileCopyCommand);
 		p.waitFor();
 		}
@@ -172,17 +179,15 @@ public class SSF {
 		}
 	}
 	
-	public void readIndexFromS3fs(String timestamp)
+	public void readIndexFromS3fs(String timestamp, String baseDirectory)
 	{
 		try{
 		String s3directory = Constants.s3directory+timestamp + "/";
-		String s3cmdCommand = String.format("sudo cp -r %s%s %s",s3directory,Constants.indexLocation,Constants.indexLocation);
+	
+		String s3cmdCommand = String.format("sudo cp -r %s .",s3directory);
+		System.out.println(s3cmdCommand);
 		Process p;
 		p = Runtime.getRuntime().exec(s3cmdCommand);
-		p.waitFor();
-		
-		String s3cmdSerializedFileCopyCommand = String.format("sudo cp %s%s %s",s3directory,Constants.trecTextSerializedFile,Constants.trecTextSerializedFile);
-		p = Runtime.getRuntime().exec(s3cmdSerializedFileCopyCommand);
 		p.waitFor();
 		}
 		catch (Exception e)
@@ -197,23 +202,31 @@ public class SSF {
 		IndriIndexBuilder.buildIndex("/home/aju/cs341/data/smallIndex", "/home/aju/cs341/data/doc");
 		System.out.println("Done");*/
 		/** create index for the current hour */
-		File tempDir = new File("temp");
+		String baseFolder = timestamp + "/";
+		String indexLocation = baseFolder + "index/";
+		String workingDirectory = baseFolder + "temp/";
+		String trecTextSerializedFile = baseFolder + "filteredSerialized.ser";
 		// if the directory does not exist, create it
-		if (!tempDir.exists())
-		    tempDir.mkdir(); 
+		File baseDir = new File(baseFolder);
+		if (!baseDir.exists())
+			baseDir.mkdirs();
+		
 		Boolean doesIndexExist = VerifyIndexExistence(timestamp);
 		if (!doesIndexExist)
 		{
-			Indexer.createIndex(timestamp, Constants.workingDirectory, Constants.indexLocation, Constants.trecTextSerializedFile, entities); 
-			writeIndexToS3fs(timestamp);
+			File tempDir = new File(workingDirectory);
+			if (!tempDir.exists())
+			    tempDir.mkdirs(); 
+			Indexer.createIndex(timestamp, workingDirectory, indexLocation, trecTextSerializedFile, entities); 
+			writeIndexToS3fs(timestamp,indexLocation,trecTextSerializedFile);
 		}
 		else
 		{
-			readIndexFromS3fs(timestamp);
+			readIndexFromS3fs(timestamp,baseFolder);
 		}
 		/*
 		for(Entity ent: entities) {
-			Map<TrecTextDocument,Double> docs= ent.getRelevantDocuments(Constants.indexLocation);
+			Map<TrecTextDocument,Double> docs= ent.getRelevantDocuments(indexLocation,trecTextSerializedFile);
 
 			for(Slot slot: slots) {
 				List<String> candidateVals = slot.extractSlotVals(ent, docs);

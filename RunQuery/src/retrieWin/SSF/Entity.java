@@ -47,14 +47,14 @@ public class Entity  implements Serializable {
 		throw new NoSuchElementException();
 	}
 	
-	public Map<TrecTextDocument, Double> getRelevantDocuments(String indexLocation) {
+	public Map<TrecTextDocument, Double> getRelevantDocuments(String indexLocation, String trecTextSerializedFile) {
 		ExecuteQuery queryExecuter =  new ExecuteQuery(indexLocation);
 		Map<TrecTextDocument, Double> results = new HashMap<TrecTextDocument, Double>();
 		String query;
 		
 		for(String expansion: getExpansions()) {
 			query = QueryBuilder.buildOrderedQuery(expansion, 5);
-			for(TrecTextDocument doc: queryExecuter.executeQueryFromStoredFile(query, Integer.MAX_VALUE, Constants.trecTextSerializedFile)) {
+			for(TrecTextDocument doc: queryExecuter.executeQueryFromStoredFile(query, Integer.MAX_VALUE, trecTextSerializedFile)) {
 				results.put(doc, 0.0);
 			}
 		}

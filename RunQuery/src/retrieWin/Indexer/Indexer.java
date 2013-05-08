@@ -64,7 +64,7 @@ public class Indexer {
 		ThriftReader.WriteTrecTextDocumentToFile(allResults, "filtered", filteredFilesLocation);
 		IndriIndexBuilder.buildIndex(filteredIndexLocation, filteredFilesLocation);
 		TrecTextDocument.serializeFile(allResults,serializedFileLocation);
-		/*
+		
 		try{
 		Process p;
 		String deleteCommand = "rm -rf " + tmpdirLocation;
@@ -75,7 +75,7 @@ public class Indexer {
 		{
 			System.out.println("Failed to delete temporary files");
 		}
-		*/
+		
 	}
 	
 	public static class parallelQuerier implements Runnable{
