@@ -148,7 +148,10 @@ public class SSF implements Runnable{
 	
 	public void runSSF(String timestamp) {
 		/** create index for the current hour */
-		String baseFolder = workingDirectory + timestamp + "/";
+		String[] splits = timestamp.split("-");
+		String year = splits[0],month = splits[1], day = splits[2], hour = splits[3];
+		
+		String baseFolder = String.format("%s%s/%s/%s/%s/",workingDirectory,year,month,day,hour);
 		String indexLocation = baseFolder + "index/";
 		String workingDirectory = baseFolder + "temp/";
 		String trecTextSerializedFile = baseFolder + "filteredSerialized.ser";
@@ -157,7 +160,7 @@ public class SSF implements Runnable{
 		if (!baseDir.exists())
 			baseDir.mkdirs();
 
-		Indexer.createIndex(timestamp, workingDirectory, indexLocation, trecTextSerializedFile, entities); 
+		Indexer.createIndex(baseFolder, workingDirectory, indexLocation, trecTextSerializedFile, entities); 
 	
 		for(Entity ent: entities) {
 			Map<TrecTextDocument,Double> docs= ent.getRelevantDocuments(indexLocation,trecTextSerializedFile);
