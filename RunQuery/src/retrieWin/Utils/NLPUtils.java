@@ -159,6 +159,8 @@ public class NLPUtils {
 		frontier.add(word);
 		while(!frontier.isEmpty()) {
 			current = frontier.remove(0);
+			//System.out.println(current);
+			graph.getChildrenWithReln(current, GrammaticalRelation.valueOf("conj_and"));
 			for(IndexedWord w: graph.getChildrenWithReln(current, GrammaticalRelation.valueOf("conj_and")))
 				if(ans.contains(w))
 					continue;
@@ -180,7 +182,7 @@ public class NLPUtils {
 	
 	public List<String> findSlotValue(String sentence, String entity1, SlotPattern pattern, List<NERType> targetNERTypes) {
 		List<String> values = new ArrayList<String>();
-		
+		//System.out.println(pattern);
 		try {
 			Annotation document = new Annotation(sentence);
 			processor.annotate(document);
@@ -200,11 +202,16 @@ public class NLPUtils {
 	private Set<String> findValue(CoreMap sentence,
 			List<IndexedWord> words1, SlotPattern pattern,
 			List<NERType> targetNERTypes) {
+		//System.out.println(pattern);
+		//System.out.println(pattern.getRules());
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		Set<IndexedWord> ansSet = new HashSet<IndexedWord>();
 		Set<IndexedWord> tempSet = new HashSet<IndexedWord>();
 		Set<String> ans = new HashSet<String>();
+		
 		IndexedWord patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
+		if(patternWord == null)
+			return ans;
 		Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
 		
 		//Checking rule1
@@ -230,7 +237,7 @@ public class NLPUtils {
 		for(IndexedWord w: ansSet) {
 			String phrase = findExpandedEntity(sentence, w.originalText());
 			for(String tok: phrase.split(" "))
-				if(targetNERTypes.contains(NERType.valueOf(nerMap.get(tok)))) {
+				if(targetNERTypes == null || targetNERTypes.contains(NERType.NONE) || targetNERTypes.contains(NERType.valueOf(nerMap.get(tok)))) {
 					ans.add(phrase);
 					break;
 				}	
@@ -240,6 +247,7 @@ public class NLPUtils {
 	}
 	
 	private Set<IndexedWord> getWordsSatisfyingPattern(Set<IndexedWord> words, Rule rule, SemanticGraph graph) {
+		//System.out.println(rule);
 		Set<IndexedWord> ans = new HashSet<IndexedWord>();
 		for(IndexedWord word: words)
 			if(rule.direction == EdgeDirection.In)
