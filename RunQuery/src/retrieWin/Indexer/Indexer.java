@@ -1,8 +1,9 @@
 package retrieWin.Indexer;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
+
 
 import java.util.List;
 
@@ -18,22 +19,21 @@ public class Indexer {
 	public static void writeIndexToS3fs(String baseFolder,String indexLocation,String trecTextSerializedFile)
 	{
 		try{
+		
 		String s3directory = Constants.s3directory+baseFolder;
-		String s3MakeDirectory = String.format("sudo mkdir -p %s",s3directory);
+		
+		String s3PutIndex = String.format("s3cmd put -r %s %s",indexLocation,s3directory+"index/");
+		System.out.println(s3PutIndex);
 		Process p;
-		p = Runtime.getRuntime().exec(s3MakeDirectory);
+		p = Runtime.getRuntime().exec(s3PutIndex);
 		p.waitFor();
 				
-		String s3cmdCommand = String.format("sudo cp -r %s %s",indexLocation,s3directory);
-		System.out.println(s3cmdCommand);
+		String s3PutFiltered = String.format("s3cmd put %s %s",trecTextSerializedFile,s3directory);
+		System.out.println(s3PutFiltered);
 		
-		p = Runtime.getRuntime().exec(s3cmdCommand);
+		p = Runtime.getRuntime().exec(s3PutFiltered);
 		p.waitFor();
 		
-		String s3cmdSerializedFileCopyCommand = String.format("sudo cp %s %s",trecTextSerializedFile,s3directory);
-		System.out.println(s3cmdSerializedFileCopyCommand);
-		p = Runtime.getRuntime().exec(s3cmdSerializedFileCopyCommand);
-		p.waitFor();
 		}
 		catch (Exception e)
 		{
@@ -42,17 +42,27 @@ public class Indexer {
 		}
 	}
 	
-	public static void readIndexFromS3fs(String baseFolder)
+	public static void readIndexFromS3fs(String baseFolder, String indexLocation, String trecTextFileLocation)
 	{
 		try{
 		String s3directory = Constants.s3directory+baseFolder;
-	
-		String s3cmdCommand = String.format("sudo cp -r %s* %s",s3directory,baseFolder);
-		System.out.println(s3cmdCommand);
+		String s3Index = s3directory + "index/";
+		String s3getIndex = String.format("s3cmd get -r %s* %s",s3Index,indexLocation);
+		System.out.println(s3getIndex);
 		Process p;
-		p = Runtime.getRuntime().exec(s3cmdCommand);
+		p = Runtime.getRuntime().exec(s3getIndex);
 		p.waitFor();
+		
+		
+		String s3File = s3directory + "filteredSerialized.ser";
+		String s3getFiltered = String.format("s3cmd get %s %s",s3File,trecTextFileLocation);
+		System.out.println(s3getFiltered);
+		p = Runtime.getRuntime().exec(s3getIndex);
+		p.waitFor();
+		
 		}
+		
+		
 		catch (Exception e)
 		{
 			System.out.println("Reading from S3 failed");
@@ -60,31 +70,58 @@ public class Indexer {
 		}	
 	}
 	
-	public static Boolean VerifyIndexExistence(String baseFolder)
+	public static Boolean checkS3Existence(String folder, String file)
 	{
-		String s3IndexFolder = Constants.s3directory + baseFolder;
-		File f = new File(s3IndexFolder);
-		if (!f.exists())
-			return false;
-		
-		File[] subdirectories = f.listFiles();
-		Set<String> subdirectoryNames = new HashSet<String>();
-		for (File subdir:subdirectories)
-			subdirectoryNames.add(subdir.getName());
-		return (subdirectoryNames.contains("index") && subdirectoryNames.contains("filteredSerialized.ser"));
+		try{
+		Process p;
+		String s3cmdls = "s3cmd ls " + folder;
+		System.out.println(s3cmdls);
+		p = Runtime.getRuntime().exec(s3cmdls);
+		BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+		String line;
+		while ((line = input.readLine()) != null) 
+		{
+		    String[] components = line.split("\\t");
+		    String nameOnly = components[components.length-1];
+		    String[] pathComponents = nameOnly.split("/");
+		    String relName = pathComponents[pathComponents.length-1];
+		    System.out.println(relName);
+		    if (relName.equals(file))
+		    	return true;
+		}
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		return false;
+	}
+	
+	public static Boolean VerifyIndexExistence(String timestamp)
+	{
+		String[] splits = timestamp.split("-");
+		String currentFolder = Constants.s3directory;
+
+		for (int i = 0;i<4;i++)
+		{
+			if (!checkS3Existence(currentFolder,splits[i]))
+				return false;
+			currentFolder = currentFolder + splits[i] + "/";
+		}
+		return checkS3Existence(currentFolder,"index");
 	}
 	
 	public static void createIndex(String timestamp,String baseFolder, String tmpdirLocation, String filteredIndexLocation, String serializedFileLocation,
 			List<Entity> allEntities)
 	{
-		Boolean doesIndexExist = VerifyIndexExistence(baseFolder);
+		Boolean doesIndexExist = VerifyIndexExistence(timestamp);
 		if (!doesIndexExist)
 		{
 			Indexer.createIndexHelper(timestamp, tmpdirLocation, filteredIndexLocation, serializedFileLocation, allEntities); 
 			writeIndexToS3fs(baseFolder,filteredIndexLocation,serializedFileLocation);
 		}	
 		else
-			readIndexFromS3fs(baseFolder);
+			readIndexFromS3fs(baseFolder,filteredIndexLocation,serializedFileLocation);
 	}
 	
 	public static void createIndexHelper(String folder, String tmpdirLocation, String filteredIndexLocation, String serializedFileLocation,

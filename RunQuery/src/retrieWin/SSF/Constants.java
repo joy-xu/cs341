@@ -10,7 +10,7 @@ public class Constants  implements Serializable {
 	
 	public final static String indriBuildIndexParamFile = "data/buildIndexParams.xml";
 	
-	public final static String s3directory = "/mnt/s3fs/";
+	public final static String s3directory = "s3://hourlyindex/";
 	
 	public enum EntityType {
 		PER,

@@ -147,6 +147,14 @@ public class SSF implements Runnable{
 	public void runSSF(String timestamp) {
 		/** create index for the current hour */
 		String[] splits = timestamp.split("-");
+		String currentFolder = workingDirectory;
+		for (int i = 0;i<4;i++)
+		{
+			currentFolder = currentFolder + splits[i] + "/";
+			File f = new File(currentFolder);
+			if (!f.exists())
+				f.mkdir();
+		}
 		String year = splits[0],month = splits[1], day = splits[2], hour = splits[3];
 		
 		String baseFolder = String.format("%s/%s/%s/%s/",year,month,day,hour);
