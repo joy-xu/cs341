@@ -45,7 +45,7 @@ public class SlotPattern  implements Serializable {
 	}
 	
 	public Rule getRules(int ruleNumber) {
-		if(rules.size() < ruleNumber)
+		if(ruleNumber < rules.size())
 			return rules.get(ruleNumber);
 		return null;
 	}
