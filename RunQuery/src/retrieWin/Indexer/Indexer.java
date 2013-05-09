@@ -60,9 +60,9 @@ public class Indexer {
 		}	
 	}
 	
-	public static Boolean VerifyIndexExistence(String timestamp)
+	public static Boolean VerifyIndexExistence(String baseFolder)
 	{
-		String s3IndexFolder = Constants.s3directory + timestamp;
+		String s3IndexFolder = Constants.s3directory + baseFolder;
 		File f = new File(s3IndexFolder);
 		if (!f.exists())
 			return false;
@@ -74,17 +74,17 @@ public class Indexer {
 		return (subdirectoryNames.contains("index") && subdirectoryNames.contains("filteredSerialized.ser"));
 	}
 	
-	public static void createIndex(String folder, String tmpdirLocation, String filteredIndexLocation, String serializedFileLocation,
+	public static void createIndex(String timestamp,String baseFolder, String tmpdirLocation, String filteredIndexLocation, String serializedFileLocation,
 			List<Entity> allEntities)
 	{
-		Boolean doesIndexExist = VerifyIndexExistence(folder);
+		Boolean doesIndexExist = VerifyIndexExistence(baseFolder);
 		if (!doesIndexExist)
 		{
-			Indexer.createIndexHelper(folder, tmpdirLocation, filteredIndexLocation, serializedFileLocation, allEntities); 
-			writeIndexToS3fs(folder,filteredIndexLocation,serializedFileLocation);
+			Indexer.createIndexHelper(timestamp, tmpdirLocation, filteredIndexLocation, serializedFileLocation, allEntities); 
+			writeIndexToS3fs(baseFolder,filteredIndexLocation,serializedFileLocation);
 		}	
 		else
-			readIndexFromS3fs(folder);
+			readIndexFromS3fs(baseFolder);
 	}
 	
 	public static void createIndexHelper(String folder, String tmpdirLocation, String filteredIndexLocation, String serializedFileLocation,

@@ -149,17 +149,17 @@ public class SSF implements Runnable{
 		String[] splits = timestamp.split("-");
 		String year = splits[0],month = splits[1], day = splits[2], hour = splits[3];
 		
-		String baseFolder = String.format("%s%s/%s/%s/%s/",workingDirectory,year,month,day,hour);
-		String indexLocation = baseFolder + "index/";
-		String workingDirectory = baseFolder + "temp/";
-		String trecTextSerializedFile = baseFolder + "filteredSerialized.ser";
+		String baseFolder = String.format("%s/%s/%s/%s/",year,month,day,hour);
+		String indexLocation = workingDirectory + baseFolder + "index/";
+		String tempDirectory = workingDirectory + baseFolder + "temp/";
+		String trecTextSerializedFile = workingDirectory + baseFolder + "filteredSerialized.ser";
 		// if the directory does not exist, create it
 		File baseDir = new File(baseFolder);
 		if (!baseDir.exists())
 			baseDir.mkdirs();
 
-		Indexer.createIndex(baseFolder, workingDirectory, indexLocation, trecTextSerializedFile, entities); 
-	
+		Indexer.createIndex(timestamp,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities); 
+		/*
 		for(Entity ent: entities) {
 			Map<TrecTextDocument,Double> docs= ent.getRelevantDocuments(indexLocation,trecTextSerializedFile);
 
@@ -172,7 +172,7 @@ public class SSF implements Runnable{
 					System.out.println(slot.getName() + " not updated");
 			}
 		}
-		
+		*/
 		/*NLPUtils utils = new NLPUtils();
 		String sent = "Bill Gates millionaire and founder of Microsoft was diagnosed with Aspergers.";
 		List<SlotPattern> patterns = utils.findSlotPattern(sent, "Bill Gate", "Microsoft");
