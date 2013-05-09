@@ -2,7 +2,6 @@ package retrieWin.Utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -18,6 +17,7 @@ import retrieWin.SSF.SlotPattern.Rule;
 import edu.stanford.nlp.dcoref.CorefChain;
 import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
 import edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefChainAnnotation;
+import edu.stanford.nlp.dcoref.Dictionaries;
 import edu.stanford.nlp.dcoref.Dictionaries.MentionType;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
 import edu.stanford.nlp.ling.CoreAnnotations.NamedEntityTagAnnotation;
@@ -57,9 +57,14 @@ public class NLPUtils {
 			Annotation document = new Annotation(sentence);
 			processor.annotate(document);
 
+			Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
+			Map<Integer, Set<Integer>> corefsEntity2 = getCorefs(document, entity2);
+			
+			int sentNum = 0;
 			for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
 				SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
-				patterns.addAll(findRelation(graph, findWordsInSemanticGraph(sentenceMap, entity1), findWordsInSemanticGraph(sentenceMap, entity2)));
+				patterns.addAll(findRelation(graph, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), findWordsInSemanticGraph(sentenceMap, entity2, corefsEntity2.get(sentNum))));
+				sentNum++;
 			}
 		}
 		catch(Exception ex) {
@@ -71,11 +76,18 @@ public class NLPUtils {
 	}
 	
 	//TODO - Improve if needed!
-	public List<IndexedWord> findWordsInSemanticGraph(CoreMap sentenceMap, String entity) {
+	public List<IndexedWord> findWordsInSemanticGraph(CoreMap sentenceMap, String entity, Set<Integer> corefs) {
 		SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		List<String> entitySplits = Arrays.asList(entity.split(" "));
 		List<IndexedWord> words = new ArrayList<IndexedWord>();
 		HashSet<String> expandedEntitySplits = new HashSet<String>();
+		
+		//add corefs if they exist
+		if(corefs != null) {
+			for(int ind: corefs)
+				words.add(graph.getNodeByIndex(ind));
+		}
+		
 		for(String str:entitySplits) {
 			String expansion = findExpandedEntity(sentenceMap, str);
 			if(expansion!=null && !expansion.isEmpty())
@@ -119,9 +131,11 @@ public class NLPUtils {
 					shortestPath = current;
 			}
 		}
+		if(shortestPath.isEmpty())
+			return patterns;
 		//System.out.println(shortestPath);
 		Set<IndexedWord> neighbours = getConjAndNeighbours(graph, shortestPath.get(0));
-		if(!neighbours.containsAll(shortestPath) || shortestPath.size() == 0)
+		if(!neighbours.containsAll(shortestPath))
 			return patterns;
 		
 		for(IndexedWord word: neighbours) {
@@ -186,9 +200,12 @@ public class NLPUtils {
 		try {
 			Annotation document = new Annotation(sentence);
 			processor.annotate(document);
-
+			Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
+			
+			int sentNum = 0;
 			for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
-				values.addAll(findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1), pattern, targetNERTypes));
+				values.addAll(findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, targetNERTypes));
+				sentNum++;
 			}
 		}
 		catch(Exception ex) {
@@ -330,6 +347,8 @@ public class NLPUtils {
 	        	for(Set<CorefMention> s : c.getMentionMap().values()){
 	            	for(CorefMention m: s) {
 	            		String clust2 = "";
+	            		if(m.mentionType != Dictionaries.MentionType.PRONOMINAL)
+	            			continue;
 	                    tks = document.get(SentencesAnnotation.class).get(m.sentNum-1).get(TokensAnnotation.class);
 	                    for(int i = m.startIndex-1; i < m.endIndex-1; i++)
 	                        clust2 += tks.get(i).get(TextAnnotation.class) + " ";
@@ -350,6 +369,52 @@ public class NLPUtils {
 		}
 	}
 
+	public Map<Integer, Set<Integer>> getCorefs(Annotation document, String entity) {
+		Map<Integer, Set<Integer>> ans = new HashMap<Integer, Set<Integer>>();
+		Set<Integer> temp;
+		
+		try {
+			Map<Integer, CorefChain> coref = document.get(CorefChainAnnotation.class);
+			
+			for(Map.Entry<Integer, CorefChain> entry : coref.entrySet()) {
+	            CorefChain c = entry.getValue();
+	            CorefMention cm = c.getRepresentativeMention();
+	            String clust = "";
+	            List<CoreLabel> tks = document.get(SentencesAnnotation.class).get(cm.sentNum-1).get(TokensAnnotation.class);
+	            for(int i = cm.startIndex-1; i < cm.endIndex-1; i++)
+	                clust += tks.get(i).get(TextAnnotation.class) + " ";
+	            clust = clust.trim();
+	            
+	            boolean present = false;
+	            for(String word: entity.split(" ")) {
+	            	if(Arrays.asList(clust.split(" ")).contains(word)) {
+	            		present = true;
+	            		break;
+	            	}
+	            }
+	            if(!present)
+	            	continue;
+	           
+	            for(Set<CorefMention> s : c.getMentionMap().values()){
+	            	for(CorefMention m: s) {
+	            		if(m.mentionType != Dictionaries.MentionType.PRONOMINAL)
+	            			continue;
+	            		if(!ans.containsKey(m.sentNum-1))
+	            				ans.put(m.sentNum - 1, new HashSet<Integer>());
+	            		temp = ans.get(m.sentNum-1);
+	            		temp.add(m.startIndex);
+	            		ans.put(m.sentNum-1, temp);
+	                }
+	            }
+	        }
+			return ans;
+		}
+		catch (NoSuchParseException e) {
+			return ans;
+		}
+	}
+
+	
 	public boolean containsTokens(String s2, String s1) {
 		for(String token: s1.split(" ")) {
 			if(!s2.contains(token))
