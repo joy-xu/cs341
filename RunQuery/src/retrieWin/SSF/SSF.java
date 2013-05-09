@@ -22,7 +22,6 @@ import retrieWin.Utils.Utils;
 import sun.security.jgss.LoginConfigImpl;
 
 public class SSF implements Runnable{
-	@Option(gloss="index Location") public String indexLocation;
 	@Option(gloss="working Directory") public String workingDirectory;
 	@Option(gloss="download Hour") public String downloadHour;
 	
