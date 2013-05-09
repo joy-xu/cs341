@@ -15,11 +15,11 @@ import retrieWin.SSF.*;
 import retrieWin.Querying.*;
 public class Indexer {
 
-	public static void writeIndexToS3fs(String timestamp,String indexLocation,String trecTextSerializedFile)
+	public static void writeIndexToS3fs(String baseFolder,String indexLocation,String trecTextSerializedFile)
 	{
 		try{
-		String s3directory = Constants.s3directory+timestamp + "/";
-		String s3MakeDirectory = String.format("sudo mkdir %s",s3directory);
+		String s3directory = Constants.s3directory+baseFolder;
+		String s3MakeDirectory = String.format("sudo mkdir -p %s",s3directory);
 		Process p;
 		p = Runtime.getRuntime().exec(s3MakeDirectory);
 		p.waitFor();
@@ -42,12 +42,12 @@ public class Indexer {
 		}
 	}
 	
-	public static void readIndexFromS3fs(String timestamp)
+	public static void readIndexFromS3fs(String baseFolder)
 	{
 		try{
-		String s3directory = Constants.s3directory+timestamp + "/";
+		String s3directory = Constants.s3directory+baseFolder;
 	
-		String s3cmdCommand = String.format("sudo cp -r %s .",s3directory);
+		String s3cmdCommand = String.format("sudo cp -r %s* %s",s3directory,baseFolder);
 		System.out.println(s3cmdCommand);
 		Process p;
 		p = Runtime.getRuntime().exec(s3cmdCommand);

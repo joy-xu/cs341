@@ -22,9 +22,7 @@ import retrieWin.Utils.Utils;
 import sun.security.jgss.LoginConfigImpl;
 
 public class SSF implements Runnable{
-	@Option(gloss="index Location") public String indexLocation;
 	@Option(gloss="working Directory") public String workingDirectory;
-	@Option(gloss="mode") public String mode;
 	@Option(gloss="download Hour") public String downloadHour;
 	
 	List<Slot> slots;
@@ -148,7 +146,10 @@ public class SSF implements Runnable{
 	
 	public void runSSF(String timestamp) {
 		/** create index for the current hour */
-		String baseFolder = workingDirectory + timestamp + "/";
+		String[] splits = timestamp.split("-");
+		String year = splits[0],month = splits[1], day = splits[2], hour = splits[3];
+		
+		String baseFolder = String.format("%s%s/%s/%s/%s/",workingDirectory,year,month,day,hour);
 		String indexLocation = baseFolder + "index/";
 		String workingDirectory = baseFolder + "temp/";
 		String trecTextSerializedFile = baseFolder + "filteredSerialized.ser";
@@ -157,7 +158,7 @@ public class SSF implements Runnable{
 		if (!baseDir.exists())
 			baseDir.mkdirs();
 
-		Indexer.createIndex(timestamp, workingDirectory, indexLocation, trecTextSerializedFile, entities); 
+		Indexer.createIndex(baseFolder, workingDirectory, indexLocation, trecTextSerializedFile, entities); 
 	
 		for(Entity ent: entities) {
 			Map<TrecTextDocument,Double> docs= ent.getRelevantDocuments(indexLocation,trecTextSerializedFile);
@@ -191,10 +192,6 @@ public class SSF implements Runnable{
 			LogInfo.logs("Working directory cannot be empty. Set the -workingDirectory option.");
 			terminate = true;
 		}
-		if(mode == null || mode.isEmpty()) {
-			LogInfo.logs("Mode cannot be empty. Set the -mode option.");
-			terminate = true;
-		}
 		if(downloadHour == null || downloadHour.isEmpty()) {
 			LogInfo.logs("Download hour cannot be empty. Set the -downloadHour option.");
 			terminate = true;
@@ -207,17 +204,11 @@ public class SSF implements Runnable{
 			workingDirectory += "/";
 		
 		LogInfo.begin_track("run()");
-		LogInfo.logs(String.format("Running mode      : %s", mode));
 		LogInfo.logs(String.format("Download hour     : %s", downloadHour));
 		LogInfo.logs(String.format("Working directory : %s", workingDirectory));
 		
-		switch(mode.toLowerCase()) {
-		case "bootstrap":
-			break;
-		case "ssf":
-			runSSF(downloadHour);
-			break;
-		}
+		runSSF(downloadHour);
+		
 		LogInfo.end_track();
 	}
 }
