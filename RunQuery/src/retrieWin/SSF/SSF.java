@@ -190,6 +190,12 @@ public class SSF implements Runnable{
 	}
 	
 	public static void main(String[] args) {
+		if (!System.getenv().containsKey("LD_LIBRARY_PATH"))
+		{
+			System.out.println("Environment variable not set");
+			return;
+		}
+		
 		Execution.run(args, "Main", new SSF());
 	}
 

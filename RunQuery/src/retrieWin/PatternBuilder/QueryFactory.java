@@ -21,7 +21,12 @@ public class QueryFactory {
 	public static Set<TrecTextDocument> DoQuery(List<String> folders, List<String> queries,
 								String workingDirectory, List<Entity> entities)
 	{
-		int numthreads = folders.size()<8 ? folders.size():8;
+		if (!System.getenv().containsKey("LD_LIBRARY_PATH"))
+		{
+			System.out.println("Environment variable not set");
+			System.exit(0);
+		}
+		int numthreads = folders.size()<4 ? folders.size():4;
 		Set<TrecTextDocument> results = new HashSet<TrecTextDocument>();
 		ExecutorService e = Executors.newFixedThreadPool(numthreads);
 		
@@ -93,7 +98,7 @@ public class QueryFactory {
 			Indexer.createIndex(folder,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities);
 			ExecuteQuery eq = new ExecuteQuery(indexLocation);
 			
-			int numthreads = queries.size() < 8 ? queries.size():8;
+			int numthreads = queries.size() < 4 ? queries.size():4;
 			ExecutorService e = Executors.newFixedThreadPool(numthreads);
 			
 			Set<TrecTextDocument> results = new HashSet<TrecTextDocument>();

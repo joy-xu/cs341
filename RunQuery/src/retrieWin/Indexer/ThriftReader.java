@@ -24,9 +24,9 @@ import streamcorpus.Token;
 
 public class ThriftReader {
 	
-	private static TrecTextDocument populateTrecTextDocument(StreamItem item, String filename)
+	private static TrecTextDocument populateTrecTextDocument(StreamItem item, String filename,String folder)
 	{
-		String docNumber = item.stream_id + "_" + filename + "_" + item.stream_time.zulu_timestamp;
+		String docNumber = item.stream_id + "_" + filename + "_" + folder;
 		List<Sentence> s = item.body.sentences.get("lingpipe");
         
     	List<String> allSentences = new ArrayList<String>();
@@ -86,7 +86,7 @@ public class ThriftReader {
             	if (item.body == null || item.body.clean_visible == null || 
             			item.body.sentences == null || !item.body.sentences.containsKey("lingpipe"))
             		continue;
-            	output.add(populateTrecTextDocument(item,file));
+            	output.add(populateTrecTextDocument(item,file,folder));
             }
         }
 		} catch (Exception e)
@@ -123,7 +123,7 @@ public class ThriftReader {
             		continue;
             	}
 	            	
-	            output.add(populateTrecTextDocument(item,file));
+	            output.add(populateTrecTextDocument(item,file,folder));
 	            
 	        }
 		} 
