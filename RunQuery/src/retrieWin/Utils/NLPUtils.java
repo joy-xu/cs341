@@ -20,7 +20,10 @@ import edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefChainAnnotation;
 import edu.stanford.nlp.dcoref.Dictionaries;
 import edu.stanford.nlp.dcoref.Dictionaries.MentionType;
 import edu.stanford.nlp.ie.AbstractSequenceClassifier;
+import edu.stanford.nlp.ling.CoreAnnotations.DocIDAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.IndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.NamedEntityTagAnnotation;
+import edu.stanford.nlp.ling.CoreAnnotations.SentenceIndexAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TextAnnotation;
 import edu.stanford.nlp.ling.CoreAnnotations.TokensAnnotation;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -68,7 +71,7 @@ public class NLPUtils {
 			}
 		}
 		catch(Exception ex) {
-			System.out.println(ex.getMessage());
+			//System.out.println(ex.getMessage());
 			ex.printStackTrace();
 		}
 		
@@ -98,7 +101,7 @@ public class NLPUtils {
 				words.add(word);
 			}
 		}
-		//System.out.println(entity + "," + words);
+		System.out.println(entity + "," + words);
 		return words;
 	}
 	
@@ -125,15 +128,17 @@ public class NLPUtils {
 			for(IndexedWord w2: words2) {
 				List<IndexedWord> current = graph.getShortestUndirectedPathNodes(w1, w2);
 				current.remove(w1); current.remove(w2);
-				word1 = w1;
-				wordN = w2;
-				if(shortestPath.size() == 0 || shortestPath.size() > current.size())
+				
+				if(shortestPath.size() == 0 || shortestPath.size() > current.size()) {
+					word1 = w1;
+					wordN = w2;
 					shortestPath = current;
+				}
 			}
 		}
 		if(shortestPath.isEmpty())
 			return patterns;
-		//System.out.println(shortestPath);
+		
 		Set<IndexedWord> neighbours = getConjAndNeighbours(graph, shortestPath.get(0));
 		if(!neighbours.containsAll(shortestPath))
 			return patterns;
