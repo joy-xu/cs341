@@ -2,7 +2,9 @@ package retrieWin.Indexer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
+
+import java.util.HashSet;
+import java.util.Set;
 
 
 import java.util.List;
@@ -153,7 +155,7 @@ public class Indexer {
 		ExecuteQuery queryExecutor = new ExecuteQuery(indexFolder);
 		
 		ExecutorService e = Executors.newFixedThreadPool(16);
-		List<TrecTextDocument> allResults = new ArrayList<TrecTextDocument>();
+		Set<TrecTextDocument> allResults = new HashSet<TrecTextDocument>();
 		
 		for (Entity entity:allEntities)
 		{
@@ -190,11 +192,11 @@ public class Indexer {
 	}
 	
 	public static class parallelQuerier implements Runnable{
-		List<TrecTextDocument> output;
+		Set<TrecTextDocument> output;
 		Entity entity;
 		ExecuteQuery queryExecutor;
 		String filesLocation;
-		public parallelQuerier(Entity ent, ExecuteQuery eq, String loc,List<TrecTextDocument> in)
+		public parallelQuerier(Entity ent, ExecuteQuery eq, String loc,Set<TrecTextDocument> in)
 		{
 			output = in;
 			entity = ent;

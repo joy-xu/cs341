@@ -27,7 +27,7 @@ public class TrecTextDocument implements Serializable, Comparable<TrecTextDocume
 		sentences = sentencesIn;
 	}
 	
-	public static void serializeFile(List<TrecTextDocument> results,String serializedFileLocation)
+	public static void serializeFile(Set<TrecTextDocument> results,String serializedFileLocation)
 	{
 		Map<String, TrecTextDocument> hmap = new HashMap<String,TrecTextDocument>();
 		for (TrecTextDocument t:results)

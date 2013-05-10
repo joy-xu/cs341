@@ -26,7 +26,7 @@ public class ThriftReader {
 	
 	private static TrecTextDocument populateTrecTextDocument(StreamItem item, String filename,String folder)
 	{
-		String docNumber = item.stream_id + "_" + filename + "_" + folder;
+		String docNumber = item.stream_id + "__" + filename + "__" + folder;
 		List<Sentence> s = item.body.sentences.get("lingpipe");
         
     	List<String> allSentences = new ArrayList<String>();
@@ -95,14 +95,14 @@ public class ThriftReader {
 		return output;
 	}
 	
-	public static List<TrecTextDocument> GetAllFiles(String folder, String file, String workingDirectory)
+	public static Set<TrecTextDocument> GetAllFiles(String folder, String file, String workingDirectory)
 	{
 		
 		String downloadedFile = Downloader.downloadfile(folder, file, workingDirectory);
 		
-		if (downloadedFile == null) return new ArrayList<TrecTextDocument>();
+		if (downloadedFile == null) return new HashSet<TrecTextDocument>();
 		
-		List<TrecTextDocument> output = new ArrayList<TrecTextDocument>();
+		Set<TrecTextDocument> output = new HashSet<TrecTextDocument>();
 		try 
 		{
 			TBinaryProtocol protocol = openBinaryProtocol(downloadedFile);
@@ -136,10 +136,10 @@ public class ThriftReader {
 		return output;
 	}
 	
-	public static void WriteTrecTextDocumentToFile(List<TrecTextDocument> documentList,String filename,String downloadDirectory)
+	public static void WriteTrecTextDocumentToFile(Set<TrecTextDocument> documentList,String filename,String downloadDirectory)
 	{
-		Set<TrecTextDocument> documentSet = new HashSet<TrecTextDocument>(documentList);
-		for (TrecTextDocument t:documentSet)
+		
+		for (TrecTextDocument t:documentList)
 		{
 			t.writeToFile(filename,downloadDirectory);
 		}			
@@ -203,7 +203,7 @@ public class ThriftReader {
 		}
 		public void run()
 		{
-			List<TrecTextDocument> documentList = GetAllFiles(folder,file,downloadDirectory);
+			Set<TrecTextDocument> documentList = GetAllFiles(folder,file,downloadDirectory);
 			WriteTrecTextDocumentToFile(documentList,file.substring(0,file.length()-10),folderToIndex);
 		}
 	}

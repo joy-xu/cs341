@@ -57,7 +57,7 @@ public class ExecuteQuery {
     	
     	for(String result:queryResults) {    	
 	    	System.out.println("Processing queryResult: " + result);
-    		String[] a = result.split("_");
+    		String[] a = result.split("__");
 			String streamID = a[0];
 			String localfilename = a[1];
 			String[] b = localfilename.split("/");
