@@ -177,7 +177,7 @@ public class ThriftReader {
 			    	filenames.add(relName);
 			}
 			
-			ExecutorService e = Executors.newFixedThreadPool(4);
+			ExecutorService e = Executors.newFixedThreadPool(16);
 		
 			for (String file:filenames)
 			{

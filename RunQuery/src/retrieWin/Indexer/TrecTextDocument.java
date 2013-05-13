@@ -1,6 +1,7 @@
 package retrieWin.Indexer;
 
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -52,7 +53,9 @@ public class TrecTextDocument implements Serializable, Comparable<TrecTextDocume
 	@SuppressWarnings("unchecked")
 	public static void serializeFile(Set<TrecTextDocument> results,String serializedFileLocation, Boolean append)
 	{
-		if (!append)
+		File f = new File(serializedFileLocation);
+		
+		if (!append || !f.exists())
 		{
 			serializeFile(results,serializedFileLocation);
 		}

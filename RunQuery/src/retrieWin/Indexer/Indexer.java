@@ -3,7 +3,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -55,7 +57,7 @@ public class Indexer {
 		String s3File = s3directory + "filteredSerialized.ser";
 		String s3getFiltered = String.format("s3cmd get %s %s",s3File,trecTextFileLocation);
 		System.out.println(s3getFiltered);
-		p = Runtime.getRuntime().exec(s3getIndex);
+		p = Runtime.getRuntime().exec(s3getFiltered);
 		p.waitFor();
 		
 		}
@@ -151,11 +153,11 @@ public class Indexer {
 		ExecuteQuery queryExecutor = new ExecuteQuery(indexFolder);
 		
 		ExecutorService e = Executors.newFixedThreadPool(4);
-		//Set<TrecTextDocument> allResults = new HashSet<TrecTextDocument>();
+		Set<TrecTextDocument> allResults = new HashSet<TrecTextDocument>();
 		
 		for (Entity entity:allEntities)
 		{
-			e.execute(new parallelQuerier(entity,queryExecutor,filesLocation,filteredFilesLocation, serializedFileLocation));
+			e.execute(new parallelQuerier(entity,queryExecutor,filesLocation,filteredFilesLocation, serializedFileLocation, allResults));
 		}
 		e.shutdown();
 		while(true)
@@ -170,9 +172,9 @@ public class Indexer {
 			}
 		}
 		
-		//ThriftReader.WriteTrecTextDocumentToFile(allResults, "filtered", filteredFilesLocation);
+		ThriftReader.WriteTrecTextDocumentToFile(allResults, "filtered", filteredFilesLocation);
 		IndriIndexBuilder.buildIndex(filteredIndexLocation, filteredFilesLocation);
-		//TrecTextDocument.serializeFile(allResults,serializedFileLocation);
+		TrecTextDocument.serializeFile(allResults,serializedFileLocation);
 		
 		try{
 		Process p;
@@ -189,40 +191,42 @@ public class Indexer {
 	
 	public static class parallelQuerier implements Runnable{
 		
+		Set<TrecTextDocument> output;
 		Entity entity;
 		ExecuteQuery queryExecutor;
 		String filesLocation;
 		String filteredFilesLocation;
 		String serializedFileLocation;
-		public parallelQuerier(Entity ent, ExecuteQuery eq, String loc,String filteredLoc, String serializedFileLoc)
+		public parallelQuerier(Entity ent, ExecuteQuery eq, String loc,String filteredLoc, String serializedFileLoc, Set<TrecTextDocument> In)
 		{
+			output = In;
 			entity = ent;
 			queryExecutor = eq;
 			filesLocation = loc;
 			filteredFilesLocation = filteredLoc;
 			serializedFileLocation = serializedFileLoc;
 		}
-		/*
+		
 		private synchronized void addToList(List<TrecTextDocument> results)
 		{
 			output.addAll(results);
 		}
-		*/
+		/*
 		private synchronized void writeResultsToFile(List<TrecTextDocument> results)
 		{
 			
 			ThriftReader.WriteTrecTextDocumentToFile(results, "filtered", filteredFilesLocation);
 			TrecTextDocument.serializeFile(results, serializedFileLocation, true);
 		}
-		
+		*/
 		public void run()
 		{
 			String query = QueryBuilder.buildOrQuery(entity.getExpansions());
 			//System.out.println("Querying for: " + query);
 			List<TrecTextDocument> queryResults = queryExecutor.executeQuery(query, Integer.MAX_VALUE, filesLocation);
 			System.out.println("Query Results for: " + query + " : " + queryResults.size());
-			writeResultsToFile(queryResults);
-			//addToList(queryResults);
+			//writeResultsToFile(queryResults);
+			addToList(queryResults);
 		}
 	}
 }
