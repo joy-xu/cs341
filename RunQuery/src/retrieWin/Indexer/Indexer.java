@@ -124,41 +124,13 @@ public class Indexer {
 		}	
 		else
 			readIndexFromS3fs(baseFolder,filteredIndexLocation,serializedFileLocation);
-	}
+	} 
 	
-	public static void createUnfilteredIndex(String timestamp,String baseFolder, String tmpdirLocation)
-	{
-		Boolean doesIndexExist = VerifyIndexExistence(timestamp);
-		if (!doesIndexExist)
-		{
-			Indexer.createUnfilteredIndexHelper(timestamp, tmpdirLocation); 
-			//writeIndexToS3fs(baseFolder, tmpdirLocation + "index/", null);
-		}	
-		//else
-		//	readIndexFromS3fs(baseFolder);
-	}
-	
-	private static void createUnfilteredIndexHelper(String folder, String tmpdirLocation) {
-		if (!folder.endsWith("/"))
-			folder = folder + "/";
-		String filesLocation = tmpdirLocation + "allFiles/";
-		String folderToIndex = tmpdirLocation + "Unserialized/";
-		String indexFolder = tmpdirLocation + "index/";
-		String filteredFilesLocation = tmpdirLocation + "filteredFiles/";
-		
-		File tmpdir = new File(tmpdirLocation);
-		File filesDir = new File(filesLocation);
-		File indexDir = new File(indexFolder);
-		File indexinFolder = new File(folderToIndex);
-		File filteredFilesDir = new File(filteredFilesLocation);
-		
-		tmpdir.mkdirs();
-		filesDir.mkdirs();
-		indexDir.mkdirs();
-		indexinFolder.mkdirs();
-		filteredFilesDir.mkdirs();
-		
-		ThriftReader.GetFolder(folder, filesLocation, folderToIndex);
+	public static void createUnfilteredIndex(List<String> downloadHours, String downloadDirectory, String saveFilesLocation, String indexLocation) {
+		for(String downloadHour: downloadHours) {
+			ThriftReader.GetFolder(downloadHour, downloadDirectory, saveFilesLocation);
+		}
+		IndriIndexBuilder.buildIndex(indexLocation, saveFilesLocation);
 	}
 
 	public static void createIndexHelper(String folder, String tmpdirLocation, String filteredIndexLocation, String serializedFileLocation,
