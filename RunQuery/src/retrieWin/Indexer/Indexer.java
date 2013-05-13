@@ -21,20 +21,22 @@ public class Indexer {
 	public static void writeIndexToS3fs(String baseFolder,String indexLocation,String trecTextSerializedFile)
 	{
 		try{
-		
-		String s3directory = Constants.s3directory+baseFolder;
-		
-		String s3PutIndex = String.format("s3cmd put -r %s %s",indexLocation,s3directory+"index/");
-		System.out.println(s3PutIndex);
-		Process p;
-		p = Runtime.getRuntime().exec(s3PutIndex);
-		p.waitFor();
+			
+			String s3directory = Constants.s3directory+baseFolder;
+			Process p;
+			if(indexLocation!=null) {
+				String s3PutIndex = String.format("s3cmd put -r %s %s",indexLocation,s3directory+"index/");
+				System.out.println(s3PutIndex);
+				p = Runtime.getRuntime().exec(s3PutIndex);
+				p.waitFor();
+			}
+			if(trecTextSerializedFile!=null) {
+				String s3PutFiltered = String.format("s3cmd put %s %s",trecTextSerializedFile,s3directory);
+				System.out.println(s3PutFiltered);
 				
-		String s3PutFiltered = String.format("s3cmd put %s %s",trecTextSerializedFile,s3directory);
-		System.out.println(s3PutFiltered);
-		
-		p = Runtime.getRuntime().exec(s3PutFiltered);
-		p.waitFor();
+				p = Runtime.getRuntime().exec(s3PutFiltered);
+				p.waitFor();
+			}
 		
 		}
 		catch (Exception e)
@@ -47,21 +49,23 @@ public class Indexer {
 	public static void readIndexFromS3fs(String baseFolder, String indexLocation, String trecTextFileLocation)
 	{
 		try{
-		String s3directory = Constants.s3directory+baseFolder;
-		String s3Index = s3directory + "index/";
-		String s3getIndex = String.format("s3cmd get -r %s* %s",s3Index,indexLocation);
-		System.out.println(s3getIndex);
-		Process p;
-		p = Runtime.getRuntime().exec(s3getIndex);
-		p.waitFor();
-		
-		
-		String s3File = s3directory + "filteredSerialized.ser";
-		String s3getFiltered = String.format("s3cmd get %s %s",s3File,trecTextFileLocation);
-		System.out.println(s3getFiltered);
-		p = Runtime.getRuntime().exec(s3getIndex);
-		p.waitFor();
-		
+			String s3directory = Constants.s3directory+baseFolder;
+			Process p;
+			String s3Index = s3directory + "index/";
+			if(indexLocation!= null) {
+				String s3getIndex = String.format("s3cmd get -r %s* %s",s3Index,indexLocation);
+				System.out.println(s3getIndex);
+				
+				p = Runtime.getRuntime().exec(s3getIndex);
+				p.waitFor();
+			}
+			if(trecTextFileLocation != null) {
+				String s3File = s3directory + "filteredSerialized.ser";
+				String s3getFiltered = String.format("s3cmd get %s %s",s3File,trecTextFileLocation);
+				System.out.println(s3getFiltered);
+				p = Runtime.getRuntime().exec(s3getFiltered);
+				p.waitFor();
+			}
 		}
 		
 		
@@ -126,10 +130,19 @@ public class Indexer {
 			readIndexFromS3fs(baseFolder,filteredIndexLocation,serializedFileLocation);
 	}
 	
-	public static void createIndexHelper(String folder, String tmpdirLocation, String filteredIndexLocation, String serializedFileLocation,
-			List<Entity> allEntities)
+	public static void createUnfilteredIndex(String timestamp,String baseFolder, String tmpdirLocation)
 	{
-		System.out.println(folder);
+		Boolean doesIndexExist = VerifyIndexExistence(timestamp);
+		if (!doesIndexExist)
+		{
+			Indexer.createUnfilteredIndexHelper(timestamp, tmpdirLocation); 
+			writeIndexToS3fs(baseFolder, tmpdirLocation + "index/", null);
+		}	
+		else
+			readIndexFromS3fs(baseFolder);
+	}
+	
+	private static void createUnfilteredIndexHelper(String folder, String tmpdirLocation) {
 		if (!folder.endsWith("/"))
 			folder = folder + "/";
 		String filesLocation = tmpdirLocation + "allFiles/";
@@ -152,6 +165,35 @@ public class Indexer {
 		ThriftReader.GetFolder(folder, filesLocation, folderToIndex);
 		
 		IndriIndexBuilder.buildIndex(indexFolder, folderToIndex);
+	}
+
+	public static void createIndexHelper(String folder, String tmpdirLocation, String filteredIndexLocation, String serializedFileLocation,
+			List<Entity> allEntities)
+	{
+		if (!folder.endsWith("/"))
+			folder = folder + "/";
+		String filesLocation = tmpdirLocation + "allFiles/";
+		String folderToIndex = tmpdirLocation + "Unserialized/";
+		String indexFolder = tmpdirLocation + "index/";
+		String filteredFilesLocation = tmpdirLocation + "filteredFiles/";
+		
+		File tmpdir = new File(tmpdirLocation);
+		File filesDir = new File(filesLocation);
+		File indexDir = new File(indexFolder);
+		File indexinFolder = new File(folderToIndex);
+		File filteredFilesDir = new File(filteredFilesLocation);
+		
+		tmpdir.mkdirs();
+		filesDir.mkdirs();
+		indexDir.mkdirs();
+		indexinFolder.mkdirs();
+		filteredFilesDir.mkdirs();
+		
+		ThriftReader.GetFolder(folder, filesLocation, folderToIndex);
+		
+		IndriIndexBuilder.buildIndex(indexFolder, folderToIndex);
+		
+		//--------------------------------------------------------------
 		ExecuteQuery queryExecutor = new ExecuteQuery(indexFolder);
 		
 		ExecutorService e = Executors.newFixedThreadPool(16);
