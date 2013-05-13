@@ -95,6 +95,8 @@ public class ThriftReader {
 		return output;
 	}
 	
+	
+	
 	public static Set<TrecTextDocument> GetAllFiles(String folder, String file, String workingDirectory)
 	{
 		
@@ -145,6 +147,16 @@ public class ThriftReader {
 		}			
 	}
 	
+	public static void WriteTrecTextDocumentToFile(List<TrecTextDocument> documentList,String filename,String downloadDirectory)
+	{
+		
+		for (TrecTextDocument t:documentList)
+		{
+			t.writeToFile(filename,downloadDirectory);
+		}			
+	}
+	
+	
 	public static void GetFolder(String folder, String downloadDirectory, String folderToIndex)
 	{
 		List<String> filenames = new ArrayList<String>();
@@ -165,7 +177,7 @@ public class ThriftReader {
 			    	filenames.add(relName);
 			}
 			
-			ExecutorService e = Executors.newFixedThreadPool(16);
+			ExecutorService e = Executors.newFixedThreadPool(4);
 		
 			for (String file:filenames)
 			{

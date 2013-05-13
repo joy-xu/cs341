@@ -38,7 +38,64 @@ public class TrecTextDocument implements Serializable, Comparable<TrecTextDocume
 		FileUtils.writeFile(hmap, serializedFileLocation);
 	}
 	
-	public static List<TrecTextDocument> getFromStoredFile(List<String> queryResults, String filteredFileName)
+	public static void serializeFile(List<TrecTextDocument> results,String serializedFileLocation)
+	{
+		Map<String, TrecTextDocument> hmap = new HashMap<String,TrecTextDocument>();
+		for (TrecTextDocument t:results)
+		{
+			String docNo = t.docNumber;
+			hmap.put(docNo,t);
+		}
+		FileUtils.writeFile(hmap, serializedFileLocation);
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static void serializeFile(Set<TrecTextDocument> results,String serializedFileLocation, Boolean append)
+	{
+		if (!append)
+		{
+			serializeFile(results,serializedFileLocation);
+		}
+		else
+		{
+			Map<String,TrecTextDocument> storedFiles = (Map<String,TrecTextDocument>)FileUtils.readFile(serializedFileLocation);
+			for (TrecTextDocument r:results)
+			{
+				String docNo = r.docNumber;
+				if (!storedFiles.containsKey(docNo))
+				{
+					storedFiles.put(docNo, r);
+				}
+			}
+			FileUtils.writeFile(storedFiles,serializedFileLocation);
+		}
+	}
+	
+	
+	@SuppressWarnings("unchecked")
+	public static void serializeFile(List<TrecTextDocument> results,String serializedFileLocation, Boolean append)
+	{
+		if (!append)
+		{
+			serializeFile(results,serializedFileLocation);
+		}
+		else
+		{
+			Map<String,TrecTextDocument> storedFiles = (Map<String,TrecTextDocument>)FileUtils.readFile(serializedFileLocation);
+			for (TrecTextDocument r:results)
+			{
+				String docNo = r.docNumber;
+				if (!storedFiles.containsKey(docNo))
+				{
+					storedFiles.put(docNo, r);
+				}
+			}
+			FileUtils.writeFile(storedFiles,serializedFileLocation);
+		}
+	}
+	
+	
+	public static List<TrecTextDocument> getFromStoredFile(Set<String> queryResults, String filteredFileName)
 	{
 		@SuppressWarnings("unchecked")
 		Map<String,TrecTextDocument> storedFiles = (Map<String,TrecTextDocument>)FileUtils.readFile(filteredFileName);
@@ -87,8 +144,10 @@ public class TrecTextDocument implements Serializable, Comparable<TrecTextDocume
 			buf.close();
 		}
 		catch (Exception e)
-		{}
+		{e.printStackTrace();}
 	}
+	
+	
 
 	@Override
 	public int compareTo(TrecTextDocument other) {
