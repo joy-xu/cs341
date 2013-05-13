@@ -56,19 +56,16 @@ public class ExecuteQuery {
     	Map<String, Set<String>> streamIDMap = new HashMap<String, Set<String>>();
     	
     	for(String result:queryResults) {    	
-	    	//System.out.println("Processing queryResult: " + result);
     		String[] a = result.split("__");
 			String streamID = a[0];
 			String localfilename = a[1];
 			String[] b = localfilename.split("/");
 			String filename = b[b.length-1];
 			
-			String folder = a[2];
-			/*
 			String timeStamp = a[2];
 			String timeTokens[] = timeStamp.split("T");
 			String folder = timeTokens[0] + "-" + timeTokens[1].substring(0,2) + "/";
-			*/
+			
 			if(!fileMap.keySet().contains(folder)) {
 				fileMap.put(folder, new HashSet<String>());
 			}
