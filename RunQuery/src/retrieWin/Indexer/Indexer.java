@@ -125,10 +125,36 @@ public class Indexer {
 	} 
 	
 	public static void createUnfilteredIndex(List<String> downloadHours, String downloadDirectory, String saveFilesLocation, String indexLocation) {
+		
 		for(String downloadHour: downloadHours) {
-			ThriftReader.GetFolder(downloadHour, downloadDirectory, saveFilesLocation);
+			if(!downloadHour.endsWith("/"))
+				downloadHour += "/";
+			System.out.println(downloadHour);
+			String folderName = downloadHour.replace("-", "/");
+			String downloadFolder = downloadDirectory + folderName, saveFolder = saveFilesLocation + folderName;
+			File baseDir = new File(downloadFolder);
+			if (!baseDir.exists())
+				baseDir.mkdirs();
+			baseDir = new File(saveFolder);
+			if (!baseDir.exists())
+				baseDir.mkdirs();
+
+			ThriftReader.GetFolder(downloadHour, downloadFolder, saveFolder);
+			
+			try {
+				Process p;
+				System.out.println("Removing folder " + downloadFolder);
+				String deleteCommand = "sudo rm -rf " + downloadFolder;
+				System.out.println(deleteCommand);
+				p = Runtime.getRuntime().exec(deleteCommand);
+				p.waitFor();
+			}
+			catch (Exception exc)
+			{
+				System.out.println("Failed to delete temporary files");
+			}
 		}
-		IndriIndexBuilder.buildIndex(indexLocation, saveFilesLocation);
+		//IndriIndexBuilder.buildIndex(indexLocation, saveFilesLocation);
 	}
 
 	public static void createIndexHelper(String folder, String tmpdirLocation, String filteredIndexLocation, String serializedFileLocation,
