@@ -26,6 +26,7 @@ public class SSF implements Runnable{
 	@Option(gloss="working Directory") public String workingDirectory;
 	@Option(gloss="download Hour") public String downloadHour;
 	@Option(gloss="index Location") public String indexLocation;
+	@Option(gloss="index Location") public String downloadDirectory;
 	List<Slot> slots;
 	List<Entity> entities;
 	
@@ -167,8 +168,8 @@ public class SSF implements Runnable{
 		if (!baseDir.exists())
 			baseDir.mkdirs();
 
-		//Indexer.createIndex(timestamp,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities);
-		Indexer.createUnfilteredIndex(timestamp, baseFolder, tempDirectory);
+		Indexer.createIndex(timestamp,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities);
+		//Indexer.createUnfilteredIndex(timestamp, baseFolder, tempDirectory);
 		/*
 		for(Entity ent: entities) {
 			Map<TrecTextDocument,Double> docs= ent.getRelevantDocuments(indexLocation,trecTextSerializedFile);
@@ -192,14 +193,15 @@ public class SSF implements Runnable{
 	}
 	
 	void buildLargeIndex() {
+		List<String> downloadHours = new ArrayList<String>();
 		for(int i = 1; i <= 20; i++) {
 			for(int j=0; j < 24; j++) {
 				String downloadHour = String.format("2012-04-%02d-%02d", i, j);
-				runSSF(downloadHour);
+				downloadHours.add(downloadHour);
 			}
 		}
 		
-		IndriIndexBuilder.buildIndex(indexLocation, workingDirectory);
+		Indexer.createUnfilteredIndex(downloadHours, workingDirectory, downloadDirectory, indexLocation);
 	}
 	
 	public static void main(String[] args) {
