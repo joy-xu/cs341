@@ -26,7 +26,7 @@ public class SSF implements Runnable{
 	@Option(gloss="working Directory") public String workingDirectory;
 	@Option(gloss="download Hour") public String downloadHour;
 	@Option(gloss="index Location") public String indexLocation;
-	@Option(gloss="index Location") public String downloadDirectory;
+	@Option(gloss="index Location") public String saveAsDirectory;
 	List<Slot> slots;
 	List<Entity> entities;
 	
@@ -194,14 +194,14 @@ public class SSF implements Runnable{
 	
 	void buildLargeIndex() {
 		List<String> downloadHours = new ArrayList<String>();
-		for(int i = 1; i <= 20; i++) {
+		for(int i = 7; i <= 10; i++) {
 			for(int j=0; j < 24; j++) {
-				String downloadHour = String.format("2012-04-%02d-%02d", i, j);
+				String downloadHour = String.format("2011-10-%02d-%02d", i, j);
 				downloadHours.add(downloadHour);
 			}
 		}
 		
-		Indexer.createUnfilteredIndex(downloadHours, workingDirectory, downloadDirectory, indexLocation);
+		Indexer.createUnfilteredIndex(downloadHours, workingDirectory, saveAsDirectory, indexLocation);
 	}
 	
 	public static void main(String[] args) {
@@ -229,8 +229,14 @@ public class SSF implements Runnable{
 			LogInfo.logs("Terminating execution!");
 			return;
 		}
-		if(!workingDirectory.endsWith("/"))
+		if(workingDirectory!=null && !workingDirectory.endsWith("/"))
 			workingDirectory += "/";
+		
+		if(indexLocation!=null && !indexLocation.endsWith("/"))
+			indexLocation += "/";
+		
+		if(saveAsDirectory !=null && !saveAsDirectory.endsWith("/"))
+			saveAsDirectory += "/";
 		
 		LogInfo.begin_track("run()");
 		LogInfo.logs(String.format("Download hour     : %s", downloadHour));
