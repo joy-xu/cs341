@@ -24,8 +24,8 @@ public class ExecuteQuery {
 		}
 	}
 	
-	public List<String> queryIndex(String query, int resultsRequested) {
-		List<String> results = new ArrayList<String>();
+	public Set<String> queryIndex(String query, int resultsRequested) {
+		Set<String> results = new HashSet<String>();
 		try {
 			QueryRequest queryRequest = new QueryRequest();
 			queryRequest.query = query;
@@ -40,24 +40,23 @@ public class ExecuteQuery {
 		return results;
 	}
 	
-	public List<String> queryIndex(String query) {
+	public Set<String> queryIndex(String query) {
 		return queryIndex(query, Integer.MAX_VALUE);
 	}
 
 	public List<TrecTextDocument> executeQueryFromStoredFile(String query, int numResults, String filteredFileLocation)
 	{
-		List<String> queryResults = queryIndex(query, numResults);
+		Set<String> queryResults = queryIndex(query, numResults);
 		return TrecTextDocument.getFromStoredFile(queryResults,filteredFileLocation);
 	}
 	
 	public List<TrecTextDocument> executeQuery(String query, int numResults, String workingDirectory) {
-    	List<String> queryResults = queryIndex(query, numResults);
+    	Set<String> queryResults = queryIndex(query, numResults);
     	Map<String, Set<String>> fileMap = new HashMap<String, Set<String>>();
     	Map<String, Set<String>> streamIDMap = new HashMap<String, Set<String>>();
     	
     	for(String result:queryResults) {    	
-	    	
-    		String[] a = result.split("_");
+    		String[] a = result.split("__");
 			String streamID = a[0];
 			String localfilename = a[1];
 			String[] b = localfilename.split("/");

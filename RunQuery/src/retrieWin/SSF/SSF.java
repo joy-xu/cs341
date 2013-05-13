@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 
 import retrieWin.Indexer.Indexer;
+import retrieWin.Indexer.IndriIndexBuilder;
 import retrieWin.Indexer.TrecTextDocument;
 import retrieWin.SSF.Constants.EntityType;
 import retrieWin.SSF.Constants.NERType;
@@ -24,7 +25,7 @@ import sun.security.jgss.LoginConfigImpl;
 public class SSF implements Runnable{
 	@Option(gloss="working Directory") public String workingDirectory;
 	@Option(gloss="download Hour") public String downloadHour;
-	
+	@Option(gloss="index Location") public String indexLocation;
 	List<Slot> slots;
 	List<Entity> entities;
 	
@@ -166,7 +167,8 @@ public class SSF implements Runnable{
 		if (!baseDir.exists())
 			baseDir.mkdirs();
 
-		Indexer.createIndex(timestamp,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities); 
+		//Indexer.createIndex(timestamp,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities);
+		Indexer.createUnfilteredIndex(timestamp, baseFolder, tempDirectory);
 		/*
 		for(Entity ent: entities) {
 			Map<TrecTextDocument,Double> docs= ent.getRelevantDocuments(indexLocation,trecTextSerializedFile);
@@ -187,6 +189,17 @@ public class SSF implements Runnable{
 		System.out.println(patterns);
 		System.out.println(utils.findSlotValue(sent, "Bill Gates", patterns.get(0), null));*/
 		
+	}
+	
+	void buildLargeIndex() {
+		for(int i = 1; i <= 20; i++) {
+			for(int j=0; j < 24; j++) {
+				String downloadHour = String.format("2012-04-%02d-%02d", i, j);
+				runSSF(downloadHour);
+			}
+		}
+		
+		IndriIndexBuilder.buildIndex(indexLocation, workingDirectory);
 	}
 	
 	public static void main(String[] args) {
@@ -221,7 +234,8 @@ public class SSF implements Runnable{
 		LogInfo.logs(String.format("Download hour     : %s", downloadHour));
 		LogInfo.logs(String.format("Working directory : %s", workingDirectory));
 		
-		runSSF(downloadHour);
+		//runSSF(downloadHour);
+		buildLargeIndex();
 		
 		LogInfo.end_track();
 	}

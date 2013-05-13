@@ -3,10 +3,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 
-import java.util.HashSet;
-import java.util.Set;
-
-
 import java.util.List;
 
 import java.util.concurrent.ExecutorService;
@@ -136,10 +132,10 @@ public class Indexer {
 		if (!doesIndexExist)
 		{
 			Indexer.createUnfilteredIndexHelper(timestamp, tmpdirLocation); 
-			writeIndexToS3fs(baseFolder, tmpdirLocation + "index/", null);
+			//writeIndexToS3fs(baseFolder, tmpdirLocation + "index/", null);
 		}	
-		else
-			readIndexFromS3fs(baseFolder);
+		//else
+		//	readIndexFromS3fs(baseFolder);
 	}
 	
 	private static void createUnfilteredIndexHelper(String folder, String tmpdirLocation) {
@@ -163,8 +159,6 @@ public class Indexer {
 		filteredFilesDir.mkdirs();
 		
 		ThriftReader.GetFolder(folder, filesLocation, folderToIndex);
-		
-		IndriIndexBuilder.buildIndex(indexFolder, folderToIndex);
 	}
 
 	public static void createIndexHelper(String folder, String tmpdirLocation, String filteredIndexLocation, String serializedFileLocation,
@@ -196,12 +190,12 @@ public class Indexer {
 		//--------------------------------------------------------------
 		ExecuteQuery queryExecutor = new ExecuteQuery(indexFolder);
 		
-		ExecutorService e = Executors.newFixedThreadPool(16);
-		Set<TrecTextDocument> allResults = new HashSet<TrecTextDocument>();
+		ExecutorService e = Executors.newFixedThreadPool(4);
+		//Set<TrecTextDocument> allResults = new HashSet<TrecTextDocument>();
 		
 		for (Entity entity:allEntities)
 		{
-			e.execute(new parallelQuerier(entity,queryExecutor,filesLocation,allResults));
+			e.execute(new parallelQuerier(entity,queryExecutor,filesLocation,filteredFilesLocation, serializedFileLocation));
 		}
 		e.shutdown();
 		while(true)
@@ -216,9 +210,9 @@ public class Indexer {
 			}
 		}
 		
-		ThriftReader.WriteTrecTextDocumentToFile(allResults, "filtered", filteredFilesLocation);
+		//ThriftReader.WriteTrecTextDocumentToFile(allResults, "filtered", filteredFilesLocation);
 		IndriIndexBuilder.buildIndex(filteredIndexLocation, filteredFilesLocation);
-		TrecTextDocument.serializeFile(allResults,serializedFileLocation);
+		//TrecTextDocument.serializeFile(allResults,serializedFileLocation);
 		
 		try{
 		Process p;
@@ -234,21 +228,31 @@ public class Indexer {
 	}
 	
 	public static class parallelQuerier implements Runnable{
-		Set<TrecTextDocument> output;
+		
 		Entity entity;
 		ExecuteQuery queryExecutor;
 		String filesLocation;
-		public parallelQuerier(Entity ent, ExecuteQuery eq, String loc,Set<TrecTextDocument> in)
+		String filteredFilesLocation;
+		String serializedFileLocation;
+		public parallelQuerier(Entity ent, ExecuteQuery eq, String loc,String filteredLoc, String serializedFileLoc)
 		{
-			output = in;
 			entity = ent;
 			queryExecutor = eq;
 			filesLocation = loc;
+			filteredFilesLocation = filteredLoc;
+			serializedFileLocation = serializedFileLoc;
 		}
-		
+		/*
 		private synchronized void addToList(List<TrecTextDocument> results)
 		{
 			output.addAll(results);
+		}
+		*/
+		private synchronized void writeResultsToFile(List<TrecTextDocument> results)
+		{
+			
+			ThriftReader.WriteTrecTextDocumentToFile(results, "filtered", filteredFilesLocation);
+			TrecTextDocument.serializeFile(results, serializedFileLocation, true);
 		}
 		
 		public void run()
@@ -257,7 +261,8 @@ public class Indexer {
 			//System.out.println("Querying for: " + query);
 			List<TrecTextDocument> queryResults = queryExecutor.executeQuery(query, Integer.MAX_VALUE, filesLocation);
 			System.out.println("Query Results for: " + query + " : " + queryResults.size());
-			addToList(queryResults);
+			writeResultsToFile(queryResults);
+			//addToList(queryResults);
 		}
 	}
 }

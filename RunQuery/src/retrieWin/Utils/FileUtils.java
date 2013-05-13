@@ -22,6 +22,28 @@ public class FileUtils {
 		    	
 		    }
 	  }
+	 
+	 public static void writeFile(Object data, String fileName, Boolean append) {
+		  // Write to disk with FileOutputStream
+		    try{
+		    FileOutputStream f_out;
+		    if (append)
+		    {
+		    	f_out = new FileOutputStream(fileName,append);
+		    }
+		    else
+		    {
+		    	f_out = new FileOutputStream(fileName);
+		    }
+		    // Write object with ObjectOutputStream
+		    ObjectOutputStream obj_out = new ObjectOutputStream (f_out);
+
+		    // Write object out to disk
+		    obj_out.writeObject ( data);
+		    }catch (Exception ex) {
+		    	
+		    }
+	  }
 	  
 	  public static Object readFile(String fileName) {
 		// Read from disk using FileInputStream
