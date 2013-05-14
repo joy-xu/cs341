@@ -194,9 +194,9 @@ public class SSF implements Runnable{
 	
 	void buildLargeIndex() {
 		List<String> downloadHours = new ArrayList<String>();
-		for(int i = 7; i <= 10; i++) {
+		for(int i = 1; i <= 20; i++) {
 			for(int j=0; j < 24; j++) {
-				String downloadHour = String.format("2011-10-%02d-%02d", i, j);
+				String downloadHour = String.format("2012-04-%02d-%02d", i, j);
 				downloadHours.add(downloadHour);
 			}
 		}

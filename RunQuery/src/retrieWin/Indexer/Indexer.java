@@ -143,9 +143,7 @@ public class Indexer {
 			
 			try {
 				Process p;
-				System.out.println("Removing folder " + downloadFolder);
 				String deleteCommand = "sudo rm -rf " + downloadFolder;
-				System.out.println(deleteCommand);
 				p = Runtime.getRuntime().exec(deleteCommand);
 				p.waitFor();
 			}
@@ -154,7 +152,7 @@ public class Indexer {
 				System.out.println("Failed to delete temporary files");
 			}
 		}
-		//IndriIndexBuilder.buildIndex(indexLocation, saveFilesLocation);
+		IndriIndexBuilder.buildIndex(indexLocation, saveFilesLocation);
 	}
 
 	public static void createIndexHelper(String folder, String tmpdirLocation, String filteredIndexLocation, String serializedFileLocation,

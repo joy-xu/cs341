@@ -169,7 +169,6 @@ public class ThriftReader {
 			String line;
 			while ((line = input.readLine()) != null) 
 			{
-				System.out.println(line);
 			    String[] components = line.split("\\t");
 			    String nameOnly = components[components.length-1];
 			    String[] pathComponents = nameOnly.split("/");
