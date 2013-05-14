@@ -169,7 +169,6 @@ public class ThriftReader {
 			String line;
 			while ((line = input.readLine()) != null) 
 			{
-				System.out.println(line);
 			    String[] components = line.split("\\t");
 			    String nameOnly = components[components.length-1];
 			    String[] pathComponents = nameOnly.split("/");
@@ -178,7 +177,7 @@ public class ThriftReader {
 			    	filenames.add(relName);
 			}
 			
-			ExecutorService e = Executors.newFixedThreadPool(4);
+			ExecutorService e = Executors.newFixedThreadPool(16);
 		
 			for (String file:filenames)
 			{
