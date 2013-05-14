@@ -138,7 +138,7 @@ public class Indexer {
 			baseDir = new File(saveFolder);
 			if (!baseDir.exists())
 				baseDir.mkdirs();
-
+			System.out.println(downloadHour);
 			ThriftReader.GetFolder(downloadHour, downloadFolder, saveFolder);
 			
 			try {
@@ -186,7 +186,7 @@ public class Indexer {
 		//--------------------------------------------------------------
 		ExecuteQuery queryExecutor = new ExecuteQuery(indexFolder);
 		
-		ExecutorService e = Executors.newFixedThreadPool(4);
+		ExecutorService e = Executors.newFixedThreadPool(1);
 		Set<TrecTextDocument> allResults = new HashSet<TrecTextDocument>();
 		
 		for (Entity entity:allEntities)

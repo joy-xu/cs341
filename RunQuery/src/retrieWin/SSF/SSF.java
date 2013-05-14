@@ -242,8 +242,8 @@ public class SSF implements Runnable{
 		LogInfo.logs(String.format("Download hour     : %s", downloadHour));
 		LogInfo.logs(String.format("Working directory : %s", workingDirectory));
 		
-		//runSSF(downloadHour);
-		buildLargeIndex();
+		runSSF(downloadHour);
+		//buildLargeIndex();
 		
 		LogInfo.end_track();
 	}
