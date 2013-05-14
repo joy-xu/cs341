@@ -57,6 +57,8 @@ public class NLPUtils {
 		List<SlotPattern> patterns = new ArrayList<SlotPattern>();
 		
 		try {
+			if(sentence.length() > 400)
+				return patterns;
 			Annotation document = new Annotation(sentence);
 			processor.annotate(document);
 
@@ -65,6 +67,10 @@ public class NLPUtils {
 			
 			int sentNum = 0;
 			for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
+				String sentenceFromMap = sentenceMap.toString().trim();
+				//System.out.println(sentenceFromMap.length() + "##" + sentenceFromMap);
+				if(sentenceFromMap.startsWith("Tags :") || sentenceFromMap.length() > 300)
+					continue;
 				SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
 				patterns.addAll(findRelation(graph, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), findWordsInSemanticGraph(sentenceMap, entity2, corefsEntity2.get(sentNum))));
 				sentNum++;
@@ -126,8 +132,15 @@ public class NLPUtils {
 		
 		for(IndexedWord w1: words1) {
 			for(IndexedWord w2: words2) {
+				if(w1 == w2)
+					continue;
 				List<IndexedWord> current = graph.getShortestUndirectedPathNodes(w1, w2);
+
 				current.remove(w1); current.remove(w2);
+				
+				//Check if shortest path is through one of the entities, don't take it
+				if(current.removeAll(words1) || current.removeAll(words2))
+					continue;
 				
 				if(shortestPath.size() == 0 || shortestPath.size() > current.size()) {
 					word1 = w1;
@@ -136,6 +149,8 @@ public class NLPUtils {
 				}
 			}
 		}
+
+		
 		if(shortestPath.isEmpty())
 			return patterns;
 		
@@ -178,7 +193,6 @@ public class NLPUtils {
 		frontier.add(word);
 		while(!frontier.isEmpty()) {
 			current = frontier.remove(0);
-			//System.out.println(current);
 			graph.getChildrenWithReln(current, GrammaticalRelation.valueOf("conj_and"));
 			for(IndexedWord w: graph.getChildrenWithReln(current, GrammaticalRelation.valueOf("conj_and")))
 				if(ans.contains(w))
