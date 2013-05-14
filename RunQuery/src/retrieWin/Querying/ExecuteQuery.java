@@ -62,9 +62,7 @@ public class ExecuteQuery {
 			String[] b = localfilename.split("/");
 			String filename = b[b.length-1];
 			
-			String timeStamp = a[2];
-			String timeTokens[] = timeStamp.split("T");
-			String folder = timeTokens[0] + "-" + timeTokens[1].substring(0,2) + "/";
+			String folder = a[2];
 			
 			if(!fileMap.keySet().contains(folder)) {
 				fileMap.put(folder, new HashSet<String>());
