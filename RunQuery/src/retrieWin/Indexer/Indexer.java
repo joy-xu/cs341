@@ -50,7 +50,7 @@ public class Indexer {
 
 		String s3directory = Constants.s3directory+baseFolder;
 		String s3Index = s3directory + "index/";
-		String s3getIndex = String.format("s3cmd get -r %s* %s",s3Index,indexLocation);
+		String s3getIndex = String.format("s3cmd get -r %s %s",s3Index,indexLocation);
 		System.out.println(s3getIndex);
 		Process p;
 		p = Runtime.getRuntime().exec(s3getIndex);
@@ -114,6 +114,9 @@ public class Indexer {
 	public static void createIndex(String timestamp,String baseFolder, String tmpdirLocation, String filteredIndexLocation, String serializedFileLocation,
 			List<Entity> allEntities)
 	{
+		
+
+		
 		Boolean doesIndexExist = VerifyIndexExistence(timestamp);
 		if (!doesIndexExist)
 		{
@@ -121,7 +124,13 @@ public class Indexer {
 			writeIndexToS3fs(baseFolder,filteredIndexLocation,serializedFileLocation);
 		}	
 		else
+		{
+			//String indexFolder = baseFolder + "index/";
+			System.out.println(filteredIndexLocation);
+			File indexDir = new File(filteredIndexLocation);
+			indexDir.mkdirs();
 			readIndexFromS3fs(baseFolder,filteredIndexLocation,serializedFileLocation);
+		}
 	} 
 	
 	public static void createUnfilteredIndex(List<String> downloadHours, String downloadDirectory, String saveFilesLocation, String indexLocation) {
