@@ -63,7 +63,7 @@ public class Entity  implements Serializable {
 		return results;
 	}
 
-	EntityType getEntityType() {
+	public EntityType getEntityType() {
 		return entityType;
 	}
 
@@ -71,15 +71,15 @@ public class Entity  implements Serializable {
 		this.entityType = entityType;
 	}
 
-	String getTargetID() {
+	public String getTargetID() {
 		return targetID;
 	}
 
 	void setTargetID(String targetID) {
-		this.targetID = targetID;
+		this.targetID = targetID;    
 	}
 
-	String getGroup() {
+	public String getGroup() {
 		return group;
 	}
 
@@ -93,9 +93,9 @@ public class Entity  implements Serializable {
 
 	void setExpansions(List<String> expansions) {
 		this.expansions = expansions;
-	}
+	} 
 
-	List<String> getDisambiguations() {
+	public List<String> getDisambiguations() {
 		return disambiguations;
 	}
 
@@ -103,7 +103,7 @@ public class Entity  implements Serializable {
 		this.disambiguations = disambiguations;
 	}
 
-	String getName() {
+	public String getName() {
 		return name;
 	}
 
