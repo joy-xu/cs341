@@ -95,7 +95,81 @@ public class ThriftReader {
 		return output;
 	}
 	
+	public static List<StreamItem> GetFilteredStreamItems(String folder, String file, String workingDirectory, Set<String> streamIDs)
+	{
+		List<StreamItem> output = new ArrayList<StreamItem>();
+		
+		String downloadedFile = Downloader.downloadfile(folder, file, workingDirectory);
+		
+		if (downloadedFile == null) return new ArrayList<StreamItem>();
+		
+		
+		try {
+
+		TBinaryProtocol protocol = openBinaryProtocol(downloadedFile);
+        Set<String> added = new HashSet<String>();
+       
+        while (true) 
+        {
+            final StreamItem item = new StreamItem();
+            if (added.equals(streamIDs))
+             	break;
+            
+            item.read(protocol);
+            
+            if (streamIDs.contains(item.stream_id))
+            {
+            	added.add(item.stream_id);
+            	if (item.body == null || item.body.clean_visible == null || 
+            			item.body.sentences == null || !item.body.sentences.containsKey("lingpipe"))
+            		continue;
+            	output.add(item);
+            }
+        }
+		} catch (Exception e)
+		{e.printStackTrace();}
+		
+		return output;
+	}
 	
+	public static Set<StreamItem> GetAllStreamItems(String downloadedFile)
+	{
+		
+		//String downloadedFile = Downloader.downloadfile(folder, file, workingDirectory);
+		
+		Set<StreamItem> output = new HashSet<StreamItem>();
+		try 
+		{
+			TBinaryProtocol protocol = openBinaryProtocol(downloadedFile);
+			while (true) 
+	        {
+	            final StreamItem item = new StreamItem(); 
+	            try {
+	            item.read(protocol);  
+	            }
+	            catch (Exception transportException)
+	            {
+	            	break;
+	            }
+            	if (item.body == null || item.body.clean_visible == null || 
+            			item.body.sentences == null || !item.body.sentences.containsKey("lingpipe"))
+            	{
+            		//System.out.println("null");
+            		continue;
+            	}
+	            	
+	            output.add(item);
+	            
+	        }
+		} 
+		catch (Exception e)
+			{
+				System.out.println("Thrift Error");
+				e.printStackTrace();
+			}
+		
+		return output;
+	}
 	
 	public static Set<TrecTextDocument> GetAllFiles(String folder, String file, String workingDirectory)
 	{
