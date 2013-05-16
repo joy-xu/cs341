@@ -53,6 +53,54 @@ public class NLPUtils {
 		processor = new StanfordCoreNLP(props, false);
 	}
 	
+	public List<SlotPattern> findSlotPatternGivenEntityAndRelation(String sentence, String entity, List<String> edgeTypes)
+	{
+		List<SlotPattern> patterns = new ArrayList<SlotPattern>();
+		try {
+			if(sentence.length() > 400)
+				return patterns;
+			Annotation document = new Annotation(sentence);
+			processor.annotate(document);
+
+			Map<Integer, Set<Integer>> corefsEntity = getCorefs(document, entity);
+			
+			
+			int sentNum = 0;
+			for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
+				String sentenceFromMap = sentenceMap.toString().trim();
+				System.out.println("Processing sentence: " + sentenceFromMap);
+				//System.out.println(sentenceFromMap.length() + "##" + sentenceFromMap);
+				if(sentenceFromMap.startsWith("Tags :") || sentenceFromMap.length() > 300)
+					continue;
+				SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
+				
+				List<IndexedWord> words = findWordsInSemanticGraph(sentenceMap,entity,corefsEntity.get(sentNum));
+				
+				if (!words.isEmpty())
+				{	
+					System.out.println("Entity words: ");
+					for (IndexedWord word:words)
+						System.out.println(word.originalText());
+					List<IndexedWord> placeTimeWords = new ArrayList<IndexedWord>();
+					System.out.println("placeTimeWords: ");
+					for (IndexedWord pt : placeTimeWords)
+						System.out.println(pt.originalText());
+					
+					for (String edgeType:edgeTypes)
+						placeTimeWords.addAll(findWordsInSemanticGraphByEdgeType(sentenceMap,edgeType));
+					if (!words.isEmpty() && !placeTimeWords.isEmpty())
+						patterns.addAll(findRelation(graph, words, placeTimeWords));
+				}
+				sentNum++;
+			}
+		}
+		catch(Exception ex) {
+			//System.out.println(ex.getMessage());
+			ex.printStackTrace();
+		}
+		
+		return patterns;
+	}
 	public List<SlotPattern> findSlotPattern(String sentence, String entity1, String entity2) {
 		List<SlotPattern> patterns = new ArrayList<SlotPattern>();
 		
@@ -107,8 +155,20 @@ public class NLPUtils {
 				words.add(word);
 			}
 		}
-		System.out.println(entity + "," + words);
+		//System.out.println(entity + "," + words);
 		return words;
+	}
+	
+	public List<IndexedWord> findWordsInSemanticGraphByEdgeType(CoreMap sentenceMap, String edgeType) {
+		SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
+		Set<SemanticGraphEdge> allEdges = graph.getEdgeSet();
+		List<IndexedWord> candidates = new ArrayList<IndexedWord>();
+		for (SemanticGraphEdge edge:allEdges)
+		{
+			if (edge.toString().equals(edgeType))
+				candidates.add(edge.getDependent());
+		}
+		return candidates;
 	}
 	
 	//TODO - Improve if needed!

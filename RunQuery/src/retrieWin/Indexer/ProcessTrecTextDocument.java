@@ -1,10 +1,11 @@
 package retrieWin.Indexer;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class ProcessTrecTextDocument {
-	public static List<String> extractRelevantSentences(List<TrecTextDocument> documents, String entity1, String entity2) {
+	public static List<String> extractRelevantSentences(Collection<TrecTextDocument> documents, String entity1, String entity2) {
 		List<String> returnString = new ArrayList<String>();
 		for (TrecTextDocument t:documents)
 		{
@@ -68,7 +69,7 @@ public class ProcessTrecTextDocument {
 		return returnString;
 	}
 	
-	public static List<String> extractRelevantSentences(List<TrecTextDocument> documents, String entity1) 
+	public static List<String> extractRelevantSentences(Collection<TrecTextDocument> documents, String entity1) 
 	{
 		List<String> returnString = new ArrayList<String>();
 		for (TrecTextDocument t:documents)
