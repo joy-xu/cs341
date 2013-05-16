@@ -12,6 +12,8 @@ public class Constants  implements Serializable {
 	
 	public final static String s3directory = "s3://hourlyindex/";
 	
+	public final static String s3ConceptsDirectory = "s3://conceptsData/";
+	
 	public enum EntityType {
 		PER,
 		ORG,
@@ -24,7 +26,12 @@ public class Constants  implements Serializable {
 		ORGANIZATION,
 		DATE,
 		TIME,
-		NONE
+		NONE,
+		O,
+		NUMBER,
+		MISC,
+		DURATION,
+		ORDINAL
 	}
 	
 	public enum SlotName{
