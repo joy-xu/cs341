@@ -51,7 +51,8 @@ public class Aju implements Runnable{
 	
 	public void runBootStrapforEntityAndNER() {
 		ExecuteQuery eq = new ExecuteQuery(indexLocation);
-		NLPUtils.extractPERRelation("The time has come to reassess to impact of former Presiding Justices Aharon Barak and Dorit Beinisch on Human Rights, the justice system, and the rule of law in the State of Israel.");
+		NLPUtils utils = new NLPUtils();
+		utils.extractPERRelation("The time has come to reassess to impact of former Presiding Justices Aharon Barak and Dorit Beinisch on Human Rights, the justice system, and the rule of law in the State of Israel.");
 		/*for(Entity e:entities) {
 			if(e.getEntityType()==EntityType.PER) {
 				String query = QueryBuilder.buildOrQuery(e.getExpansions());
