@@ -550,4 +550,16 @@ public class NLPUtils {
     	}
     	return b.toString().trim();
     }
+
+	public void extractPERRelation(String sentence) {
+		// TODO Auto-generated method stub
+		System.out.println(sentence);
+		Annotation document = new Annotation(sentence);
+		processor.annotate(document);
+		
+		//for(CoreMap map:document.get(SentencesAnnotation.class)) {
+		//	lst.add(map.get(SemanticGraphCoreAnnotations.BasicDependenciesAnnotation.class));
+		//}
+		//getPersons(sentence)
+	}
 }

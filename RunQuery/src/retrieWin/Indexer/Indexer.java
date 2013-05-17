@@ -75,7 +75,7 @@ public class Indexer {
 		try{
 		Process p;
 		String s3cmdls = "s3cmd ls " + folder;
-		System.out.println(s3cmdls);
+		//System.out.println(s3cmdls);
 		p = Runtime.getRuntime().exec(s3cmdls);
 		BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
 		String line;
@@ -85,7 +85,7 @@ public class Indexer {
 		    String nameOnly = components[components.length-1];
 		    String[] pathComponents = nameOnly.split("/");
 		    String relName = pathComponents[pathComponents.length-1];
-		    System.out.println(relName);
+		    //System.out.println(relName);
 		    if (relName.equals(file))
 		    	return true;
 		}
@@ -113,10 +113,7 @@ public class Indexer {
 	
 	public static void createIndex(String timestamp,String baseFolder, String tmpdirLocation, String filteredIndexLocation, String serializedFileLocation,
 			List<Entity> allEntities)
-	{
-		
-
-		
+	{	
 		Boolean doesIndexExist = VerifyIndexExistence(timestamp);
 		if (!doesIndexExist)
 		{
@@ -126,10 +123,12 @@ public class Indexer {
 		else
 		{
 			//String indexFolder = baseFolder + "index/";
-			System.out.println(filteredIndexLocation);
+			//System.out.println(filteredIndexLocation);
 			File indexDir = new File(filteredIndexLocation);
-			indexDir.mkdirs();
-			readIndexFromS3fs(baseFolder,filteredIndexLocation,serializedFileLocation);
+			if(!indexDir.exists()) {
+				indexDir.mkdirs();
+				readIndexFromS3fs(baseFolder,filteredIndexLocation,serializedFileLocation);
+			}
 		}
 	} 
 	
