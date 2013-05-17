@@ -59,19 +59,15 @@ public class NLPUtils {
 	public String deAccent(String str) {
 	    String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD); 
 	    Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-	    return pattern.matcher(nfdNormalizedString).replaceAll("");
+	    String s = pattern.matcher(nfdNormalizedString).replaceAll("");
+	    return s.replaceAll("[^\\0x00-\\0x7f]", "");
 	}
 	
 	public List<SlotPattern> findSlotPatternGivenEntityAndRelation(String sentence, String entity, List<String> edgeTypes)
 	{
 		System.out.println("Accented : " + sentence);
 		String deAccented = deAccent(sentence);
-		try {
-			deAccented = new String(deAccent(sentence).getBytes(),"UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		
 		System.out.println("Processing sentence: " + deAccented);
 		
 		List<SlotPattern> patterns = new ArrayList<SlotPattern>();
