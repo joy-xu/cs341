@@ -50,22 +50,30 @@ public class Aju implements Runnable{
 	}
 	
 	public void runBootStrapforEntityAndNER() {
-		for(Entity e:entities) {
-			ExecuteQuery eq = new ExecuteQuery(indexLocation);
-			String query = QueryBuilder.buildOrQuery(e.getExpansions());
-            //System.out.println("Querying for: " + query); =
-			List<String> folders = new ArrayList<String>();
-			List<String> queries = new ArrayList<String>();
-			folders.add("2012-05-05-05");
-			queries.add(query);
-			Set<TrecTextDocument> trecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities);
-			break;
-			//for(String expansion:e.getExpansions()) {
-				
-			//	ProcessTrecTextDocument.extractRelevantSentences(trecDocs, expansion);
-			//}
+		ExecuteQuery eq = new ExecuteQuery(indexLocation);
+		NLPUtils.extractPERRelation("The time has come to reassess to impact of former Presiding Justices Aharon Barak and Dorit Beinisch on Human Rights, the justice system, and the rule of law in the State of Israel.");
+		/*for(Entity e:entities) {
+			if(e.getEntityType()==EntityType.PER) {
+				String query = QueryBuilder.buildOrQuery(e.getExpansions());
+	            //System.out.println("Querying for: " + query); =
+				List<String> folders = new ArrayList<String>();
+				List<String> queries = new ArrayList<String>();
+				folders.add("2012-05-05-05");
+				queries.add(query);
+				Set<TrecTextDocument> trecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities);
+				if(trecDocs.size() > 0) {
+					for(String expansion:e.getExpansions()) {
+						List<TrecTextDocument> list = new ArrayList<TrecTextDocument>();
+						list.addAll(trecDocs);
+						List<String> sents = ProcessTrecTextDocument.extractRelevantSentences(list, expansion);
+						for(String sent:sents) {
+							System.out.println(sent);
+						}
+					}
+				}
+			}
 		}
-		
+		*/
 		
 	}
 		
