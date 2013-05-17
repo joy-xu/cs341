@@ -56,7 +56,7 @@ public class ExecuteQuery {
     	Map<String, Set<String>> streamIDMap = new HashMap<String, Set<String>>();
     	
     	for(String result:queryResults) { 
-    		System.out.println(result);
+    		//System.out.println(result);
     		String[] a = result.split("__");
 			String streamID = a[0];
 			String localfilename = a[1];

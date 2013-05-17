@@ -190,9 +190,20 @@ public class Indexer {
 		IndriIndexBuilder.buildIndex(indexFolder, folderToIndex);
 		
 		//--------------------------------------------------------------
+		/*
+		ExecuteQuery queryExecutor = new ExecuteQuery(indexFolder);
+		Set<TrecTextDocument> allResults = new HashSet<TrecTextDocument>();
+		for (Entity entity:allEntities)
+		{
+			String query = QueryBuilder.buildOrQuery(entity.getExpansions());
+			//System.out.println("Querying for: " + query);
+			allResults.addAll(queryExecutor.executeQuery(query, Integer.MAX_VALUE, filesLocation));	
+		}
+		*/
+		
 		ExecuteQuery queryExecutor = new ExecuteQuery(indexFolder);
 		
-		ExecutorService e = Executors.newFixedThreadPool(1);
+		ExecutorService e = Executors.newFixedThreadPool(16);
 		Set<TrecTextDocument> allResults = new HashSet<TrecTextDocument>();
 		
 		for (Entity entity:allEntities)
@@ -264,9 +275,10 @@ public class Indexer {
 			String query = QueryBuilder.buildOrQuery(entity.getExpansions());
 			//System.out.println("Querying for: " + query);
 			List<TrecTextDocument> queryResults = queryExecutor.executeQuery(query, Integer.MAX_VALUE, filesLocation);
-			System.out.println("Query Results for: " + query + " : " + queryResults.size());
+			//System.out.println("Query Results for: " + query + " : " + queryResults.size());
 			//writeResultsToFile(queryResults);
-			addToList(queryResults);
+			if (!queryResults.isEmpty())
+				addToList(queryResults);
 		}
 	}
 }
