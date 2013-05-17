@@ -68,7 +68,7 @@ public class Aju implements Runnable{
 						list.addAll(trecDocs);
 						List<String> sents = ProcessTrecTextDocument.extractRelevantSentences(list, expansion);
 						for(String sent:sents) {
-							utils.extractPERRelation(sent);
+							utils.extractPERRelation(sent, expansion);
 						}
 					}
 				}

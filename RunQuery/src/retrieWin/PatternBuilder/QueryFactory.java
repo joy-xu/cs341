@@ -9,6 +9,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import fig.basic.LogInfo;
+
 import retrieWin.Indexer.Indexer;
 import retrieWin.Indexer.TrecTextDocument;
 
@@ -148,7 +150,7 @@ public class QueryFactory {
 		{
 			
 			List<TrecTextDocument> queryResults = queryExecutor.executeQueryFromStoredFile(query, Integer.MAX_VALUE, filteredFileLocation);
-			System.out.println("Query Results for: " + query + " : " + queryResults.size());
+			LogInfo.logs("Query Results for: " + query + " : " + queryResults.size());
 			addToList(queryResults);
 		}
 	}

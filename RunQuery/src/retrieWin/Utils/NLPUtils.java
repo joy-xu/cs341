@@ -11,6 +11,7 @@ import java.util.Set;
 
 import retrieWin.SSF.Constants.EdgeDirection;
 import retrieWin.SSF.Constants.NERType;
+import retrieWin.SSF.Entity;
 import retrieWin.SSF.SlotPattern;
 import retrieWin.SSF.SlotPattern.Rule;
 
@@ -44,6 +45,7 @@ import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations;
 import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.StringUtils;
+import fig.basic.LogInfo;
 
 public class NLPUtils {
 	AbstractSequenceClassifier<CoreLabel> classifier;
@@ -60,7 +62,7 @@ public class NLPUtils {
 	    String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD); 
 	    Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
 	    String s = pattern.matcher(nfdNormalizedString).replaceAll("");
-	    return s.replaceAll("[^\\0x00-\\0x7f]", "");
+	    return s.replaceAll("[^\\x00-\\x7f]", "");
 	}
 	
 	public List<SlotPattern> findSlotPatternGivenEntityAndRelation(String sentence, String entity, List<String> edgeTypes)
@@ -639,15 +641,27 @@ public class NLPUtils {
     	return b.toString().trim();
     }
 
-	public void extractPERRelation(String sentence) {
+	public void extractPERRelation(String sentence, String entity) {
 		// TODO Auto-generated method stub
-		System.out.println(sentence);
-		Annotation document = new Annotation(sentence);
-		processor.annotate(document);
-		
-		for(CoreMap map:document.get(SentencesAnnotation.class)) {
-			System.out.println(getPersons(sentence));	
+		//sentence = deAccent(sentence);
+		//System.out.println(sentence);
+		try {
+			sentence = sentence.replaceAll("[Ââ]+", "");
+			sentence = deAccent(sentence);
+			Annotation document = new Annotation(sentence);
+			processor.annotate(document);
+			
+			for(CoreMap map:document.get(SentencesAnnotation.class)) {
+				
+				Set<String> persons = getPersons(map);
+				if(persons.size() > 1 && persons.contains(entity)) {
+					LogInfo.logs(map);
+					LogInfo.logs(persons);	
+				}
+			}
 		}
-		
+		catch(Exception ex){
+			System.out.println(ex.getMessage());
+		}
 	}
 }
