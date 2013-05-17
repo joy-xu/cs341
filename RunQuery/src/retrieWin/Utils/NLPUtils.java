@@ -14,6 +14,9 @@ import retrieWin.SSF.Constants.NERType;
 import retrieWin.SSF.SlotPattern;
 import retrieWin.SSF.SlotPattern.Rule;
 
+import java.io.UnsupportedEncodingException;
+import java.text.Normalizer;
+import java.util.regex.Pattern;
 import edu.stanford.nlp.dcoref.CorefChain;
 import edu.stanford.nlp.dcoref.CorefChain.CorefMention;
 import edu.stanford.nlp.dcoref.CorefCoreAnnotations.CorefChainAnnotation;
@@ -53,13 +56,29 @@ public class NLPUtils {
 		processor = new StanfordCoreNLP(props, false);
 	}
 	
+	public String deAccent(String str) {
+	    String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD); 
+	    Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
+	    return pattern.matcher(nfdNormalizedString).replaceAll("");
+	}
+	
 	public List<SlotPattern> findSlotPatternGivenEntityAndRelation(String sentence, String entity, List<String> edgeTypes)
 	{
+		System.out.println("Accented : " + sentence);
+		String deAccented = deAccent(sentence);
+		try {
+			deAccented = new String(deAccent(sentence).getBytes(),"UTF-8");
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println("Processing sentence: " + deAccented);
+		
 		List<SlotPattern> patterns = new ArrayList<SlotPattern>();
 		try {
-			if(sentence.length() > 400)
+			if(deAccented.length() > 400)
 				return patterns;
-			Annotation document = new Annotation(sentence);
+			Annotation document = new Annotation(deAccented);
 			processor.annotate(document);
 
 			Map<Integer, Set<Integer>> corefsEntity = getCorefs(document, entity);
@@ -68,7 +87,7 @@ public class NLPUtils {
 			int sentNum = 0;
 			for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
 				String sentenceFromMap = sentenceMap.toString().trim();
-				System.out.println("Processing sentence: " + sentenceFromMap);
+				
 				//System.out.println(sentenceFromMap.length() + "##" + sentenceFromMap);
 				if(sentenceFromMap.startsWith("Tags :") || sentenceFromMap.length() > 300)
 					continue;
@@ -78,14 +97,17 @@ public class NLPUtils {
 				
 				if (!words.isEmpty())
 				{	
+					/*
 					System.out.println("Entity words: ");
 					for (IndexedWord word:words)
 						System.out.println(word.originalText());
+					*/
 					List<IndexedWord> placeTimeWords = new ArrayList<IndexedWord>();
+					/*
 					System.out.println("placeTimeWords: ");
 					for (IndexedWord pt : placeTimeWords)
 						System.out.println(pt.originalText());
-					
+					*/
 					for (String edgeType:edgeTypes)
 						placeTimeWords.addAll(findWordsInSemanticGraphByEdgeType(sentenceMap,edgeType));
 					if (!words.isEmpty() && !placeTimeWords.isEmpty())
