@@ -337,12 +337,23 @@ public class NLPUtils {
 	public Set<String> getPersons(String sentence) {
 		Annotation document = new Annotation(sentence);
 		processor.annotate(document);
+		return getPersons(document.get(SentencesAnnotation.class));
+	}
+	
+	public Set<String> getPersons(List<CoreMap> sentences) {
+		Set<String> persons = new HashSet<String>();
+
+		for(CoreMap sent: sentences) {
+	      persons.addAll(getPersons(sent));
+	    }
+	    
+	    return persons;
+	}
+	
+	public Set<String> getPersons(CoreMap sentence) {
 		Set<String> persons = new HashSet<String>();
 		String person = "";
-		List<CoreMap> sentences = document.get(SentencesAnnotation.class);
-
-	    for(CoreMap sent: sentences) {
-	      for (CoreLabel token: sent.get(TokensAnnotation.class)) {
+		for (CoreLabel token: sentence.get(TokensAnnotation.class)) {
 	        String word = token.get(TextAnnotation.class);
 	        String ner = token.get(NamedEntityTagAnnotation.class);  
 	        if(NERType.valueOf(ner).equals(NERType.PERSON)) 
@@ -352,10 +363,9 @@ public class NLPUtils {
 	        		person = "";
 	        }
 	      }
-	    }
-	    if(!person.isEmpty())
+        if(!person.isEmpty())
     		persons.add(person.trim());
-	    return persons;
+        return persons;
 	}
 	
 	public Map<String, String> createNERMap(CoreMap sentence) {
@@ -557,9 +567,9 @@ public class NLPUtils {
 		Annotation document = new Annotation(sentence);
 		processor.annotate(document);
 		
-		//for(CoreMap map:document.get(SentencesAnnotation.class)) {
-		//	lst.add(map.get(SemanticGraphCoreAnnotations.BasicDependenciesAnnotation.class));
-		//}
-		//getPersons(sentence)
+		for(CoreMap map:document.get(SentencesAnnotation.class)) {
+			System.out.println(getPersons(sentence));	
+		}
+		
 	}
 }
