@@ -103,9 +103,9 @@ public class TrecTextDocument implements Serializable, Comparable<TrecTextDocume
 		@SuppressWarnings("unchecked")
 		Map<String,TrecTextDocument> storedFiles = (Map<String,TrecTextDocument>)FileUtils.readFile(filteredFileName);
 		List<TrecTextDocument> output = new ArrayList<TrecTextDocument>();
-		Set<String> queryResultsSet = new HashSet<String>(queryResults);
+		//Set<String> queryResultsSet = new HashSet<String>(queryResults);
 		
-		for (String docNo:queryResultsSet)
+		for (String docNo:queryResults)
 		{
 			if (storedFiles.containsKey(docNo))
 				output.add(storedFiles.get(docNo));
@@ -114,6 +114,8 @@ public class TrecTextDocument implements Serializable, Comparable<TrecTextDocume
 		}
 		return output;
 	}
+	
+	
 	
 	public void writeToFile(String filename,String workingDirectory)
 	{
