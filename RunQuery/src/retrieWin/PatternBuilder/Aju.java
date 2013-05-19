@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -56,30 +57,73 @@ public class Aju implements Runnable{
 		//utils.extractPERRelation("The time has come to reassess to impact of former Presiding Justices Aharon Barak and Dorit Beinisch on Human Rights, the justice system, and the rule of law in the State of Israel.");
 		List<String> folders = new ArrayList<String>();
 		for(int i=0;i<24;i++)
-			folders.add(String.format("%04d-%02d-%02d-%02d", 2012,6,2,i));
+			folders.add(String.format("%04d-%02d-%02d-%02d", 2012,6,1,i));
+		
+		Map<Entity,String> entityToQueries = new HashMap<Entity,String>();
+		List<String> queries = new ArrayList<String>();
+		
+		for(Entity e:entities) {
+			if (e.getEntityType()!=EntityType.PER)
+				continue;
+			String query = QueryBuilder.buildOrQuery(e.getExpansions());
+			entityToQueries.put(e, query);
+			queries.add(query);
+		}
+			
+		Map<String,List<TrecTextDocument>> AllTrecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities);
 		
 		for(Entity e:entities) {
 			if(e.getEntityType()==EntityType.PER) {
 				String query = QueryBuilder.buildOrQuery(e.getExpansions());
-	            //System.out.println("Querying for: " + query); =
-				
-				List<String> queries = new ArrayList<String>();
-				
-				
-				queries.add(query);
-				List<String> documentTypes = new ArrayList<String>();
-				documentTypes.add("news");
-				Map<String,List<TrecTextDocument>> trecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities);
-				if(trecDocs.size() > 0) {
-					/*for(String expansion:e.getExpansions()) {
-						List<TrecTextDocument> list = new ArrayList<TrecTextDocument>();
-						list.addAll(trecDocs);
-						List<String> sents = ProcessTrecTextDocument.extractRelevantSentences(list, expansion);
-						for(String sent:sents) {
-							utils.extractPERRelation(sent, expansion);
+				if (!AllTrecDocs.containsKey(query))
+					continue;
+				List<TrecTextDocument> trecDocs = AllTrecDocs.get(query);
+				Set<String> uniqueSentences = new HashSet<String>();
+				Map<String, Set<String>> expansionToSentences = new HashMap<String,Set<String>>();
+				if (!trecDocs.isEmpty())
+				{
+					for(String expansion:e.getExpansions()) {
+						
+						expansionToSentences.put(expansion, new HashSet<String>());
+						List<String> sentences  = ProcessTrecTextDocument.extractRelevantSentences(trecDocs, expansion);
+						sentences  = ProcessTrecTextDocument.getCleanedSentences(sentences);
+						for (String sentence:sentences)
+						{
+							if (uniqueSentences.contains(sentence))
+								continue;
+							uniqueSentences.add(sentence);
+							Set<String> currentExpansionSet = expansionToSentences.get(expansion);
+							currentExpansionSet.add(sentence);
+							expansionToSentences.put(expansion,currentExpansionSet);
+							
 						}
 					}
-					*/
+					
+					for (String expansion:expansionToSentences.keySet())
+					{
+						//System.out.println("Expansion: " + expansion);
+						Set<String> currentExpansionSet = expansionToSentences.get(expansion);
+						for (String sentence:currentExpansionSet)
+						{
+							//System.out.println("Full sentence: " + sentence);
+							utils.extractPERRelation(sentence, expansion);
+							/*for (SlotPattern pattern:patterns.keySet())
+							{
+								patternWeights.incrementCount(pattern,patterns.get(pattern).size());
+								if (allPatterns.containsKey(pattern))
+								{
+									List<String> existing = allPatterns.get(pattern);
+									existing.addAll(patterns.get(pattern));
+									allPatterns.put(pattern,existing);
+								}
+								else
+								{
+									allPatterns.put(pattern, patterns.get(pattern));
+								}
+							}*/
+							
+						}
+					}
 				}
 			}
 		}
