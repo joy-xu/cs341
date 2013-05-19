@@ -62,10 +62,16 @@ public class ContactMeetPlaceTime implements Runnable{
 		IntCounter<SlotPattern> patternWeights = new IntCounter<SlotPattern>();
 		Map<SlotPattern,List<String>> allPatterns = new HashMap<SlotPattern,List<String>>();
 		relations.add("prep_at");
-		relations.add("prep_in");
+		//	relations.add("prep_in");
 		List<String> folders = new ArrayList<String>();
+		/*
+		for (int i = 0;i<24;i++)
+		{
+			String folderName = String.format("2012-07-25-%02d", i);
+			folders.add(folderName);
+		}
+		*/
 		folders.add("2012-07-25-00");
-		folders.add("2012-07-25-01");
 		Map<Entity,String> entityToQueries = new HashMap<Entity,String>();
 		List<String> queries = new ArrayList<String>();
 		
@@ -90,6 +96,7 @@ public class ContactMeetPlaceTime implements Runnable{
 			if (!AllTrecDocs.containsKey(query))
 				continue;
 			List<TrecTextDocument> trecDocs = AllTrecDocs.get(query);
+			
 			Set<String> uniqueSentences = new HashSet<String>();
 			Map<String, Set<String>> expansionToSentences = new HashMap<String,Set<String>>();
 			if (!trecDocs.isEmpty())
@@ -109,14 +116,14 @@ public class ContactMeetPlaceTime implements Runnable{
 						
 					}
 				}
-				
+				System.out.println("Query: " + query + " Size of results: " + uniqueSentences.size());
 				for (String expansion:expansionToSentences.keySet())
 				{
 					//System.out.println("Expansion: " + expansion);
 					Set<String> currentExpansionSet = expansionToSentences.get(expansion);
 					for (String sentence:currentExpansionSet)
 					{
-						//System.out.println("Full sentence: " + sentence);
+						
 						Map<SlotPattern,List<String>> patterns = nlp.findSlotPatternGivenEntityAndRelation(sentence, expansion, relations);
 						for (SlotPattern pattern:patterns.keySet())
 						{

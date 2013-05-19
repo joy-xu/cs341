@@ -229,6 +229,7 @@ public class NLPUtils {
 			for(IndexedWord w2: words2) {
 				if(w1 == w2)
 					continue;
+				try {
 				List<IndexedWord> current = graph.getShortestUndirectedPathNodes(w1, w2);
 
 				current.remove(w1); current.remove(w2);
@@ -242,8 +243,17 @@ public class NLPUtils {
 					wordN = w2;
 					shortestPath = current;
 				}
+				}
+				catch (Exception e)
+				{
+					System.out.println("Exception at : ");
+					System.out.println(w1.originalText());
+					System.out.println(w2.originalText());
+				}
 			}
 		}
+		
+		
 
 		
 		if(shortestPath.isEmpty())
