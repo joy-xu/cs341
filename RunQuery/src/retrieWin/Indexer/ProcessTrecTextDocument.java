@@ -127,9 +127,9 @@ public class ProcessTrecTextDocument {
 			sentence = sentence.replaceAll("\\[\\s*\\[", "");
 			sentence = sentence.replaceAll("\\]\\s*\\]","");
 					
-			
+			results.addAll(Arrays.asList(sentence.split("[|]+")));
 			//System.out.println("Process : "+ sentence);
-			//for(String s:Arrays.asList(sentence.split("[|]+")))
+			//for(String s:))
 			//	System.out.println("Output :" + s);
 			//results.addAll();
 		}
