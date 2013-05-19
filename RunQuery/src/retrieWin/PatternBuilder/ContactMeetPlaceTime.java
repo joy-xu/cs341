@@ -60,7 +60,7 @@ public class ContactMeetPlaceTime implements Runnable{
 		NLPUtils nlp = new NLPUtils();
 		List<String> relations = new ArrayList<String>();
 		IntCounter<SlotPattern> patternWeights = new IntCounter<SlotPattern>();
-		
+		Map<SlotPattern,List<String>> allPatterns = new HashMap<SlotPattern,List<String>>();
 		relations.add("prep_at");
 		relations.add("prep_in");
 		List<String> folders = new ArrayList<String>();
@@ -78,10 +78,18 @@ public class ContactMeetPlaceTime implements Runnable{
 		}
 			
 		Map<String,List<TrecTextDocument>> AllTrecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities);
-		
+		/*
+		for (String q:AllTrecDocs.keySet())
+		{
+			System.out.println("query: " + q + " Number of results is: " + AllTrecDocs.get(q).size());
+		}
+		*/
 		for (Entity e:entities)
 		{
-			List<TrecTextDocument> trecDocs = AllTrecDocs.get(entityToQueries.get(e));
+			String query = QueryBuilder.buildOrQuery(e.getExpansions());
+			if (!AllTrecDocs.containsKey(query))
+				continue;
+			List<TrecTextDocument> trecDocs = AllTrecDocs.get(query);
 			Set<String> uniqueSentences = new HashSet<String>();
 			Map<String, Set<String>> expansionToSentences = new HashMap<String,Set<String>>();
 			if (!trecDocs.isEmpty())
@@ -104,20 +112,24 @@ public class ContactMeetPlaceTime implements Runnable{
 				
 				for (String expansion:expansionToSentences.keySet())
 				{
-					System.out.println("Expansion: " + expansion);
+					//System.out.println("Expansion: " + expansion);
 					Set<String> currentExpansionSet = expansionToSentences.get(expansion);
 					for (String sentence:currentExpansionSet)
 					{
-						System.out.println("Full sentence: " + sentence);
+						//System.out.println("Full sentence: " + sentence);
 						Map<SlotPattern,List<String>> patterns = nlp.findSlotPatternGivenEntityAndRelation(sentence, expansion, relations);
 						for (SlotPattern pattern:patterns.keySet())
 						{
 							patternWeights.incrementCount(pattern,patterns.get(pattern).size());
-							System.out.println(pattern.toString());
-							System.out.println("Sentences: ");
-							for (String s:patterns.get(pattern))
+							if (allPatterns.containsKey(pattern))
 							{
-								System.out.println(s);
+								List<String> existing = allPatterns.get(pattern);
+								existing.addAll(patterns.get(pattern));
+								allPatterns.put(pattern,existing);
+							}
+							else
+							{
+								allPatterns.put(pattern, patterns.get(pattern));
 							}
 						}
 						
@@ -128,6 +140,12 @@ public class ContactMeetPlaceTime implements Runnable{
 		for (SlotPattern pattern:patternWeights.keySet())
 		{
 			System.out.println(pattern.toString());
+			System.out.println("Sentences: ");
+			for (String s:allPatterns.get(pattern))
+			{
+				System.out.println(s);
+			}
+			System.out.println("Count: ");
 			System.out.println(patternWeights.getCountAsString(pattern));
 		}
 	}

@@ -110,7 +110,7 @@ public class QueryFactory {
 			if (!baseDir.exists())
 				baseDir.mkdirs();
 			Indexer.createIndex(folder,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities);
-			ExecuteQuery eq = new ExecuteQuery(indexLocation);
+			ExecuteQuery eq = new ExecuteQuery(indexLocation,trecTextSerializedFile);
 			
 			int numthreads = queries.size() < 4 ? queries.size():4;
 			ExecutorService e = Executors.newFixedThreadPool(numthreads);
@@ -119,7 +119,7 @@ public class QueryFactory {
 			
 			for (String query:queries)
 			{
-				e.execute(new ParallelQueryFactory(query,eq,trecTextSerializedFile,results));
+				e.execute(new ParallelQueryFactory(query,eq,results));
 			}
 			e.shutdown();
 			while(true)
@@ -144,12 +144,10 @@ public class QueryFactory {
 		Map<String,List<TrecTextDocument>> output;
 		ExecuteQuery queryExecutor;	
 		String query;
-		String filteredFileLocation;
-		public ParallelQueryFactory(String queryIn, ExecuteQuery eq, String trecTextSerializedFile,Map<String,List<TrecTextDocument>> in)
+		public ParallelQueryFactory(String queryIn, ExecuteQuery eq, Map<String,List<TrecTextDocument>> in)
 		{
 			output = in;
 			queryExecutor = eq;
-			filteredFileLocation = trecTextSerializedFile;
 			query = queryIn;
 		}
 		
@@ -161,7 +159,7 @@ public class QueryFactory {
 		public void run()
 		{
 			
-			List<TrecTextDocument> queryResults = queryExecutor.executeQueryFromStoredFile(query, Integer.MAX_VALUE, filteredFileLocation);
+			List<TrecTextDocument> queryResults = queryExecutor.executeQueryFromStoredFile(query, Integer.MAX_VALUE);
 			//System.out.println("Query Results for: " + query + " : " + queryResults.size());
 			addToList(queryResults);
 		}

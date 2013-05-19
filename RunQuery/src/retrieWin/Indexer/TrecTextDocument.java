@@ -97,7 +97,7 @@ public class TrecTextDocument implements Serializable, Comparable<TrecTextDocume
 		}
 	}
 	
-	
+	/*
 	public static List<TrecTextDocument> getFromStoredFile(Set<String> queryResults, String filteredFileName)
 	{
 		@SuppressWarnings("unchecked")
@@ -114,7 +114,7 @@ public class TrecTextDocument implements Serializable, Comparable<TrecTextDocume
 		}
 		return output;
 	}
-	
+	*/
 	
 	
 	public void writeToFile(String filename,String workingDirectory)
