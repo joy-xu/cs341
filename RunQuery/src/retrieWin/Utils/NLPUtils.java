@@ -58,17 +58,10 @@ public class NLPUtils {
 		processor = new StanfordCoreNLP(props, false);
 	}
 	
-	public String deAccent(String str) {
-	    String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD); 
-	    Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-	    String s = pattern.matcher(nfdNormalizedString).replaceAll("");
-	    return s.replaceAll("[^\\x00-\\x7f]", "");
-	}
-	
 	public Map<SlotPattern,List<String>> findSlotPatternGivenEntityAndRelation(String sentence, String entity, List<String> edgeTypes)
 	{
 		
-		String deAccented = deAccent(sentence);
+		String deAccented = sentence;
 		
 		
 		
@@ -666,7 +659,6 @@ public class NLPUtils {
 		//System.out.println(sentence);
 		try {
 			sentence = sentence.replaceAll("[Ââ]+", "");
-			sentence = deAccent(sentence);
 			if(sentence.length() > 400)
 				return;
 			Annotation document = new Annotation(sentence);
