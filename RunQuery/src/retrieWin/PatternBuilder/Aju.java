@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import retrieWin.Indexer.ProcessTrecTextDocument;
@@ -68,9 +69,9 @@ public class Aju implements Runnable{
 				queries.add(query);
 				List<String> documentTypes = new ArrayList<String>();
 				documentTypes.add("news");
-				Set<TrecTextDocument> trecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities, null);
+				Map<String,List<TrecTextDocument>> trecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities);
 				if(trecDocs.size() > 0) {
-					for(String expansion:e.getExpansions()) {
+					/*for(String expansion:e.getExpansions()) {
 						List<TrecTextDocument> list = new ArrayList<TrecTextDocument>();
 						list.addAll(trecDocs);
 						List<String> sents = ProcessTrecTextDocument.extractRelevantSentences(list, expansion);
@@ -78,6 +79,7 @@ public class Aju implements Runnable{
 							utils.extractPERRelation(sent, expansion);
 						}
 					}
+					*/
 				}
 			}
 		}

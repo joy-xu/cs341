@@ -4,6 +4,7 @@ import java.util.*;
 
 import retrieWin.Indexer.ThriftReader;
 import retrieWin.Indexer.TrecTextDocument;
+import retrieWin.Utils.FileUtils;
 
 import lemurproject.indri.QueryEnvironment;
 import lemurproject.indri.QueryRequest;
@@ -13,8 +14,22 @@ import lemurproject.indri.QueryResults;
 public class ExecuteQuery {
 	
 	final String INDEX_LOCATION;
+	Map<String,TrecTextDocument> storedFiles = new HashMap<String,TrecTextDocument>();
+			
 	QueryEnvironment env = new QueryEnvironment();
 	public ExecuteQuery(String IndexLocation) {
+		this.INDEX_LOCATION = IndexLocation;
+		try {
+			env.addIndex(INDEX_LOCATION);
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public ExecuteQuery(String IndexLocation,String filteredFilesLocation) {
+		storedFiles = (Map<String,TrecTextDocument>)FileUtils.readFile(filteredFilesLocation);
 		this.INDEX_LOCATION = IndexLocation;
 		try {
 			env.addIndex(INDEX_LOCATION);
@@ -44,10 +59,29 @@ public class ExecuteQuery {
 		return queryIndex(query, Integer.MAX_VALUE);
 	}
 
-	public List<TrecTextDocument> executeQueryFromStoredFile(String query, int numResults, String filteredFileLocation, List<String> documentTypes)
+
+	public List<TrecTextDocument> executeQueryFromStoredFile(String query, int numResults, List<String> documentTypes)
 	{
 		Set<String> queryResults = queryIndex(query, numResults);
-		return TrecTextDocument.getFromStoredFile(queryResults,filteredFileLocation, documentTypes);
+		return getFromStoredFile(queryResults);
+	}
+	public List<TrecTextDocument> getFromStoredFile(Set<String> queryResults)
+	{
+		List<TrecTextDocument> output = new ArrayList<TrecTextDocument>();
+		for (String docNo:queryResults)
+		{
+			if (storedFiles.containsKey(docNo))
+				output.add(storedFiles.get(docNo));
+			else
+				System.out.println("File not found. You are definitely doing something wrong");
+		}
+		return output;
+	}
+	
+	public List<TrecTextDocument> executeQueryFromStoredFile(String query, int numResults)
+	{
+		Set<String> queryResults = queryIndex(query, numResults);
+		return getFromStoredFile(queryResults);
 	}
 	
 	public List<TrecTextDocument> executeQuery(String query, int numResults, String workingDirectory) {

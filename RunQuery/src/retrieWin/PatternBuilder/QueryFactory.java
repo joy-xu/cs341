@@ -2,8 +2,10 @@ package retrieWin.PatternBuilder;
 
 import java.io.File;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,8 +22,8 @@ import retrieWin.SSF.Entity;
 
 public class QueryFactory {
 	
-	public static Set<TrecTextDocument> DoQuery(List<String> folders, List<String> queries,
-								String workingDirectory, List<Entity> entities, List<String> documentTypes)
+	public static Map<String,List<TrecTextDocument>> DoQuery(List<String> folders, List<String> queries,
+								String workingDirectory, List<Entity> entities)
 	{
 		if (!System.getenv().containsKey("LD_LIBRARY_PATH"))
 		{
@@ -29,12 +31,12 @@ public class QueryFactory {
 			System.exit(0);
 		}
 		int numthreads = folders.size()<4 ? folders.size():4;
-		Set<TrecTextDocument> results = new HashSet<TrecTextDocument>();
+		Map<String,List<TrecTextDocument>> results = new HashMap<String,List<TrecTextDocument>>();
 		ExecutorService e = Executors.newFixedThreadPool(numthreads);
 		
 		for (String folder:folders)
 		{
-			e.execute(new ParallelIndexAndQueryFactory(folder,queries,results, workingDirectory, entities, documentTypes));
+			e.execute(new ParallelIndexAndQueryFactory(folder,queries,results, workingDirectory, entities));
 		}
 		e.shutdown();
 		while(true)
@@ -54,26 +56,37 @@ public class QueryFactory {
 	
 	public static class ParallelIndexAndQueryFactory implements Runnable
 	{
-		Set<TrecTextDocument> allResults;
+		Map<String,List<TrecTextDocument>> allResults;
 		String folder;
 		List<String> queries;
 		String workingDirectory;
 		List<Entity> entities;
-		List<String> documentTypes;
-		public ParallelIndexAndQueryFactory(String folderIn,List<String> queriesIn,Set<TrecTextDocument> output,
-									String workingDir,List<Entity> entitiesIn, List<String> documentTypesIn)
+
+		public ParallelIndexAndQueryFactory(String folderIn,List<String> queriesIn,Map<String,List<TrecTextDocument>> output,
+									String workingDir,List<Entity> entitiesIn)
 		{
 			folder = folderIn;
 			queries = queriesIn;
 			allResults = output;
 			workingDirectory = workingDir;
 			entities = entitiesIn;
-			this.documentTypes = documentTypesIn;
 		}
 		
-		public synchronized void addToList(Set<TrecTextDocument> current)
+		public synchronized void addMaptoMap(Map<String,List<TrecTextDocument>> current)
 		{
-			allResults.addAll(current);
+			for (String query:current.keySet())
+			{
+				if (allResults.containsKey(query))
+				{
+					List<TrecTextDocument> present = allResults.get(query);
+					present.addAll(current.get(query));
+					allResults.put(query, present);
+				}
+				else
+				{
+					allResults.put(query, current.get(query));
+				}
+			}
 		}
 		
 		
@@ -100,16 +113,16 @@ public class QueryFactory {
 			if (!baseDir.exists())
 				baseDir.mkdirs();
 			Indexer.createIndex(folder,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities);
-			ExecuteQuery eq = new ExecuteQuery(indexLocation);
+			ExecuteQuery eq = new ExecuteQuery(indexLocation,trecTextSerializedFile);
 			
 			int numthreads = queries.size() < 4 ? queries.size():4;
 			ExecutorService e = Executors.newFixedThreadPool(numthreads);
 			
-			Set<TrecTextDocument> results = new HashSet<TrecTextDocument>();
+			Map<String,List<TrecTextDocument>> results = new HashMap<String,List<TrecTextDocument>>();
 			
 			for (String query:queries)
 			{
-				e.execute(new ParallelQueryFactory(query,eq,trecTextSerializedFile,results, documentTypes));
+				e.execute(new ParallelQueryFactory(query,eq,results));
 			}
 			e.shutdown();
 			while(true)
@@ -124,37 +137,32 @@ public class QueryFactory {
 					System.out.println("Waiting in ParallelQueryFactory - Thread interrupted");
 				}
 			}
-			addToList(results);
+			addMaptoMap(results);
 		}
 		
 	}
 	
 	
 	private static class ParallelQueryFactory implements Runnable{
-		Set<TrecTextDocument> output;
+		Map<String,List<TrecTextDocument>> output;
 		ExecuteQuery queryExecutor;	
 		String query;
-		String filteredFileLocation;
-		List<String> documentTypes;
-		public ParallelQueryFactory(String queryIn, ExecuteQuery eq, String trecTextSerializedFile,Set<TrecTextDocument> in, List<String> documentTypes)
+		public ParallelQueryFactory(String queryIn, ExecuteQuery eq, Map<String,List<TrecTextDocument>> in)
 		{
 			output = in;
 			queryExecutor = eq;
-			filteredFileLocation = trecTextSerializedFile;
 			query = queryIn;
-			this.documentTypes = documentTypes;
 		}
 		
 		private synchronized void addToList(List<TrecTextDocument> results)
 		{
-			output.addAll(results);
+			output.put(query,results);
 		}
 		
 		public void run()
 		{
-			
-			List<TrecTextDocument> queryResults = queryExecutor.executeQueryFromStoredFile(query, Integer.MAX_VALUE, filteredFileLocation, documentTypes);
-			LogInfo.logs("Query Results for: " + query + " : " + queryResults.size());
+			List<TrecTextDocument> queryResults = queryExecutor.executeQueryFromStoredFile(query, Integer.MAX_VALUE);
+			//System.out.println("Query Results for: " + query + " : " + queryResults.size());
 			addToList(queryResults);
 		}
 	}

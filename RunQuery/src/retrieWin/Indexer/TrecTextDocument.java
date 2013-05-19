@@ -99,15 +99,15 @@ public class TrecTextDocument implements Serializable, Comparable<TrecTextDocume
 		}
 	}
 	
-	
-	public static List<TrecTextDocument> getFromStoredFile(Set<String> queryResults, String filteredFileName, List<String> documentTypes)
+	/*
+	public static List<TrecTextDocument> getFromStoredFile(Set<String> queryResults, String filteredFileName)
 	{
 		@SuppressWarnings("unchecked")
 		Map<String,TrecTextDocument> storedFiles = (Map<String,TrecTextDocument>)FileUtils.readFile(filteredFileName);
 		List<TrecTextDocument> output = new ArrayList<TrecTextDocument>();
-		Set<String> queryResultsSet = new HashSet<String>(queryResults);
+		//Set<String> queryResultsSet = new HashSet<String>(queryResults);
 		
-		for (String docNo:queryResultsSet)
+		for (String docNo:queryResults)
 		{
 			if (storedFiles.containsKey(docNo)) {
 				String documentType = docNo.split("__")[1].split("-")[0];
@@ -121,6 +121,8 @@ public class TrecTextDocument implements Serializable, Comparable<TrecTextDocume
 		}
 		return output;
 	}
+	*/
+	
 	
 	public void writeToFile(String filename,String workingDirectory)
 	{

@@ -65,14 +65,14 @@ public class NLPUtils {
 	    return s.replaceAll("[^\\x00-\\x7f]", "");
 	}
 	
-	public List<SlotPattern> findSlotPatternGivenEntityAndRelation(String sentence, String entity, List<String> edgeTypes)
+	public Map<SlotPattern,List<String>> findSlotPatternGivenEntityAndRelation(String sentence, String entity, List<String> edgeTypes)
 	{
-		System.out.println("Accented : " + sentence);
+		
 		String deAccented = deAccent(sentence);
 		
-		System.out.println("Processing sentence: " + deAccented);
 		
-		List<SlotPattern> patterns = new ArrayList<SlotPattern>();
+		
+		Map<SlotPattern,List<String>> patterns = new HashMap<SlotPattern,List<String>>();
 		try {
 			if(deAccented.length() > 400)
 				return patterns;
@@ -109,7 +109,24 @@ public class NLPUtils {
 					for (String edgeType:edgeTypes)
 						placeTimeWords.addAll(findWordsInSemanticGraphByEdgeType(sentenceMap,edgeType));
 					if (!words.isEmpty() && !placeTimeWords.isEmpty())
-						patterns.addAll(findRelation(graph, words, placeTimeWords));
+					{
+						List<SlotPattern> currentPatterns = findRelation(graph, words, placeTimeWords);
+						for (SlotPattern p :currentPatterns)
+						{
+							if (patterns.containsKey(p))
+							{
+								List<String> s = patterns.get(p);
+								s.add(sentenceFromMap);
+								patterns.put(p, s);
+							}
+							else
+							{
+								List<String> s = new ArrayList<String>();
+								s.add(sentenceFromMap);
+								patterns.put(p, s);
+							}
+						}
+					}
 				}
 				sentNum++;
 			}
