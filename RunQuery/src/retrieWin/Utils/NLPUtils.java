@@ -216,6 +216,7 @@ public class NLPUtils {
 					continue;
 				List<IndexedWord> current = graph.getShortestUndirectedPathNodes(w1, w2);
 
+				LogInfo.logs("One option:" + current);
 				current.remove(w1); current.remove(w2);
 				
 				//Check if shortest path is through one of the entities, don't take it
@@ -230,6 +231,7 @@ public class NLPUtils {
 			}
 		}
 
+		LogInfo.logs("Shortest dep path:" + shortestPath);
 		
 		if(shortestPath.isEmpty())
 			return patterns;
@@ -648,15 +650,31 @@ public class NLPUtils {
 		try {
 			sentence = sentence.replaceAll("[Ââ]+", "");
 			sentence = deAccent(sentence);
+			if(sentence.length() > 400)
+				return;
 			Annotation document = new Annotation(sentence);
 			processor.annotate(document);
 			
-			for(CoreMap map:document.get(SentencesAnnotation.class)) {
-				
+			for(CoreMap map:document.get(SentencesAnnotation.class)) {				
 				Set<String> persons = getPersons(map);
 				if(persons.size() > 1 && persons.contains(entity)) {
 					LogInfo.logs(map);
 					LogInfo.logs(persons);	
+					SemanticGraph graph = map.get(SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation.class);
+					
+					for(String person:persons) {
+						if(!person.equals(entity)) {
+							List<IndexedWord> indexWords1 = findWordsInSemanticGraph(map, person, null);
+							List<IndexedWord> indexWords2 = findWordsInSemanticGraph(map, entity, null);
+							
+							LogInfo.begin_track("\nFinding relation: " + entity + " # " + person);
+							List<SlotPattern> patterns = findRelation(graph, indexWords1, indexWords2);
+							LogInfo.logs("Found patterns" + patterns);
+							LogInfo.end_track();
+							
+						}
+					}
+
 				}
 			}
 		}

@@ -43,7 +43,7 @@ public class Aju implements Runnable{
 	@Override
 	public void run() {
 		LogInfo.begin_track("run()");
-		//runBootstrap();
+		//runBootstrapForPair();
 		runBootStrapforEntityAndNER();
 	
 		LogInfo.end_track();
@@ -53,15 +53,22 @@ public class Aju implements Runnable{
 		ExecuteQuery eq = new ExecuteQuery(indexLocation);
 		NLPUtils utils = new NLPUtils();
 		//utils.extractPERRelation("The time has come to reassess to impact of former Presiding Justices Aharon Barak and Dorit Beinisch on Human Rights, the justice system, and the rule of law in the State of Israel.");
+		List<String> folders = new ArrayList<String>();
+		for(int i=0;i<24;i++)
+			folders.add(String.format("%04d-%02d-%02d-%02d", 2012,6,2,i));
+		
 		for(Entity e:entities) {
 			if(e.getEntityType()==EntityType.PER) {
 				String query = QueryBuilder.buildOrQuery(e.getExpansions());
 	            //System.out.println("Querying for: " + query); =
-				List<String> folders = new ArrayList<String>();
+				
 				List<String> queries = new ArrayList<String>();
-				folders.add("2012-05-05-05");
+				
+				
 				queries.add(query);
-				Set<TrecTextDocument> trecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities);
+				List<String> documentTypes = new ArrayList<String>();
+				documentTypes.add("news");
+				Set<TrecTextDocument> trecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities, null);
 				if(trecDocs.size() > 0) {
 					for(String expansion:e.getExpansions()) {
 						List<TrecTextDocument> list = new ArrayList<TrecTextDocument>();
@@ -85,6 +92,7 @@ public class Aju implements Runnable{
 		HashMap<SlotPattern, Double> weights = new HashMap<SlotPattern,Double>();
 		for(Pair<String, String> pair:bootstrapList) {
 			ExecuteQuery eq = new ExecuteQuery(indexLocation);
+			LogInfo.logs("Start querying");
 			List<TrecTextDocument> trecDocs = eq.executeQuery(QueryBuilder.buildUnorderedQuery(pair.first, pair.second, 10), 1000, workingDirectory);
 			IntCounter<SlotPattern> individualWeights = new IntCounter<SlotPattern>();
 			for(String str:ProcessTrecTextDocument.extractRelevantSentences(trecDocs, pair.first, pair.second)) {

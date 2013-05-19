@@ -21,7 +21,7 @@ import retrieWin.SSF.Entity;
 public class QueryFactory {
 	
 	public static Set<TrecTextDocument> DoQuery(List<String> folders, List<String> queries,
-								String workingDirectory, List<Entity> entities)
+								String workingDirectory, List<Entity> entities, List<String> documentTypes)
 	{
 		if (!System.getenv().containsKey("LD_LIBRARY_PATH"))
 		{
@@ -34,7 +34,7 @@ public class QueryFactory {
 		
 		for (String folder:folders)
 		{
-			e.execute(new ParallelIndexAndQueryFactory(folder,queries,results, workingDirectory, entities));
+			e.execute(new ParallelIndexAndQueryFactory(folder,queries,results, workingDirectory, entities, documentTypes));
 		}
 		e.shutdown();
 		while(true)
@@ -59,14 +59,16 @@ public class QueryFactory {
 		List<String> queries;
 		String workingDirectory;
 		List<Entity> entities;
+		List<String> documentTypes;
 		public ParallelIndexAndQueryFactory(String folderIn,List<String> queriesIn,Set<TrecTextDocument> output,
-									String workingDir,List<Entity> entitiesIn)
+									String workingDir,List<Entity> entitiesIn, List<String> documentTypesIn)
 		{
 			folder = folderIn;
 			queries = queriesIn;
 			allResults = output;
 			workingDirectory = workingDir;
 			entities = entitiesIn;
+			this.documentTypes = documentTypesIn;
 		}
 		
 		public synchronized void addToList(Set<TrecTextDocument> current)
@@ -107,7 +109,7 @@ public class QueryFactory {
 			
 			for (String query:queries)
 			{
-				e.execute(new ParallelQueryFactory(query,eq,trecTextSerializedFile,results));
+				e.execute(new ParallelQueryFactory(query,eq,trecTextSerializedFile,results, documentTypes));
 			}
 			e.shutdown();
 			while(true)
@@ -133,12 +135,14 @@ public class QueryFactory {
 		ExecuteQuery queryExecutor;	
 		String query;
 		String filteredFileLocation;
-		public ParallelQueryFactory(String queryIn, ExecuteQuery eq, String trecTextSerializedFile,Set<TrecTextDocument> in)
+		List<String> documentTypes;
+		public ParallelQueryFactory(String queryIn, ExecuteQuery eq, String trecTextSerializedFile,Set<TrecTextDocument> in, List<String> documentTypes)
 		{
 			output = in;
 			queryExecutor = eq;
 			filteredFileLocation = trecTextSerializedFile;
 			query = queryIn;
+			this.documentTypes = documentTypes;
 		}
 		
 		private synchronized void addToList(List<TrecTextDocument> results)
@@ -149,7 +153,7 @@ public class QueryFactory {
 		public void run()
 		{
 			
-			List<TrecTextDocument> queryResults = queryExecutor.executeQueryFromStoredFile(query, Integer.MAX_VALUE, filteredFileLocation);
+			List<TrecTextDocument> queryResults = queryExecutor.executeQueryFromStoredFile(query, Integer.MAX_VALUE, filteredFileLocation, documentTypes);
 			LogInfo.logs("Query Results for: " + query + " : " + queryResults.size());
 			addToList(queryResults);
 		}

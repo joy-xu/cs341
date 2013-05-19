@@ -69,7 +69,7 @@ public class ContactMeetPlaceTime implements Runnable{
 			List<String> queries = new ArrayList<String>();
 			folders.add("2012-05-05-05");
 			queries.add(query);
-			Set<TrecTextDocument> trecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities);
+			Set<TrecTextDocument> trecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities, null);
 			Set<String> uniqueSentences = new HashSet<String>();
 			Map<String, Set<String>> expansionToSentences = new HashMap<String,Set<String>>();
 			if (!trecDocs.isEmpty())
