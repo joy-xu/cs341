@@ -59,6 +59,12 @@ public class ExecuteQuery {
 		return queryIndex(query, Integer.MAX_VALUE);
 	}
 
+
+	public List<TrecTextDocument> executeQueryFromStoredFile(String query, int numResults, List<String> documentTypes)
+	{
+		Set<String> queryResults = queryIndex(query, numResults);
+		return getFromStoredFile(queryResults);
+	}
 	public List<TrecTextDocument> getFromStoredFile(Set<String> queryResults)
 	{
 		List<TrecTextDocument> output = new ArrayList<TrecTextDocument>();
@@ -90,6 +96,7 @@ public class ExecuteQuery {
 			String localfilename = a[1];
 			String[] b = localfilename.split("/");
 			String filename = b[b.length-1];
+		
 			
 			String folder = a[2];
 			

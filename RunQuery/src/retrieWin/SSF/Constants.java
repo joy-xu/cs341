@@ -28,6 +28,8 @@ public class Constants  implements Serializable {
 		TIME,
 		NONE,
 		O,
+		MONEY,
+		SET,
 		NUMBER,
 		MISC,
 		DURATION,

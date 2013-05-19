@@ -11,6 +11,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+import fig.basic.LogInfo;
+
 import retrieWin.Indexer.Indexer;
 import retrieWin.Indexer.TrecTextDocument;
 
@@ -59,6 +61,7 @@ public class QueryFactory {
 		List<String> queries;
 		String workingDirectory;
 		List<Entity> entities;
+
 		public ParallelIndexAndQueryFactory(String folderIn,List<String> queriesIn,Map<String,List<TrecTextDocument>> output,
 									String workingDir,List<Entity> entitiesIn)
 		{
@@ -158,7 +161,6 @@ public class QueryFactory {
 		
 		public void run()
 		{
-			
 			List<TrecTextDocument> queryResults = queryExecutor.executeQueryFromStoredFile(query, Integer.MAX_VALUE);
 			//System.out.println("Query Results for: " + query + " : " + queryResults.size());
 			addToList(queryResults);

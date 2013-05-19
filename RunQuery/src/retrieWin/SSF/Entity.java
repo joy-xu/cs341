@@ -55,6 +55,7 @@ public class Entity  implements Serializable {
 		for(String expansion: getExpansions()) {
 			query = QueryBuilder.buildOrderedQuery(expansion, 5);
 			for(TrecTextDocument doc: queryExecuter.executeQueryFromStoredFile(query, Integer.MAX_VALUE)) {
+
 				results.put(doc, 0.0);
 			}
 		}

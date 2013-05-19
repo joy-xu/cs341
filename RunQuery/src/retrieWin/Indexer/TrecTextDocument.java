@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import fig.basic.LogInfo;
+
 import retrieWin.Utils.FileUtils;
 
 public class TrecTextDocument implements Serializable, Comparable<TrecTextDocument>{
@@ -107,8 +109,13 @@ public class TrecTextDocument implements Serializable, Comparable<TrecTextDocume
 		
 		for (String docNo:queryResults)
 		{
-			if (storedFiles.containsKey(docNo))
-				output.add(storedFiles.get(docNo));
+			if (storedFiles.containsKey(docNo)) {
+				String documentType = docNo.split("__")[1].split("-")[0];
+				if(documentTypes == null || documentTypes.contains(documentType)) {
+					System.out.println("%%^^&&&&& "  + documentType);
+					output.add(storedFiles.get(docNo));
+				}
+			}
 			else
 				System.out.println("File not found. You are definitely doing something wrong");
 		}
