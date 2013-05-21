@@ -58,16 +58,11 @@ public class NLPUtils {
 		processor = new StanfordCoreNLP(props, false);
 	}
 	
-	public String deAccent(String str) {
-	    String nfdNormalizedString = Normalizer.normalize(str, Normalizer.Form.NFD); 
-	    Pattern pattern = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
-	    String s = pattern.matcher(nfdNormalizedString).replaceAll("");
-	    return s.replaceAll("[^\\x00-\\x7f]", "");
-	}
-	
 	public Map<SlotPattern,List<String>> findSlotPatternGivenEntityAndRelation(String sentence, String entity, List<String> edgeTypes)
 	{
-		String deAccented = deAccent(sentence);
+
+		String deAccented = sentence;
+		
 		Map<SlotPattern,List<String>> patterns = new HashMap<SlotPattern,List<String>>();
 		try {
 			if(deAccented.length() > 400)
@@ -661,18 +656,17 @@ public class NLPUtils {
 		//sentence = deAccent(sentence);
 		//System.out.println(sentence);
 		try {
-			sentence = sentence.replaceAll("[Ââ]+", "");
-			sentence = deAccent(sentence);
 			if(sentence.length() > 400)
 				return;
 			Annotation document = new Annotation(sentence);
 			processor.annotate(document);
-			
+			//LogInfo.begin_track("Current entity: " + entity);
 			for(CoreMap map:document.get(SentencesAnnotation.class)) {				
 				Set<String> persons = getPersons(map);
 				if(persons.size() > 1 && persons.contains(entity)) {
-					LogInfo.logs(map);
-					LogInfo.logs(persons);	
+					LogInfo.logs("Entity :" + entity);
+					LogInfo.logs("Sentence :" + map);
+					LogInfo.logs("People :" + persons);	
 					SemanticGraph graph = map.get(SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation.class);
 					
 					for(String person:persons) {
@@ -680,7 +674,7 @@ public class NLPUtils {
 							List<IndexedWord> indexWords1 = findWordsInSemanticGraph(map, person, null);
 							List<IndexedWord> indexWords2 = findWordsInSemanticGraph(map, entity, null);
 							
-							LogInfo.begin_track("\nFinding relation: " + entity + " # " + person);
+							LogInfo.begin_track("Finding relation: " + entity + " # " + person);
 							List<SlotPattern> patterns = findRelation(graph, indexWords1, indexWords2);
 							LogInfo.logs("Found patterns" + patterns);
 							LogInfo.end_track();
@@ -690,6 +684,7 @@ public class NLPUtils {
 
 				}
 			}
+			//LogInfo.end_track();
 		}
 		catch(Exception ex){
 			System.out.println(ex.getMessage());
