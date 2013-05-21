@@ -67,11 +67,7 @@ public class NLPUtils {
 	
 	public Map<SlotPattern,List<String>> findSlotPatternGivenEntityAndRelation(String sentence, String entity, List<String> edgeTypes)
 	{
-		
 		String deAccented = deAccent(sentence);
-		
-		
-		
 		Map<SlotPattern,List<String>> patterns = new HashMap<SlotPattern,List<String>>();
 		try {
 			if(deAccented.length() > 400)

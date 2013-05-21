@@ -1,11 +1,14 @@
 package retrieWin.SSF;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
+import retrieWin.PatternBuilder.QueryFactory;
 import retrieWin.Querying.ExecuteQuery;
 import retrieWin.Querying.QueryBuilder;
 import retrieWin.SSF.Constants.EntityType;
@@ -22,6 +25,8 @@ public class Entity  implements Serializable {
 	private List<String> disambiguations;
 	Map<SlotName, List<String>> slotValues;
 	
+	static double disambiguationThreshold = 0.1;
+	
 	public Entity(String targetID, String name, EntityType type, String group, List<String> expansions, List<String> disambiguations) {
 		this.targetID = targetID;
 		this.name = name;
@@ -31,37 +36,43 @@ public class Entity  implements Serializable {
 		this.expansions = expansions;
 	}
 	
-	private void disambiguate(Map<TrecTextDocument, Double> results) {
+	private List<TrecTextDocument> disambiguate(List<TrecTextDocument> results) {
+		List<TrecTextDocument> filtered = new ArrayList<TrecTextDocument>();
 		int maxScore = getDisambiguations().size();
-		for(TrecTextDocument doc: results.keySet()) {
+		for(TrecTextDocument doc: results) {
 			int score = 0;
 			for(String simString: getDisambiguations()) {
 				if(doc.text.toLowerCase().contains(simString.toLowerCase()))
 					score += 1;
 			}
-			results.put(doc, (double)score/maxScore);
+			//remove documents which most likely don't belong to this entity
+			if((double)score/maxScore > disambiguationThreshold)
+				filtered.add(doc);
 		}
+		return filtered;
 	}
 	
 	public List<String> updateSlot(Slot slot, List<String> candidates) {
-		throw new NoSuchElementException();
-	}
-	
-	public Map<TrecTextDocument, Double> getRelevantDocuments(String indexLocation, String trecTextSerializedFile) {
-		ExecuteQuery queryExecuter =  new ExecuteQuery(indexLocation,trecTextSerializedFile);
-		Map<TrecTextDocument, Double> results = new HashMap<TrecTextDocument, Double>();
-		String query;
-		
-		for(String expansion: getExpansions()) {
-			query = QueryBuilder.buildOrderedQuery(expansion, 5);
-			for(TrecTextDocument doc: queryExecuter.executeQueryFromStoredFile(query, Integer.MAX_VALUE)) {
-
-				results.put(doc, 0.0);
+		List<String> added = new ArrayList<String>();
+		for(String candidate: candidates) {
+			//get normalized concept for the slot candidate
+			if(slotValues.get(slot.getName()).contains(candidate))
+				continue;
+			else {
+				List<String> values = slotValues.get(slot.getName());
+				values.add(candidate);
+				slotValues.put(slot.getName(), values);
+				added.add(candidate);
 			}
 		}
+		return added;
+	}
+	
+	public List<TrecTextDocument> getRelevantDocuments(String timestamp, List<Entity> entities) {
+		String query = QueryBuilder.buildOrQuery(getExpansions());
+		List<TrecTextDocument> docs = QueryFactory.DoQuery(Arrays.asList(timestamp), Arrays.asList(query), Constants.defaultWorkingDirectory, entities).get(query);
 		
-		disambiguate(results);
-		return results;
+		return disambiguate(docs);
 	}
 
 	public EntityType getEntityType() {

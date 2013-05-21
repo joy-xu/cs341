@@ -59,12 +59,6 @@ public class ExecuteQuery {
 		return queryIndex(query, Integer.MAX_VALUE);
 	}
 
-
-	public List<TrecTextDocument> executeQueryFromStoredFile(String query, int numResults, List<String> documentTypes)
-	{
-		Set<String> queryResults = queryIndex(query, numResults);
-		return getFromStoredFile(queryResults);
-	}
 	public List<TrecTextDocument> getFromStoredFile(Set<String> queryResults)
 	{
 		List<TrecTextDocument> output = new ArrayList<TrecTextDocument>();

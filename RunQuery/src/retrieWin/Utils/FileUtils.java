@@ -18,6 +18,7 @@ public class FileUtils {
 
 		    // Write object out to disk
 		    obj_out.writeObject ( data);
+		    obj_out.close();
 		    }catch (Exception ex) {
 		    	
 		    }
@@ -40,6 +41,7 @@ public class FileUtils {
 
 		    // Write object out to disk
 		    obj_out.writeObject ( data);
+		    obj_out.close();
 		    }catch (Exception ex) {
 		    	
 		    }
@@ -56,6 +58,7 @@ public class FileUtils {
 
 	  // Read an object
 	  Object obj = obj_in.readObject();
+	  obj_in.close();
 	  return obj;
 	  }catch(Exception ex) {
 		  LogInfo.logs(ex.toString());

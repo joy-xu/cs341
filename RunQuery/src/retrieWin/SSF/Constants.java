@@ -14,6 +14,8 @@ public class Constants  implements Serializable {
 	
 	public final static String s3ConceptsDirectory = "s3://conceptsData/";
 	
+	public final static String defaultWorkingDirectory = "tmp/";
+	
 	public enum EntityType {
 		PER,
 		ORG,
