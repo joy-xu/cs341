@@ -1,5 +1,6 @@
 package retrieWin.SSF;
 
+import edu.stanford.nlp.parser.lexparser.NoSuchParseException;
 import fig.basic.*;
 import fig.exec.Execution;
 
@@ -167,10 +168,14 @@ public class SSF implements Runnable{
 				pat.setPattern(line.trim().split("\\|")[0]);
 				rule1 = new Rule();
 				rule1.edgeType = line.trim().split("\\|")[1].split(":")[0];
-				rule1.direction = (line.trim().split("\\|")[1].split(":")[1].equals("v") ? Constants.EdgeDirection.In : Constants.EdgeDirection.Out);
+				if(!rule1.edgeType.isEmpty())
+					rule1.direction = (line.trim().split("\\|")[1].split(":")[1].equals("v") ? Constants.EdgeDirection.In : Constants.EdgeDirection.Out);
 				rule2 = new Rule();
+				//System.out.println(Arrays.asList(line.trim().split("\\|")[2].split(":")));
 				rule2.edgeType = line.trim().split("\\|")[2].split(":")[0];
-				rule2.direction = (line.trim().split("\\|")[2].split(":")[1].equals("v") ? Constants.EdgeDirection.In : Constants.EdgeDirection.Out);
+				if(!rule2.edgeType.isEmpty())
+					rule2.direction = (line.trim().split("\\|")[2].split(":")[1].equals("v") ? Constants.EdgeDirection.In : Constants.EdgeDirection.Out);
+				
 				pat.setRules(Arrays.asList(rule1, rule2));
 				pat.setConfidenceScore(Double.parseDouble(line.trim().split("\\|")[2].split(":")[2].trim()));
 				patterns.add(pat);
@@ -180,7 +185,7 @@ public class SSF implements Runnable{
 			e.printStackTrace();
 			return;
 		}
-		//System.out.println(patterns);
+		System.out.println(patterns);
 		for(Slot slot: slots) {
 			if(!slot.getName().equals(slotName))
 				continue;
@@ -189,59 +194,99 @@ public class SSF implements Runnable{
 		FileUtils.writeFile(slots, Constants.slotsSerializedFile);
 	}
 	
-	private Map<String, Double> findCandidates(Entity entity, Slot slot, Map<String, Map<String, String>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
+	private boolean containsUppercaseToken(String str) {
+		for(String token: str.split(" "))
+			if(Character.isUpperCase(token.charAt(0)))
+					return true;
+		return false;
+	}
+	
+	private Map<String, Double> findTitles(Entity entity, Slot slot, Map<String, Map<String, String>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
 		Map<String, Double> candidates = new HashMap<String, Double>();
 		for(String expansion: entity.getExpansions()) {
-			for(SlotPattern pattern: slot.getPatterns()) {
-				for(String sentence: relevantSentences.get(expansion).keySet()) {
-					System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
-					//for each sentence, find possible slot values and add to candidate list
-					//arxiv documents
-					if(relevantSentences.get(expansion).get(sentence).contains("arxiv")) {
-						if(!slot.getName().equals(Constants.SlotName.Affiliate_Of) || !entity.getEntityType().equals(Constants.EntityType.PER))
-							continue;
-						arxivDocument arxivDoc = new arxivDocument(relevantSentences.get(expansion).get(sentence));
-						if(arxivDoc.getAuthors().contains(expansion)) {
-							for(String author: arxivDoc.getAuthors()) 
-								if(!author.equals(expansion))
+			for(String sentence: relevantSentences.get(expansion).keySet()) {
+				System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
+				try {
+					//check for any non-pronominal coreference
+					for(String title: coreNLP.getCorefs(sentence, expansion))
+						if(containsUppercaseToken(title) && !candidates.containsKey(title))
+							candidates.put(title, 1.0);
+					
+					//check for any compund nouns for this entity
+					String nnTitle = coreNLP.getNNs(sentence, expansion);
+					if(containsUppercaseToken(nnTitle) && !candidates.containsKey(nnTitle))
+						candidates.put(nnTitle, 1.0);
+				} catch(NoSuchParseException e) {
+					e.printStackTrace();
+					break;
+				}
+			}
+		}
+		return candidates;
+	}
+
+	
+	private Map<String, Double> findCandidates(Entity entity, Slot slot, Map<String, Map<String, String>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
+		if(slot.getName().equals(Constants.SlotName.Titles))
+			return findTitles(entity, slot, relevantSentences, coreNLP, conceptExtractor);
+		
+		Map<String, Double> candidates = new HashMap<String, Double>();
+		for(String expansion: entity.getExpansions()) {
+			for(String sentence: relevantSentences.get(expansion).keySet()) {
+				System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
+				for(SlotPattern pattern: slot.getPatterns()) {
+					try {
+						//for each sentence, find possible slot values and add to candidate list
+						//arxiv documents
+						if(relevantSentences.get(expansion).get(sentence).contains("arxiv")) {
+							if(!slot.getName().equals(Constants.SlotName.Affiliate_Of) || !entity.getEntityType().equals(Constants.EntityType.PER))
+								continue;
+							arxivDocument arxivDoc = new arxivDocument(relevantSentences.get(expansion).get(sentence));
+							if(arxivDoc.getAuthors().contains(expansion)) {
+								for(String author: arxivDoc.getAuthors()) 
+									if(!author.equals(expansion))
+										candidates.put(author, 1.0);
+								for(String ack: arxivDoc.getAcknowledgements())
+									candidates.put(ack, 1.0);
+							}
+							else if(arxivDoc.getAcknowledgements().contains(expansion)) {
+								for(String author: arxivDoc.getAuthors()) 
 									candidates.put(author, 1.0);
-							for(String ack: arxivDoc.getAcknowledgements())
-								candidates.put(ack, 1.0);
+							}
+							
+							for(List<String> reference: arxivDoc.getReferences()) {
+									if(reference.contains(expansion)) {
+										for(String author: reference) 
+											if(!author.equals(expansion))
+												candidates.put(author, 1.0);
+									}
+							}
 						}
-						else if(arxivDoc.getAcknowledgements().contains(expansion)) {
-							for(String author: arxivDoc.getAuthors()) 
-								candidates.put(author, 1.0);
+						//social documents
+						else if(relevantSentences.get(expansion).get(sentence).contains("social")) {
+							for(String str: coreNLP.findSlotValue(sentence, expansion, pattern, slot.getTargetNERTypes())) {
+								//get normalized concept from candidate
+								String concept = conceptExtractor.getConcept(str);
+								if(!candidates.containsKey(concept))
+									candidates.put(concept, pattern.getConfidenceScore());
+								else
+									candidates.put(concept, candidates.get(concept) + pattern.getConfidenceScore());
+							}
 						}
-						
-						for(List<String> reference: arxivDoc.getReferences()) {
-								if(reference.contains(expansion)) {
-									for(String author: reference) 
-										if(!author.equals(expansion))
-											candidates.put(author, 1.0);
-								}
+						//news documents
+						else {
+							for(String str: coreNLP.findSlotValue(sentence, expansion, pattern, slot.getTargetNERTypes())) {
+								//get normalized concept from candidate
+								String concept = conceptExtractor.getConcept(str);
+								if(!candidates.containsKey(concept))
+									candidates.put(concept, pattern.getConfidenceScore());
+								else
+									candidates.put(concept, candidates.get(concept) + pattern.getConfidenceScore());
+							}
 						}
-					}
-					//social documents
-					else if(relevantSentences.get(expansion).get(sentence).contains("social")) {
-						for(String str: coreNLP.findSlotValue(sentence, expansion, pattern, slot.getTargetNERTypes())) {
-							//get normalized concept from candidate
-							String concept = conceptExtractor.getConcept(str);
-							if(!candidates.containsKey(concept))
-								candidates.put(concept, pattern.getConfidenceScore());
-							else
-								candidates.put(concept, candidates.get(concept) + pattern.getConfidenceScore());
-						}
-					}
-					//news documents
-					else {
-						for(String str: coreNLP.findSlotValue(sentence, expansion, pattern, slot.getTargetNERTypes())) {
-							//get normalized concept from candidate
-							String concept = conceptExtractor.getConcept(str);
-							if(!candidates.containsKey(concept))
-								candidates.put(concept, pattern.getConfidenceScore());
-							else
-								candidates.put(concept, candidates.get(concept) + pattern.getConfidenceScore());
-						}
+					} catch(NoSuchParseException e) {
+						e.printStackTrace();
+						break;
 					}
 				}
 			}
@@ -297,25 +342,25 @@ public class SSF implements Runnable{
 			for(String expansion: entity.getExpansions()) {
 				Map<String, String> sentences = new HashMap<String, String>();
 				Map<String, String> returnedSet = ProcessTrecTextDocument.extractRelevantSentencesWithDocID(docs, expansion);
-				for(String docNo: returnedSet.keySet()) 
-					if(!retrievedSentences.contains(returnedSet.get(docNo))) {
-							sentences.put(docNo, returnedSet.get(docNo));
-							retrievedSentences.add(returnedSet.get(docNo));
+				for(String sent: returnedSet.keySet()) 
+					if(!retrievedSentences.contains(sent)) {
+							sentences.put(sent, returnedSet.get(sent));
+							retrievedSentences.add(sent);
 					}
 				relevantSentences.put(expansion, sentences);
 			}
+			System.out.println("Number of relevant sentences: " + retrievedSentences.size());
 			
-			
-			System.out.println("Number of relevant sentences: " + relevantSentences.values().size());
 			//iterate to fill slots
 			for(Slot slot: slots) {
 				//compute only for relevant slots for this entity
 				if(!slot.getEntityType().equals(entity.getEntityType()))
 						continue;
 				//TODO: remove this, computing only one slot right now
-				if(!slot.getName().equals(Constants.SlotName.Founder_Of))
+				if(!slot.getName().equals(Constants.SlotName.Founder_Of) && !slot.getName().equals(Constants.SlotName.Titles))
 					continue;
 				
+				System.out.println("Finding value for " + slot.getName());
 				//for each expansion, slot pattern, get all possible candidates
 				Map<String, Double> candidates = findCandidates(entity, slot, relevantSentences, coreNLP, conceptExtractor);
 				

@@ -71,8 +71,8 @@ public class Entity  implements Serializable {
 	public List<TrecTextDocument> getRelevantDocuments(String timestamp, List<Entity> entities) {
 		String query = QueryBuilder.buildOrQuery(getExpansions());
 		List<TrecTextDocument> docs = QueryFactory.DoQuery(Arrays.asList(timestamp), Arrays.asList(query), Constants.defaultWorkingDirectory, entities).get(query);
-		
-		return disambiguate(docs);
+		return docs;
+		//return disambiguate(docs);
 	}
 
 	public EntityType getEntityType() {

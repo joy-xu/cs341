@@ -17,3 +17,4 @@ personnel|poss:^|prep_after:^ : 0.02380952380952381
 launched|dobj:^|nsubj:^ : 0.02380952380952381
 fame|nn:^|prep_of:v : 0.2
 founder|nn:^|nn:^ : 0.029239766081871343
+|poss:v|::1.0

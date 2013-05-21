@@ -21,6 +21,19 @@ public class Slot implements Serializable {
 	private List<NERType> targetNERTypes;
 	private boolean applyPatternAfterCoreference;
 	
+	@Override
+	public String toString() {
+		String ans = "";
+		ans += name + "\n";
+		ans += entityType + "\n";
+		ans += threshold + "\n";
+		ans += sourceNERTypes + "\n";
+		ans += targetNERTypes + "\n";
+		ans += patterns + "\n";
+	
+		return ans;
+	}
+	
 	public List<String> normalize(List<String> vals) {
 		throw new NoSuchElementException();
 	}
