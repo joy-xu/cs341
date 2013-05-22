@@ -58,6 +58,89 @@ public class NLPUtils {
 		processor = new StanfordCoreNLP(props, false);
 	}
 	
+	public Map<SlotPattern,List<String>> findEntitiesForFacilities(String sentence,String entity, List<String> edgeTypes)
+	{
+		Map<SlotPattern,List<String>> patterns = new HashMap<SlotPattern,List<String>>();
+		try {
+			if(sentence.length() > 400)
+				return patterns;
+			Annotation document = new Annotation(sentence);
+			processor.annotate(document);
+
+			Map<Integer, Set<Integer>> corefsEntity = getCorefs(document, entity);
+			
+			
+			int sentNum = 0;
+			for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
+				String sentenceFromMap = sentenceMap.toString().trim();
+
+				if(sentenceFromMap.startsWith("Tags :") || sentenceFromMap.length() > 300)
+				{
+					sentNum++;
+					continue;
+				}
+				SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
+				List<IndexedWord> words = findWordsInSemanticGraph(sentenceMap,entity,corefsEntity.get(sentNum));
+				//System.out.println(sentenceFromMap.length() + "##" + sentenceFromMap);
+				if (!words.isEmpty())
+				{	
+					Set<SemanticGraphEdge> allEdges = graph.getEdgeSet();
+					String parentEdge = "";
+					IndexedWord parent = new IndexedWord();
+					Boolean found = false;
+					for (SemanticGraphEdge edge:allEdges)
+					{
+						if (edgeTypes.contains(edge.toString()) && words.contains(edge.getDependent()))
+						{
+							parent = edge.getGovernor();
+							parentEdge = edge.toString();
+							found = true;
+							break;
+						}
+					}
+					if (found)
+					{
+						for (SemanticGraphEdge edge:allEdges)
+						{
+							if (edge.getGovernor().equals(parent) && !words.contains(edge.getDependent()))
+							{
+								SlotPattern pattern = new SlotPattern();
+								Rule rule1 = new Rule();
+								Rule rule2 = new Rule();
+								rule1.direction = EdgeDirection.Out;
+								rule2.direction = EdgeDirection.Out;
+								rule1.edgeType = edge.toString();
+								rule2.edgeType = parentEdge;
+								pattern.setPattern(parent.originalText());
+								pattern.setRules(Arrays.asList(rule1, rule2));
+								if (patterns.containsKey(pattern))
+								{
+									List<String> existing = patterns.get(pattern);
+									existing.add(sentenceFromMap);
+									patterns.put(pattern, existing);
+								}
+								else
+								{
+									List<String> newList = new ArrayList<String>();
+									newList.add(sentenceFromMap);
+									patterns.put(pattern, newList);
+								}
+							}
+						}
+					}
+				}
+				sentNum++;
+			}
+		}
+		catch(Exception ex) 
+		{
+			System.out.println("Exception at : " + sentence);
+			ex.printStackTrace();
+		}
+			
+		return patterns;
+	
+	}
 	public Map<SlotPattern,List<String>> findSlotPatternGivenEntityAndRelation(String sentence, String entity, List<String> edgeTypes)
 	{
 		
@@ -79,13 +162,13 @@ public class NLPUtils {
 			for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
 				String sentenceFromMap = sentenceMap.toString().trim();
 				
-				//System.out.println(sentenceFromMap.length() + "##" + sentenceFromMap);
+				
 				if(sentenceFromMap.startsWith("Tags :") || sentenceFromMap.length() > 300)
 					continue;
 				SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
 				
 				List<IndexedWord> words = findWordsInSemanticGraph(sentenceMap,entity,corefsEntity.get(sentNum));
-				
+				//System.out.println(sentenceFromMap.length() + "##" + sentenceFromMap);
 				if (!words.isEmpty())
 				{	
 					/*
@@ -94,13 +177,15 @@ public class NLPUtils {
 						System.out.println(word.originalText());
 					*/
 					List<IndexedWord> placeTimeWords = new ArrayList<IndexedWord>();
+					for (String edgeType:edgeTypes)
+						placeTimeWords.addAll(findWordsInSemanticGraphByEdgeType(sentenceMap,edgeType));
+					
 					/*
 					System.out.println("placeTimeWords: ");
 					for (IndexedWord pt : placeTimeWords)
 						System.out.println(pt.originalText());
 					*/
-					for (String edgeType:edgeTypes)
-						placeTimeWords.addAll(findWordsInSemanticGraphByEdgeType(sentenceMap,edgeType));
+					
 					if (!words.isEmpty() && !placeTimeWords.isEmpty())
 					{
 						List<SlotPattern> currentPatterns = findRelation(graph, words, placeTimeWords);
@@ -227,7 +312,7 @@ public class NLPUtils {
 				try {
 				List<IndexedWord> current = graph.getShortestUndirectedPathNodes(w1, w2);
 
-				LogInfo.logs("One option:" + current);
+				//LogInfo.logs("One option:" + current);
 				current.remove(w1); current.remove(w2);
 				
 				//Check if shortest path is through one of the entities, don't take it
@@ -251,7 +336,7 @@ public class NLPUtils {
 		
 		
 
-		LogInfo.logs("Shortest dep path:" + shortestPath);
+		//LogInfo.logs("Shortest dep path:" + shortestPath);
 		
 		if(shortestPath.isEmpty())
 			return patterns;
@@ -280,6 +365,7 @@ public class NLPUtils {
 			}
 			pattern = new SlotPattern();
 			pattern.setPattern(word.originalText());
+			System.out.println(word.originalText() + ":" + word.tag());
 			pattern.setRules(Arrays.asList(rule1, rule2));
 			patterns.add(pattern);
 		}
