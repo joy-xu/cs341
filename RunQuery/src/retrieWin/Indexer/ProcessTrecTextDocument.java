@@ -4,7 +4,9 @@ import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -85,6 +87,24 @@ public class ProcessTrecTextDocument {
 				if (currentSentence.toLowerCase().contains(entity1.toLowerCase()))
 				{
 					returnString.add(currentSentence);
+				}
+			}
+		}
+		return returnString;
+	}
+
+	public static Map<String, String> extractRelevantSentencesWithDocID(Collection<TrecTextDocument> documents, String entity1) 
+	{
+		Map<String, String> returnString = new HashMap<String, String>();
+		for (TrecTextDocument t:documents)
+		{
+			List<String> currentAllSentences = t.sentences;
+			for (int j = 0;j<currentAllSentences.size();j++)
+			{
+				String currentSentence = currentAllSentences.get(j);
+				if (currentSentence.toLowerCase().contains(entity1.toLowerCase()))
+				{
+					returnString.put(currentSentence, t.docNumber);
 				}
 			}
 		}

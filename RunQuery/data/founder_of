@@ -1,0 +1,20 @@
+started|dobj:^|nsubj:^ : 0.02380952380952381
+cofounder|appos:v|nn:^ : 0.047619047619047616
+executed|nsubj:^|prep_at:^ : 0.014705882352941175
+built|dobj:^|nsubj:^ : 0.09523809523809523
+cofounder|conj_and:^|nn:^ : 0.014705882352941176
+left|dobj:^|nsubj:^ : 0.022222222222222227
+ceo|appos:^|nn:^ : 0.029411764705882353
+founder|appos:v|nn:^ : 0.011695906432748539
+employee|dep:^|poss:^ : 0.02380952380952381
+ceo|appos:v|prep_of:^ : 0.13986928104575164
+founded|dobj:^|nsubj:^ : 0.4796387520525452
+created|dobj:^|nsubj:^ : 0.07703081232492996
+founded|nsubj:^|prep_by:^ : 0.02380952380952381
+founder|appos:v|prep_of:^ : 0.2095238095238095
+cofounder|appos:v|prep_of:^ : 0.32882205513784457
+personnel|poss:^|prep_after:^ : 0.02380952380952381
+launched|dobj:^|nsubj:^ : 0.02380952380952381
+fame|nn:^|prep_of:v : 0.2
+founder|nn:^|nn:^ : 0.029239766081871343
+|poss:v|::1.0

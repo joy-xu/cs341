@@ -143,10 +143,8 @@ public class NLPUtils {
 	}
 	public Map<SlotPattern,List<String>> findSlotPatternGivenEntityAndRelation(String sentence, String entity, List<String> edgeTypes)
 	{
-		
+
 		String deAccented = sentence;
-		
-		
 		
 		Map<SlotPattern,List<String>> patterns = new HashMap<SlotPattern,List<String>>();
 		try {
@@ -401,10 +399,10 @@ public class NLPUtils {
 		return ans;
 	}
 	
-	public List<String> findSlotValue(String sentence, String entity1, SlotPattern pattern, List<NERType> targetNERTypes) {
+	public List<String> findSlotValue(String sentence, String entity1, SlotPattern pattern, List<NERType> targetNERTypes) throws NoSuchParseException {
 		List<String> values = new ArrayList<String>();
 		//System.out.println(pattern);
-		try {
+		//try {
 			Annotation document = new Annotation(sentence);
 			processor.annotate(document);
 			Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
@@ -414,18 +412,16 @@ public class NLPUtils {
 				values.addAll(findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, targetNERTypes));
 				sentNum++;
 			}
-		}
+		/*}
 		catch(Exception ex) {
 			System.out.println(ex.getMessage());
 			ex.printStackTrace();
 		}
-		
+		*/
 		return values;
 	}
 	
-	private Set<String> findValue(CoreMap sentence,
-			List<IndexedWord> words1, SlotPattern pattern,
-			List<NERType> targetNERTypes) {
+	private Set<String> findValue(CoreMap sentence, List<IndexedWord> words1, SlotPattern pattern, List<NERType> targetNERTypes) {
 		//System.out.println(pattern);
 		//System.out.println(pattern.getRules());
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
@@ -433,27 +429,32 @@ public class NLPUtils {
 		Set<IndexedWord> tempSet = new HashSet<IndexedWord>();
 		Set<String> ans = new HashSet<String>();
 		
-		IndexedWord patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
-		if(patternWord == null)
-			return ans;
-		Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
-		
-		//Checking rule1
-		Set<IndexedWord> rule1Set = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(0), graph);
-		for(IndexedWord w1:words1) {
-			if(rule1Set.contains(w1)) {
-				tempSet.addAll(getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(1), graph));
+		//for rules with no pattern word
+		if(pattern.getPattern().isEmpty()) {
+			tempSet = getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(0), graph);
+		}
+		else { 
+			IndexedWord patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
+			if(patternWord == null)
+				return ans;
+			Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
+			
+			//Checking rule1
+			Set<IndexedWord> rule1Set = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(0), graph);
+			for(IndexedWord w1:words1) {
+				if(rule1Set.contains(w1)) {
+					tempSet.addAll(getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(1), graph));
+				}
+			}
+			
+			//Checking rule2
+			Set<IndexedWord> rule2Set = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(1), graph);
+			for(IndexedWord w1:words1) {
+				if(rule2Set.contains(w1)) {
+					tempSet.addAll(getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(0), graph));
+				}
 			}
 		}
-		
-		//Checking rule2
-		Set<IndexedWord> rule2Set = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(1), graph);
-		for(IndexedWord w1:words1) {
-			if(rule2Set.contains(w1)) {
-				tempSet.addAll(getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(0), graph));
-			}
-		}
-		
 		for(IndexedWord w: tempSet) 
 			ansSet.addAll(getConjAndNeighbours(graph, w));
 		
@@ -655,6 +656,18 @@ public class NLPUtils {
 		}
 	}
 
+	public String getNNs(String sentence, String entity) {
+		Annotation document = new Annotation(sentence);
+		processor.annotate(document);
+		String ans = "";
+		
+		for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
+			for(String token: findExpandedEntity(sentenceMap, entity).split(" "))
+				if(!entity.contains(token))
+					ans += token + " ";
+		}
+		return ans.trim();
+	}
 	
 	public boolean containsTokens(String s2, String s1) {
 		for(String token: s1.split(" ")) {
