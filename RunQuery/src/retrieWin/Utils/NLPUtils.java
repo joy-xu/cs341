@@ -566,6 +566,8 @@ public class NLPUtils {
 		String ans = "";
 		
 		for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
+			if(findExpandedEntity(sentenceMap, entity) == null)
+				continue;
 			for(String token: findExpandedEntity(sentenceMap, entity).split(" "))
 				if(!entity.contains(token))
 					ans += token + " ";
@@ -605,11 +607,15 @@ public class NLPUtils {
             	for(CorefMention m: s) {
             		String clust2 = "";
                     tks = document.get(SentencesAnnotation.class).get(m.sentNum-1).get(TokensAnnotation.class);
-                    for(int i = m.startIndex-1; i < m.endIndex-1; i++)
+                    boolean flag = false;
+                    for(int i = m.startIndex-1; i < m.endIndex-1; i++) {
+                    	if(head.toLowerCase().contains(tks.get(i).get(TextAnnotation.class).toLowerCase()))
+                    		flag = true;
                         clust2 += tks.get(i).get(TextAnnotation.class) + " ";
+                    }
                     clust2 = clust2.trim();
                     //don't need the self mention
-                    if(clust.equals(clust2))
+                    if(clust.equals(clust2) || flag)
                         continue;
                     if(containsTokens(clust, head) && !m.mentionType.equals(MentionType.valueOf("PRONOMINAL")))
                     	corefs.add(clust2);
