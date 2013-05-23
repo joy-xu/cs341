@@ -1,9 +1,11 @@
 package retrieWin.PatternBuilder;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,8 +35,10 @@ import fig.exec.Execution;
 public class Aju implements Runnable{
 	@Option(gloss="working Directory") public String workingDirectory;
 	@Option(gloss="index Location") public String indexLocation;
+	@Option(gloss="number of Results") public int numResults;
 	List<Entity> entities;
 	public static void main(String[] args) {
+		//System.out.println("Co-founder".toLowerCase().replaceAll("[^a-z]", ""));
 		Execution.run(args, "Main", new Aju());
 	}
 	
@@ -45,8 +49,17 @@ public class Aju implements Runnable{
 	@Override
 	public void run() {
 		LogInfo.begin_track("run()");
-		//runBootstrapForPair();
-		runBootStrapforEntityAndNER();
+		LogInfo.logs("Working directory  : " + workingDirectory);
+		LogInfo.logs("Index location     : " + indexLocation);
+		LogInfo.logs("Number of results  : " + numResults);
+		
+		//NLPUtils obj = new NLPUtils();
+		//obj.findSlotPattern("Narrated by Oscar winner Meryl Streep , the film takes audiences into the lives of a mother polar bear and her twin seven-month-old cubs as never before captured on film, as they navigate the changing Arctic wilderness they call home.", "Meryl Streep", "Oscar");
+		//obj.findSlotPattern("Oldest Oscar Winner Meryl Streep Adds Sense of History With Best Actress Oscar Scarlett Johansson Lands Hitchcock Movie", "Meryl Streep", "Oscar");
+		//The movie showcases this enigmatic lady's personal demons, her struggle with dementia and her family relationships through Meryl Streep 's Oscar winning performance.
+		
+		runBootstrapForPair();
+		//runBootStrapforEntityAndNER();
 	
 		LogInfo.end_track();
 	}
@@ -56,8 +69,10 @@ public class Aju implements Runnable{
 		NLPUtils utils = new NLPUtils();
 		//utils.extractPERRelation("The time has come to reassess to impact of former Presiding Justices Aharon Barak and Dorit Beinisch on Human Rights, the justice system, and the rule of law in the State of Israel.");
 		List<String> folders = new ArrayList<String>();
-		for(int i=0;i<24;i++)
-			folders.add(String.format("%04d-%02d-%02d-%02d", 2012,6,1,i));
+		for(int d = 1; d< 11; d++) {
+			for(int i=0;i<24;i++)
+				folders.add(String.format("%04d-%02d-%02d-%02d", 2012,6,d,i));
+		}
 		
 		Map<Entity,String> entityToQueries = new HashMap<Entity,String>();
 		List<String> queries = new ArrayList<String>();
@@ -71,7 +86,8 @@ public class Aju implements Runnable{
 		}
 			
 		Map<String,List<TrecTextDocument>> AllTrecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities);
-		
+		HashMap<SlotPattern, Double> weights = new HashMap<SlotPattern,Double>();
+		IntCounter<SlotPattern> numAppearances = new IntCounter<SlotPattern>();
 		for(Entity e:entities) {
 			if(e.getEntityType()==EntityType.PER) {
 				String query = QueryBuilder.buildOrQuery(e.getExpansions());
@@ -85,9 +101,10 @@ public class Aju implements Runnable{
 					for(String expansion:e.getExpansions()) {
 						
 						expansionToSentences.put(expansion, new HashSet<String>());
-						List<String> sentences  = ProcessTrecTextDocument.extractRelevantSentences(trecDocs, expansion);
-						sentences  = ProcessTrecTextDocument.getCleanedSentences(sentences);
-						for (String sentence:sentences)
+
+						List<String> cleanedSentences = ProcessTrecTextDocument.getCleanedSentences(ProcessTrecTextDocument.extractRelevantSentences(trecDocs, expansion));
+						cleanedSentences  = ProcessTrecTextDocument.getCleanedSentences(cleanedSentences);
+						for (String sentence:cleanedSentences)
 						{
 							if (uniqueSentences.contains(sentence))
 								continue;
@@ -106,7 +123,12 @@ public class Aju implements Runnable{
 						for (String sentence:currentExpansionSet)
 						{
 							//System.out.println("Full sentence: " + sentence);
-							utils.extractPERRelation(sentence, expansion);
+							//List<SlotPattern> patterns = 
+							numAppearances.addAll(utils.extractPERRelation(sentence, expansion));
+							//System.out.println("--------------" + patterns);
+							//for(SlotPattern pattern:patterns) {
+							//	numAppearances.incrementCount(pattern);
+							//}
 							/*for (SlotPattern pattern:patterns.keySet())
 							{
 								patternWeights.incrementCount(pattern,patterns.get(pattern).size());
@@ -121,27 +143,47 @@ public class Aju implements Runnable{
 									allPatterns.put(pattern, patterns.get(pattern));
 								}
 							}*/
-							
 						}
 					}
 				}
 			}
 		}
-		
-		
+		LogInfo.logs("\n\nDone finding patterns\n");
+		double total = numAppearances.totalCount();
+		for(SlotPattern key:numAppearances.keySet()) {
+			weights.put(key, numAppearances.getCount(key) / total);
+		}
+		try {
+			BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt"));
+			
+			for(SlotPattern key:weights.keySet()) {
+				key.setConfidenceScore(numAppearances.getCount(key) / total);
+				weights.put(key, numAppearances.getCount(key) / total);
+				if(weights.get(key) > 0) {
+					LogInfo.logs(key + " : " + weights.get(key));
+					writer.write(key + " : " + weights.get(key) + "\n");
+				}
+			}
+			writer.close();
+		}
+		catch(Exception ex) {
+			LogInfo.logs(ex.getMessage());
+		}
 	}
 		
 	public void runBootstrapForPair() {
-		List<Pair<String,String>> bootstrapList = getBootstrapInput("src/seedSet/slot_Founded_by");
+		List<Pair<String,String>> bootstrapList = getBootstrapInput("src/seedSet/slot_Awards_Won");
 		NLPUtils utils = new NLPUtils();
 
-		HashMap<SlotPattern, Double> weights = new HashMap<SlotPattern,Double>();
+		HashMap<SlotPattern, Double> weights = new HashMap<SlotPattern,Double>(), minWeights = new HashMap<SlotPattern,Double>();
+		IntCounter<SlotPattern> numAppearances = new IntCounter<SlotPattern>();
 		for(Pair<String, String> pair:bootstrapList) {
 			ExecuteQuery eq = new ExecuteQuery(indexLocation);
-			LogInfo.logs("Start querying");
-			List<TrecTextDocument> trecDocs = eq.executeQuery(QueryBuilder.buildUnorderedQuery(pair.first, pair.second, 10), 1000, workingDirectory);
+			LogInfo.logs("Start querying " + pair);
+			List<TrecTextDocument> trecDocs = eq.executeQuery(QueryBuilder.buildUnorderedQuery(pair.first, pair.second, 10), numResults, workingDirectory);
 			IntCounter<SlotPattern> individualWeights = new IntCounter<SlotPattern>();
-			for(String str:ProcessTrecTextDocument.extractRelevantSentences(trecDocs, pair.first, pair.second)) {
+			List<String> cleanedSentences = ProcessTrecTextDocument.getCleanedSentences(ProcessTrecTextDocument.extractRelevantSentences(trecDocs, pair.first, pair.second));
+			for(String str:cleanedSentences) {
 				LogInfo.logs(str);
 				List<SlotPattern> patterns = utils.findSlotPattern(str, pair.first, pair.second);
 				for(SlotPattern pattern:patterns) {
@@ -153,16 +195,40 @@ public class Aju implements Runnable{
 			LogInfo.logs("\n\nIndividual counts for " + pair);
 			for(SlotPattern pattern:individualWeights.keySet()) {
 				LogInfo.logs(pattern + ":" + individualWeights.getCount(pattern));
+				double currentWt = individualWeights.getCount(pattern) / total;
+				
+				numAppearances.incrementCount(pattern);
 				if(!weights.containsKey(pattern)) {
 					weights.put(pattern, 0.0);
+					minWeights.put(pattern, (double)Integer.MAX_VALUE);
 				}
-				weights.put(pattern, weights.get(pattern) + individualWeights.getCount(pattern) / total);
+				weights.put(pattern, weights.get(pattern) + currentWt);
+				if(minWeights.get(pattern) > currentWt)
+					minWeights.put(pattern, currentWt);
 			}
 		}
 		
-		LogInfo.logs("\n\nDone finding patterns\n");
-		for(SlotPattern pattern:weights.keySet()) {
-			LogInfo.logs(pattern + ":" + weights.get(pattern));
+		try {
+			LogInfo.logs("\n\nDone finding patterns\n");
+			BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt"));
+			//for(SlotPattern pattern:weights.keySet()) {
+			//	LogInfo.logs(numAppearances.getCount(pattern) + ":" +  pattern + ":" + weights.get(pattern));
+			//}
+
+			for(SlotPattern key:weights.keySet()) {
+				double score = (weights.get(key) - minWeights.get(key) ) * (numAppearances.getCount(key) -1) ;
+				key.setConfidenceScore(score);
+				weights.put(key, score );
+				//totalNormalizedCounts.put(key, (totalNormalizedCounts.get(key) ) *  numAppearances.getCount(key));
+				if(weights.get(key) > 0) {
+					LogInfo.logs(key + " : " + weights.get(key));
+					writer.write(key + " : " + weights.get(key) + "\n");
+				}
+			}
+			writer.close();
+		}
+		catch(Exception ex) {
+			LogInfo.logs(ex.getMessage());
 		}
 	}
 	

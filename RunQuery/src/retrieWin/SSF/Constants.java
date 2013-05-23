@@ -14,6 +14,12 @@ public class Constants  implements Serializable {
 	
 	public final static String s3ConceptsDirectory = "s3://conceptsData/";
 	
+	public enum PatternType {
+		WordInBetween,
+		ShortPattern,
+		Possessive
+	}
+	
 	public enum EntityType {
 		PER,
 		ORG,
@@ -33,7 +39,8 @@ public class Constants  implements Serializable {
 		NUMBER,
 		MISC,
 		DURATION,
-		ORDINAL
+		ORDINAL,
+		PERCENT
 	}
 	
 	public enum SlotName{
