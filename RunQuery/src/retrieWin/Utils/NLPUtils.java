@@ -141,6 +141,82 @@ public class NLPUtils {
 		return patterns;
 	
 	}
+	
+	public Map<SlotPattern,List<String>> findRelationToOrganization(String sentence,String entity)
+	{
+		Map<SlotPattern,List<String>> patterns = new HashMap<SlotPattern,List<String>>();
+		try {
+			if(sentence.length() > 400)
+				return patterns;
+			Annotation document = new Annotation(sentence);
+			processor.annotate(document);
+
+			Map<Integer, Set<Integer>> corefsEntity = getCorefs(document, entity);
+			
+			
+			int sentNum = 0;
+			for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
+				String sentenceFromMap = sentenceMap.toString().trim();
+
+				if(sentenceFromMap.startsWith("Tags :") || sentenceFromMap.length() > 300)
+				{
+					sentNum++;
+					continue;
+				}
+				SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
+				List<IndexedWord> words = findWordsInSemanticGraph(sentenceMap,entity,corefsEntity.get(sentNum));
+				//System.out.println(sentenceFromMap.length() + "##" + sentenceFromMap);
+				if (words.isEmpty())
+				{
+					sentNum++;
+					continue;
+				}
+				List<String> candidates = new ArrayList<String>();
+				Map<String,String> nermap = createNERMap(sentenceMap);
+				for (String candidateWord:nermap.keySet())
+				{
+				//	System.out.println("word: " + candidateWord + " ner: " + nermap.get(candidateWord));
+					if (nermap.get(candidateWord).equals("ORGANIZATION"))
+					{
+						candidates.add(candidateWord);
+					}
+				}
+				Set<IndexedWord> allOrgWords = new HashSet<IndexedWord>();
+				for (String candidate:candidates)
+				{
+					List<IndexedWord> orgWords = findWordsInSemanticGraph(sentenceMap,candidate,null);
+					allOrgWords.addAll(orgWords);
+				}
+				List<IndexedWord> allOrgWordsList = new ArrayList<IndexedWord>(allOrgWords);
+				List<SlotPattern> currentPatterns = findRelation(graph,words,allOrgWordsList);
+				for (SlotPattern p :currentPatterns)
+				{
+					if (patterns.containsKey(p))
+					{
+						List<String> s = patterns.get(p);
+						s.add(sentenceFromMap);
+						patterns.put(p, s);
+					}
+					else
+					{
+						List<String> s = new ArrayList<String>();
+						s.add(sentenceFromMap);
+						patterns.put(p, s);
+					}
+				}		
+				sentNum++;
+			}
+		}
+		catch(Exception ex) 
+		{
+			System.out.println("Exception at : " + sentence);
+			ex.printStackTrace();
+		}
+			
+		return patterns;
+	
+	}
+	
 	public Map<SlotPattern,List<String>> findSlotPatternGivenEntityAndRelation(String sentence, String entity, List<String> edgeTypes)
 	{
 
@@ -162,7 +238,10 @@ public class NLPUtils {
 				
 				
 				if(sentenceFromMap.startsWith("Tags :") || sentenceFromMap.length() > 300)
+				{
+					sentNum++;
 					continue;
+				}
 				SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
 				
 				List<IndexedWord> words = findWordsInSemanticGraph(sentenceMap,entity,corefsEntity.get(sentNum));
@@ -214,6 +293,7 @@ public class NLPUtils {
 		
 		return patterns;
 	}
+	
 	public List<SlotPattern> findSlotPattern(String sentence, String entity1, String entity2) {
 		List<SlotPattern> patterns = new ArrayList<SlotPattern>();
 		
@@ -801,4 +881,5 @@ public class NLPUtils {
 			System.out.println(ex.getMessage());
 		}
 	}
+	
 }

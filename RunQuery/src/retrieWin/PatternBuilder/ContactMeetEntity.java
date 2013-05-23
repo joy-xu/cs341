@@ -13,8 +13,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import retrieWin.Indexer.ProcessTrecTextDocument;
@@ -54,10 +56,26 @@ public class ContactMeetEntity implements Runnable{
 		if (!workingDirectory.endsWith("/"))
 			workingDirectory = workingDirectory + "/";
 		gatherResults();
-	
+		//readResults();
 		LogInfo.end_track();
 	}
 	
+	public void readResults()
+	{
+		@SuppressWarnings("unchecked")
+		Map<SlotPattern, Set<String>> slotmap = (Map<SlotPattern,Set<String>>)FileUtils.readFile(outputFile);
+		for (SlotPattern pattern:slotmap.keySet())
+		{
+			System.out.println(pattern.toString());
+			System.out.println("Sentences: ");
+			for (String s:slotmap.get(pattern))
+			{
+				System.out.println(s);
+			}
+			System.out.println("Count: ");
+			System.out.println(slotmap.get(pattern).size());
+		}
+	}
 	public void gatherResults() {
 		
 		
@@ -84,6 +102,14 @@ public class ContactMeetEntity implements Runnable{
 		
 		for(Entity e:entities) {
 			if (e.getEntityType()!=EntityType.FAC)
+				continue;
+			Boolean isschool = false;
+			for (String expansion:e.getExpansions())
+			{
+				if (expansion.contains("school") || expansion.contains("School"))
+					isschool = true;
+			}
+			if (isschool)
 				continue;
 			String query = QueryBuilder.buildOrQuery(e.getExpansions());
 			entityToQueries.put(e, query);
@@ -259,17 +285,77 @@ public class ContactMeetEntity implements Runnable{
 					}
 				}
 				//System.out.println("Query: " + ent.getExpansions().get(0) + " Size of results: " + uniqueSentences.size());
+				
+				
 				for (String expansion:expansionToSentences.keySet())
 				{
+					int numthreads = 16;
+					ExecutorService exc = Executors.newFixedThreadPool(numthreads);
+					
+					List<Future<Map<SlotPattern,List<String>>>> futuresList = new ArrayList<Future<Map<SlotPattern,List<String>>>>();
+					Map<SlotPattern,List<String>> thisThreadResults = new HashMap<SlotPattern,List<String>>();
 					//System.out.println("Expansion: " + expansion);
 					Set<String> currentExpansionSet = expansionToSentences.get(expansion);
 					for (String sentence:currentExpansionSet)
 					{
-						Map<SlotPattern,List<String>> patterns = nlp.findEntitiesForFacilities(sentence, expansion, relations);
-						addToPatternMap(patterns);	
+						Callable<Map<SlotPattern,List<String>>> c = new NLPSentenceParser(sentence,expansion,nlp,relations);
+						Future<Map<SlotPattern,List<String>>> s = exc.submit(c);
+						futuresList.add(s);
 					}
+					for (Future<Map<SlotPattern,List<String>>> f:futuresList)
+					{
+						Map<SlotPattern,List<String>> thisResult = new HashMap<SlotPattern,List<String>>();
+						try
+						{
+							thisResult = f.get();
+						}
+						catch (Exception excep)
+						{
+							excep.printStackTrace();
+						}
+						for (SlotPattern p:thisResult.keySet())
+						{
+							if (thisThreadResults.containsKey(p))
+							{
+								List<String> existing = thisThreadResults.get(p);
+								existing.addAll(thisResult.get(p));
+								thisThreadResults.put(p,existing);
+							}
+							else
+							{
+								thisThreadResults.put(p, thisResult.get(p));
+							}
+						}
+					}
+					exc.shutdown();
+					addToPatternMap(thisThreadResults);	
 				}
+				
+			
 			}
+		}
+		
+	}
+	
+private static class NLPSentenceParser implements Callable<Map<SlotPattern,List<String>>>{
+		
+		String sentence;
+		String expansion;
+		Entity ent;
+		NLPUtils nlp;
+		List<String> relations;
+		public NLPSentenceParser(String sen, String exp, NLPUtils nlpin, List<String> relIn)
+		{
+			nlp = nlpin;
+			sentence = sen;
+			expansion = exp;
+			relations = relIn;
+		}
+		
+		@Override
+		public Map<SlotPattern,List<String>> call() throws Exception {
+
+			return nlp.findEntitiesForFacilities(sentence, expansion, relations);
 		}
 	}
 }
