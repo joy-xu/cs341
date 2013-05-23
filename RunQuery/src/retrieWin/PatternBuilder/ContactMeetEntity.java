@@ -35,15 +35,15 @@ import fig.basic.LogInfo;
 import fig.basic.Option;
 import fig.exec.Execution;
 
-public class ContactMeetPlaceTime implements Runnable{
+public class ContactMeetEntity implements Runnable{
 	@Option(gloss="working Directory") public String workingDirectory;
-
+	@Option(gloss="output file") public String outputFile;
 	List<Entity> entities;
 	public static void main(String[] args) {
-		Execution.run(args, "Main", new ContactMeetPlaceTime());
+		Execution.run(args, "Main", new ContactMeetEntity());
 	}
 	
-	public ContactMeetPlaceTime(){
+	public ContactMeetEntity(){
 		readEntities();
 	}
 
@@ -66,10 +66,10 @@ public class ContactMeetPlaceTime implements Runnable{
 		IntCounter<SlotPattern> patternWeights = new IntCounter<SlotPattern>();
 		Map<SlotPattern,Set<String>> allPatterns = new HashMap<SlotPattern,Set<String>>();
 		relations.add("prep_at");
-		relations.add("prep_in");
+		//relations.add("prep_in");
 		List<String> folders = new ArrayList<String>();
 		
-		for (int j = 21;j<23;j++)
+		for (int j = 21;j<22;j++)
 		{
 		for (int i = 0;i<24;i++)
 		{
@@ -83,7 +83,7 @@ public class ContactMeetPlaceTime implements Runnable{
 		List<String> queries = new ArrayList<String>();
 		
 		for(Entity e:entities) {
-			if (e.getEntityType()!=EntityType.PER)
+			if (e.getEntityType()!=EntityType.FAC)
 				continue;
 			String query = QueryBuilder.buildOrQuery(e.getExpansions());
 			entityToQueries.put(e, query);
@@ -135,7 +135,11 @@ public class ContactMeetPlaceTime implements Runnable{
 			System.out.println("Count: ");
 			System.out.println(patternWeights.getCountAsString(pattern));
 		}
+		
+		FileUtils.writeFile(allPatterns, outputFile);
 	}
+	
+	
 	public List<String> getDisambiguations(String entity) {
 		String baseFolder = "data/entities_expanded/";
 		List<String> disambiguations = new ArrayList<String>();
@@ -245,8 +249,8 @@ public class ContactMeetPlaceTime implements Runnable{
 					{
 						if (uniqueSentences.contains(sentence))
 							continue;
-						if (sentence.contains(" at "))
-							System.out.println("sentence: " + sentence);
+						//if (sentence.contains(" at "))
+							//System.out.println("sentence: " + sentence);
 						uniqueSentences.add(sentence);
 						Set<String> currentExpansionSet = expansionToSentences.get(expansion);
 						currentExpansionSet.add(sentence);
@@ -261,7 +265,7 @@ public class ContactMeetPlaceTime implements Runnable{
 					Set<String> currentExpansionSet = expansionToSentences.get(expansion);
 					for (String sentence:currentExpansionSet)
 					{
-						Map<SlotPattern,List<String>> patterns = nlp.findSlotPatternGivenEntityAndRelation(sentence, expansion, relations);
+						Map<SlotPattern,List<String>> patterns = nlp.findEntitiesForFacilities(sentence, expansion, relations);
 						addToPatternMap(patterns);	
 					}
 				}
@@ -269,4 +273,5 @@ public class ContactMeetPlaceTime implements Runnable{
 		}
 	}
 }
+
 

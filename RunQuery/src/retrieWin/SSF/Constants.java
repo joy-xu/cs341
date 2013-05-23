@@ -20,6 +20,8 @@ public class Constants  implements Serializable {
 		Possessive
 	}
 	
+	public final static String defaultWorkingDirectory = "tmp/";
+	
 	public enum EntityType {
 		PER,
 		ORG,

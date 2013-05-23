@@ -39,6 +39,11 @@ public class ExecuteQuery {
 		}
 	}
 	
+	public void emptyData()
+	{
+		storedFiles = null;
+	}
+	
 	public Set<String> queryIndex(String query, int resultsRequested) {
 		Set<String> results = new HashSet<String>();
 		try {
@@ -59,19 +64,16 @@ public class ExecuteQuery {
 		return queryIndex(query, Integer.MAX_VALUE);
 	}
 
-
-	public List<TrecTextDocument> executeQueryFromStoredFile(String query, int numResults, List<String> documentTypes)
-	{
-		Set<String> queryResults = queryIndex(query, numResults);
-		return getFromStoredFile(queryResults);
-	}
 	public List<TrecTextDocument> getFromStoredFile(Set<String> queryResults)
 	{
 		List<TrecTextDocument> output = new ArrayList<TrecTextDocument>();
 		for (String docNo:queryResults)
 		{
 			if (storedFiles.containsKey(docNo))
-				output.add(storedFiles.get(docNo));
+			{
+				
+				output.add(new TrecTextDocument(storedFiles.get(docNo)));
+			}
 			else
 				System.out.println("File not found. You are definitely doing something wrong");
 		}

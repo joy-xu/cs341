@@ -56,7 +56,7 @@ public class QueryBuilder {
 		sbuf.append("<");
 		for (String s:equivalents)
 		{
-			sbuf.append("#5(");
+			sbuf.append("#1(");
 			sbuf.append(s);
 			sbuf.append(")");
 			sbuf.append(" ");

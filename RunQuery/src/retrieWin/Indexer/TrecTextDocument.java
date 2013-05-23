@@ -29,7 +29,18 @@ public class TrecTextDocument implements Serializable, Comparable<TrecTextDocume
 		time = tm;
 		sentences = sentencesIn;
 	}
-	
+	public TrecTextDocument(TrecTextDocument other)
+	{
+		docNumber = other.docNumber;
+		text = other.text;
+		time = other.time;
+		sentences = new ArrayList<String>();
+		for (String s:other.sentences)
+		{
+			String dup = s;
+			sentences.add(dup);
+		}
+	}
 	public static void serializeFile(Set<TrecTextDocument> results,String serializedFileLocation)
 	{
 		Map<String, TrecTextDocument> hmap = new HashMap<String,TrecTextDocument>();

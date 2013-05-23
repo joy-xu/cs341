@@ -1,5 +1,6 @@
 package retrieWin.SSF;
 
+import edu.stanford.nlp.parser.lexparser.NoSuchParseException;
 import fig.basic.*;
 import fig.exec.Execution;
 
@@ -8,19 +9,22 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import retrieWin.Indexer.Indexer;
-import retrieWin.Indexer.IndriIndexBuilder;
+import retrieWin.Indexer.ProcessTrecTextDocument;
 import retrieWin.Indexer.TrecTextDocument;
 import retrieWin.SSF.Constants.EntityType;
 import retrieWin.SSF.Constants.NERType;
 import retrieWin.SSF.Constants.SlotName;
+import retrieWin.SSF.SlotPattern.Rule;
 import retrieWin.Utils.FileUtils;
 import retrieWin.Utils.NLPUtils;
 import retrieWin.Utils.Utils;
-import sun.security.jgss.LoginConfigImpl;
 
 public class SSF implements Runnable{
 	@Option(gloss="working Directory") public String workingDirectory;
@@ -29,6 +33,8 @@ public class SSF implements Runnable{
 	@Option(gloss="index Location") public String saveAsDirectory;
 	List<Slot> slots;
 	List<Entity> entities;
+	NLPUtils coreNLP;
+	Concept conceptExtractor;
 	
 	public SSF() {
 		initialize();
@@ -37,6 +43,8 @@ public class SSF implements Runnable{
 	public void initialize() {
 		readEntities();
 		readSlots();
+		coreNLP = new NLPUtils();
+		conceptExtractor = new Concept();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -146,8 +154,149 @@ public class SSF implements Runnable{
 		//System.out.println(slots); */
 	}
 	
+	public void updateSlotPatterns(Constants.SlotName slotName, String fileName) {
+		readSlots();
+		List<SlotPattern> patterns = new ArrayList<SlotPattern>();
+		SlotPattern pat;
+		Rule rule1, rule2;
+		String line;
+		
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(fileName));
+			while((line = reader.readLine()) != null) {
+				pat = new SlotPattern();
+				pat.setPattern(line.trim().split("\\|")[0]);
+				rule1 = new Rule();
+				rule1.edgeType = line.trim().split("\\|")[1].split(":")[0];
+				if(!rule1.edgeType.isEmpty())
+					rule1.direction = (line.trim().split("\\|")[1].split(":")[1].equals("v") ? Constants.EdgeDirection.In : Constants.EdgeDirection.Out);
+				rule2 = new Rule();
+				//System.out.println(Arrays.asList(line.trim().split("\\|")[2].split(":")));
+				rule2.edgeType = line.trim().split("\\|")[2].split(":")[0];
+				if(!rule2.edgeType.isEmpty())
+					rule2.direction = (line.trim().split("\\|")[2].split(":")[1].equals("v") ? Constants.EdgeDirection.In : Constants.EdgeDirection.Out);
+				
+				pat.setRules(Arrays.asList(rule1, rule2));
+				pat.setConfidenceScore(Double.parseDouble(line.trim().split("\\|")[2].split(":")[2].trim()));
+				patterns.add(pat);
+			}
+			reader.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return;
+		}
+		System.out.println(patterns);
+		for(Slot slot: slots) {
+			if(!slot.getName().equals(slotName))
+				continue;
+			slot.setPatterns(patterns);
+		}
+		FileUtils.writeFile(slots, Constants.slotsSerializedFile);
+	}
+	
+	private boolean containsUppercaseToken(String str) {
+		for(String token: str.split(" "))
+			if(Character.isUpperCase(token.charAt(0)))
+					return true;
+		return false;
+	}
+	
+	private Map<String, Double> findTitles(Entity entity, Slot slot, Map<String, Map<String, String>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
+		Map<String, Double> candidates = new HashMap<String, Double>();
+		for(String expansion: entity.getExpansions()) {
+			for(String sentence: relevantSentences.get(expansion).keySet()) {
+				System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
+				try {
+					//check for any non-pronominal coreference
+					for(String title: coreNLP.getCorefs(sentence, expansion))
+						if(containsUppercaseToken(title) && !candidates.containsKey(title))
+							candidates.put(title, 1.0);
+					
+					//check for any compund nouns for this entity
+					String nnTitle = coreNLP.getNNs(sentence, expansion);
+					if(containsUppercaseToken(nnTitle) && !candidates.containsKey(nnTitle))
+						candidates.put(nnTitle, 1.0);
+				} catch(NoSuchParseException e) {
+					e.printStackTrace();
+					break;
+				}
+			}
+		}
+		return candidates;
+	}
+
+	
+	private Map<String, Double> findCandidates(Entity entity, Slot slot, Map<String, Map<String, String>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
+		if(slot.getName().equals(Constants.SlotName.Titles))
+			return findTitles(entity, slot, relevantSentences, coreNLP, conceptExtractor);
+		
+		Map<String, Double> candidates = new HashMap<String, Double>();
+		for(String expansion: entity.getExpansions()) {
+			for(String sentence: relevantSentences.get(expansion).keySet()) {
+				System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
+				for(SlotPattern pattern: slot.getPatterns()) {
+					try {
+						//for each sentence, find possible slot values and add to candidate list
+						//arxiv documents
+						if(relevantSentences.get(expansion).get(sentence).contains("arxiv")) {
+							if(!slot.getName().equals(Constants.SlotName.Affiliate_Of) || !entity.getEntityType().equals(Constants.EntityType.PER))
+								continue;
+							arxivDocument arxivDoc = new arxivDocument(relevantSentences.get(expansion).get(sentence));
+							if(arxivDoc.getAuthors().contains(expansion)) {
+								for(String author: arxivDoc.getAuthors()) 
+									if(!author.equals(expansion))
+										candidates.put(author, 1.0);
+								for(String ack: arxivDoc.getAcknowledgements())
+									candidates.put(ack, 1.0);
+							}
+							else if(arxivDoc.getAcknowledgements().contains(expansion)) {
+								for(String author: arxivDoc.getAuthors()) 
+									candidates.put(author, 1.0);
+							}
+							
+							for(List<String> reference: arxivDoc.getReferences()) {
+									if(reference.contains(expansion)) {
+										for(String author: reference) 
+											if(!author.equals(expansion))
+												candidates.put(author, 1.0);
+									}
+							}
+						}
+						//social documents
+						else if(relevantSentences.get(expansion).get(sentence).contains("social")) {
+							for(String str: coreNLP.findSlotValue(sentence, expansion, pattern, slot.getTargetNERTypes())) {
+								//get normalized concept from candidate
+								String concept = conceptExtractor.getConcept(str);
+								if(!candidates.containsKey(concept))
+									candidates.put(concept, pattern.getConfidenceScore());
+								else
+									candidates.put(concept, candidates.get(concept) + pattern.getConfidenceScore());
+							}
+						}
+						//news documents
+						else {
+							for(String str: coreNLP.findSlotValue(sentence, expansion, pattern, slot.getTargetNERTypes())) {
+								//get normalized concept from candidate
+								String concept = conceptExtractor.getConcept(str);
+								if(!candidates.containsKey(concept))
+									candidates.put(concept, pattern.getConfidenceScore());
+								else
+									candidates.put(concept, candidates.get(concept) + pattern.getConfidenceScore());
+							}
+						}
+					} catch(NoSuchParseException e) {
+						e.printStackTrace();
+						break;
+					}
+				}
+			}
+		}
+		return candidates;
+	}
+	
 	public void runSSF(String timestamp) {
-		/** create index for the current hour */
+		/** create index for the current hour **/
+		System.out.println("Creating index...");
 		String[] splits = timestamp.split("-");
 		String currentFolder = workingDirectory;
 		for (int i = 0;i<4;i++)
@@ -169,27 +318,62 @@ public class SSF implements Runnable{
 			baseDir.mkdirs();
 
 		Indexer.createIndex(timestamp,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities);
-		//Indexer.createUnfilteredIndex(timestamp, baseFolder, tempDirectory);
-		/*
-		for(Entity ent: entities) {
-			Map<TrecTextDocument,Double> docs= ent.getRelevantDocuments(indexLocation,trecTextSerializedFile);
-
+		
+		/** read in existing information for entities **/
+		System.out.println("Reading entities...");
+		readEntities();
+		
+		/** read in slot information **/
+		System.out.println("Reading slots...");
+		readSlots();
+		
+		/** for each entity, for each slot, for each entity expansion**/
+		System.out.println("Finding slot values...");
+		for(Entity entity: entities) {
+			//get all relevant documents for the entity
+			List<TrecTextDocument> docs = entity.getRelevantDocuments(timestamp, entities);
+			System.out.println("Retrieved " + docs.size() + " TrecTextDocuments for entity: " + entity.getName());
+			if(docs.isEmpty())
+				continue;
+			
+			//get relevant sentences for each expansion, ensure no sentence retrieved twice
+			Map<String, Map<String, String>> relevantSentences = new HashMap<String, Map<String, String>>();
+			Set<String> retrievedSentences = new HashSet<String>();
+			for(String expansion: entity.getExpansions()) {
+				Map<String, String> sentences = new HashMap<String, String>();
+				Map<String, String> returnedSet = ProcessTrecTextDocument.extractRelevantSentencesWithDocID(docs, expansion);
+				for(String sent: returnedSet.keySet()) 
+					if(!retrievedSentences.contains(sent)) {
+							sentences.put(sent, returnedSet.get(sent));
+							retrievedSentences.add(sent);
+					}
+				relevantSentences.put(expansion, sentences);
+			}
+			System.out.println("Number of relevant sentences: " + retrievedSentences.size());
+			
+			//iterate to fill slots
 			for(Slot slot: slots) {
-				List<String> candidateVals = slot.extractSlotVals(ent, docs);
-				List<String> updatedVals = ent.updateSlot(slot, candidateVals);
-				if(!updatedVals.isEmpty())
-					System.out.println(slot.getName() + " updated with " + updatedVals);
-				else
-					System.out.println(slot.getName() + " not updated");
+				//compute only for relevant slots for this entity
+				if(!slot.getEntityType().equals(entity.getEntityType()))
+						continue;
+				//TODO: remove this, computing only one slot right now
+				if(!slot.getName().equals(Constants.SlotName.Founder_Of) && !slot.getName().equals(Constants.SlotName.Titles))
+					continue;
+				
+				System.out.println("Finding value for " + slot.getName());
+				//for each expansion, slot pattern, get all possible candidates
+				Map<String, Double> candidates = findCandidates(entity, slot, relevantSentences, coreNLP, conceptExtractor);
+				
+				//remove candidates below the threshold value
+				List<String> finalCandidateList = new ArrayList<String>();
+				for(String key: candidates.keySet()) 
+					if(candidates.get(key) > slot.getThreshold()) 
+						finalCandidateList.add(key);
+				
+				//updating slots
+				System.out.println(entity.getName() + "," + slot.getName() + ":" + entity.updateSlot(slot, finalCandidateList));
 			}
 		}
-		*/
-		/*NLPUtils utils = new NLPUtils();
-		String sent = "Bill Gates millionaire and founder of Microsoft was diagnosed with Aspergers.";
-		List<SlotPattern> patterns = utils.findSlotPattern(sent, "Bill Gate", "Microsoft");
-		System.out.println(patterns);
-		System.out.println(utils.findSlotValue(sent, "Bill Gates", patterns.get(0), null));*/
-		
 	}
 	
 	void buildLargeIndex() {
@@ -210,7 +394,7 @@ public class SSF implements Runnable{
 			System.out.println("Environment variable not set");
 			return;
 		}
-		
+		//new SSF().updateSlotPatterns(Constants.SlotName.Founder_Of, "data/founder_of");
 		Execution.run(args, "Main", new SSF());
 	}
 
