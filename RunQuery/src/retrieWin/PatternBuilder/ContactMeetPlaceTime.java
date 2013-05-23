@@ -161,6 +161,8 @@ public class ContactMeetPlaceTime implements Runnable{
 				buf.write(p.toString());
 				buf.newLine();
 			}
+			buf.flush();
+			buf.close();
 		}
 		catch (Exception e)
 		{
@@ -207,6 +209,8 @@ public class ContactMeetPlaceTime implements Runnable{
 				}
 				buf.write("\n");
 			}
+			buf.flush();
+			buf.close();
 		}
 		catch (Exception e)
 		{
