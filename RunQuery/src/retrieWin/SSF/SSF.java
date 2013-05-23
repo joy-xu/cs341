@@ -161,7 +161,7 @@ public class SSF implements Runnable{
 		Rule rule1, rule2;
 		String line;
 		
-		try {
+		/*try {
 			BufferedReader reader = new BufferedReader(new FileReader(fileName));
 			while((line = reader.readLine()) != null) {
 				pat = new SlotPattern();
@@ -190,14 +190,23 @@ public class SSF implements Runnable{
 			if(!slot.getName().equals(slotName))
 				continue;
 			slot.setPatterns(patterns);
+		}*/
+		for(Slot slot: slots) {
+			if(!slot.getName().equals(slotName))
+				continue;
+			slot.setEntityType(Constants.EntityType.PER);
+			slot.setSourceNERTypes(Arrays.asList(Constants.NERType.PERSON));
 		}
 		FileUtils.writeFile(slots, Constants.slotsSerializedFile);
 	}
 	
 	private boolean containsUppercaseToken(String str) {
-		for(String token: str.split(" "))
+		for(String token: str.split(" ")) {
+			if(token.isEmpty())
+				continue;
 			if(Character.isUpperCase(token.charAt(0)))
 					return true;
+		}
 		return false;
 	}
 	
@@ -326,6 +335,7 @@ public class SSF implements Runnable{
 		/** read in slot information **/
 		System.out.println("Reading slots...");
 		readSlots();
+		System.out.println(slots);
 		
 		/** for each entity, for each slot, for each entity expansion**/
 		System.out.println("Finding slot values...");
@@ -357,6 +367,7 @@ public class SSF implements Runnable{
 				if(!slot.getEntityType().equals(entity.getEntityType()))
 						continue;
 				//TODO: remove this, computing only one slot right now
+				System.out.println("In slot " + slot.getName());
 				if(!slot.getName().equals(Constants.SlotName.Founder_Of) && !slot.getName().equals(Constants.SlotName.Titles))
 					continue;
 				
@@ -394,7 +405,7 @@ public class SSF implements Runnable{
 			System.out.println("Environment variable not set");
 			return;
 		}
-		//new SSF().updateSlotPatterns(Constants.SlotName.Founder_Of, "data/founder_of");
+		//new SSF().updateSlotPatterns(Constants.SlotName.Titles, "data/founder_of");
 		Execution.run(args, "Main", new SSF());
 	}
 

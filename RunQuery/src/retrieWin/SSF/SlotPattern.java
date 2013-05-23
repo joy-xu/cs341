@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import retrieWin.SSF.Constants.EdgeDirection;
+import retrieWin.SSF.Constants.PatternType;
 
 public class SlotPattern  implements Serializable {
 	/**
@@ -13,6 +14,7 @@ public class SlotPattern  implements Serializable {
 	private double confidenceScore;
 	private List<Rule> rules;
 	private String pattern;
+	PatternType patternType = PatternType.WordInBetween;
 	
 	public static class Rule implements Serializable{
 		/**

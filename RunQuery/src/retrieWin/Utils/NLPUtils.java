@@ -40,6 +40,7 @@ import edu.stanford.nlp.semgraph.SemanticGraph;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations;
 import edu.stanford.nlp.semgraph.SemanticGraphEdge;
 import edu.stanford.nlp.semgraph.SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation;
+import edu.stanford.nlp.stats.IntCounter;
 import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations;
@@ -188,7 +189,7 @@ public class NLPUtils {
 					allOrgWords.addAll(orgWords);
 				}
 				List<IndexedWord> allOrgWordsList = new ArrayList<IndexedWord>(allOrgWords);
-				List<SlotPattern> currentPatterns = findRelation(graph,words,allOrgWordsList);
+				List<SlotPattern> currentPatterns = findRelation(sentenceMap,words,allOrgWordsList);
 				for (SlotPattern p :currentPatterns)
 				{
 					if (patterns.containsKey(p))
@@ -218,10 +219,9 @@ public class NLPUtils {
 	}
 	
 	public Map<SlotPattern,List<String>> findSlotPatternGivenEntityAndRelation(String sentence, String entity, List<String> edgeTypes)
-	{
-
+	{		
 		String deAccented = sentence;
-		
+
 		Map<SlotPattern,List<String>> patterns = new HashMap<SlotPattern,List<String>>();
 		try {
 			if(deAccented.length() > 400)
@@ -241,8 +241,10 @@ public class NLPUtils {
 				{
 					sentNum++;
 					continue;
+
 				}
 				SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
+
 				
 				List<IndexedWord> words = findWordsInSemanticGraph(sentenceMap,entity,corefsEntity.get(sentNum));
 				//System.out.println(sentenceFromMap.length() + "##" + sentenceFromMap);
@@ -265,7 +267,7 @@ public class NLPUtils {
 					
 					if (!words.isEmpty() && !placeTimeWords.isEmpty())
 					{
-						List<SlotPattern> currentPatterns = findRelation(graph, words, placeTimeWords);
+						List<SlotPattern> currentPatterns = findRelation(sentenceMap, words, placeTimeWords);
 						for (SlotPattern p :currentPatterns)
 						{
 							if (patterns.containsKey(p))
@@ -293,7 +295,7 @@ public class NLPUtils {
 		
 		return patterns;
 	}
-	
+
 	public List<SlotPattern> findSlotPattern(String sentence, String entity1, String entity2) {
 		List<SlotPattern> patterns = new ArrayList<SlotPattern>();
 		
@@ -312,8 +314,9 @@ public class NLPUtils {
 				//System.out.println(sentenceFromMap.length() + "##" + sentenceFromMap);
 				if(sentenceFromMap.startsWith("Tags :") || sentenceFromMap.length() > 300)
 					continue;
-				SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
-				patterns.addAll(findRelation(graph, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), findWordsInSemanticGraph(sentenceMap, entity2, corefsEntity2.get(sentNum))));
+				//SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
+				patterns.addAll(findRelation(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), findWordsInSemanticGraph(sentenceMap, entity2, corefsEntity2.get(sentNum))));
+				findShortRelation(sentenceMap, findWordsInSemanticGraphSimple(sentenceMap, entity1), findWordsInSemanticGraphSimple(sentenceMap, entity2));
 				sentNum++;
 			}
 		}
@@ -352,6 +355,19 @@ public class NLPUtils {
 		return words;
 	}
 	
+	public List<IndexedWord> findWordsInSemanticGraphSimple(CoreMap sentenceMap, String entity) {
+		SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
+		List<String> entitySplits = Arrays.asList(entity.split(" "));
+		List<IndexedWord> words = new ArrayList<IndexedWord>();
+
+		for(IndexedWord word: graph.vertexSet()) {
+			if(StringUtils.containsIgnoreCase(entitySplits, word.originalText())) {
+				words.add(word);
+			}
+		}
+		return words;
+	}
+	
 	public List<IndexedWord> findWordsInSemanticGraphByEdgeType(CoreMap sentenceMap, String edgeType) {
 		SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		Set<SemanticGraphEdge> allEdges = graph.getEdgeSet();
@@ -373,8 +389,9 @@ public class NLPUtils {
 		}
 		return null;
 	}
-
-	public List<SlotPattern> findRelation(SemanticGraph graph, List<IndexedWord> words1, List<IndexedWord> words2) {
+	
+	void findShortRelation(CoreMap map, List<IndexedWord> words1, List<IndexedWord> words2) {
+		SemanticGraph graph = map.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		List<SlotPattern> patterns = new ArrayList<SlotPattern>();
 		List<IndexedWord> shortestPath = new ArrayList<IndexedWord>();
 		SlotPattern pattern = new SlotPattern();
@@ -383,6 +400,56 @@ public class NLPUtils {
 		boolean rulesCreated = false;
 		IndexedWord word1 = null, wordN = null;
 		
+		List<IndexedWord> shortestUncleanedPath = null;
+		
+		for(IndexedWord w1: words1) {
+			for(IndexedWord w2: words2) {
+				List<IndexedWord> nodes1to2 = graph.getShortestDirectedPathNodes(w1, w2);
+				List<IndexedWord> nodes2to1 = graph.getShortestDirectedPathNodes(w2, w1);
+
+				if(nodes1to2 != null && nodes1to2.size() == 2) {
+					System.out.println("Two sized 1 to 2");
+					System.out.println(graph.getChildList(nodes1to2.get(0)));
+					for(IndexedWord w: graph.getChildList(nodes1to2.get(0))) {
+						if(!words1.contains(w) && !words2.contains(w)) {
+							System.out.println("Found " + w);
+						}
+					}
+				}
+				
+				if(nodes2to1 != null && nodes2to1.size() == 2) {
+					System.out.println("Two sized 2 to 1");
+					System.out.println(graph.getChildList(nodes2to1.get(0)));
+					for(IndexedWord w: graph.getChildList(nodes2to1.get(0))) {
+						if(!words1.contains(w) && !words2.contains(w)) {
+							System.out.println("Found " + w);
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	public List<SlotPattern> findRelation(CoreMap map, List<IndexedWord> words1, List<IndexedWord> words2) {
+		return findRelation(map, words1, words2, true);
+	}
+
+	public List<SlotPattern> findRelation(CoreMap map, List<IndexedWord> words1, List<IndexedWord> words2, boolean extractFullPattern) {
+		SemanticGraph graph = map.get(CollapsedCCProcessedDependenciesAnnotation.class);
+		List<SlotPattern> patterns = new ArrayList<SlotPattern>();
+		List<IndexedWord> shortestPath = new ArrayList<IndexedWord>();
+		SlotPattern pattern = new SlotPattern();
+		Rule rule1 = new Rule();
+		Rule rule2 = new Rule();
+		boolean rulesCreated = false;
+		IndexedWord word1 = null, wordN = null;
+		
+		//List<IndexedWord> shortestUncleanedPath = null;
+		Set<String> personTokens = getPersonsAsTokens(map);
+		
+		//System.out.println("\nWords 1 " + words1);
+		//System.out.println("Words 2 " + words2);
+		boolean checkedOnce = false;
 		for(IndexedWord w1: words1) {
 			for(IndexedWord w2: words2) {
 				if(w1 == w2)
@@ -393,14 +460,28 @@ public class NLPUtils {
 				//LogInfo.logs("One option:" + current);
 				current.remove(w1); current.remove(w2);
 				
+				List<IndexedWord> cleaned = new ArrayList<IndexedWord>();
+				for(IndexedWord w:current) {
+					if(!personTokens.contains(w.originalText()))
+						cleaned.add(w);
+				}
+				
 				//Check if shortest path is through one of the entities, don't take it
-				if(current.removeAll(words1) || current.removeAll(words2))
+				if(cleaned.removeAll(words1) || cleaned.removeAll(words2))
 					continue;
 				
-				if(shortestPath.size() == 0 || shortestPath.size() > current.size()) {
+				if((!checkedOnce && shortestPath.size() == 0) || shortestPath.size() > current.size()) {
 					word1 = w1;
 					wordN = w2;
+					checkedOnce = true;
+					
+					//shortestUncleanedPath = current;
+					//System.out.println(current);
+					//System.out.println(shortestUncleanedPath);
+					//System.out.println(shortestPath);
+					
 					shortestPath = current;
+					//System.out.println("Shortest path for " + w1.index() + " " + shortestPath.size());
 				}
 				}
 				catch (Exception e)
@@ -422,15 +503,20 @@ public class NLPUtils {
 		Set<IndexedWord> neighbours = getConjAndNeighbours(graph, shortestPath.get(0));
 		if(!neighbours.containsAll(shortestPath))
 			return patterns;
-		
+		//System.out.println("Neighbors " + neighbours);
 		for(IndexedWord word: neighbours) {
 			if(!rulesCreated) {
 				SemanticGraphEdge edge = graph.getEdge(word1, shortestPath.get(0));
 				rule1.direction = (edge != null) ? EdgeDirection.In : EdgeDirection.Out;
 				if(edge != null) 
 					rule1.edgeType = edge.toString();
-				else
+				else {
+					System.out.println(shortestPath.get(0));
+					System.out.println(word1.index());
+					System.out.println(wordN.index());
+					System.out.println(graph.getEdge(shortestPath.get(0), word1));
 					rule1.edgeType = graph.getEdge(shortestPath.get(0), word1).toString();
+				}
 				
 				edge = graph.getEdge(wordN, shortestPath.get(shortestPath.size()-1));
 				rule2.direction = (edge != null) ? EdgeDirection.In : EdgeDirection.Out;
@@ -442,8 +528,12 @@ public class NLPUtils {
 				rulesCreated = true;
 			}
 			pattern = new SlotPattern();
-			pattern.setPattern(word.originalText());
-			System.out.println(word.originalText() + ":" + word.tag());
+
+			pattern.setPattern(word.lemma().toLowerCase().replaceAll("[^a-z]", ""));
+
+			//pattern.setPattern(word.originalText());
+			//System.out.println(word.originalText() + ":" + word.tag());
+
 			pattern.setRules(Arrays.asList(rule1, rule2));
 			patterns.add(pattern);
 		}
@@ -637,6 +727,19 @@ public class NLPUtils {
         return persons;
 	}
 	
+	public Set<String> getPersonsAsTokens(CoreMap sentence) {
+		Set<String> persons = new HashSet<String>();
+		String person = "";
+		for (CoreLabel token: sentence.get(TokensAnnotation.class)) {
+	        String word = token.get(TextAnnotation.class);
+	        String ner = token.get(NamedEntityTagAnnotation.class);  
+	        if(NERType.valueOf(ner).equals(NERType.PERSON)) {
+	        		persons.add(word.trim());
+	        }
+	    }
+        return persons;
+	}
+	
 	public Map<String, String> createNERMap(CoreMap sentence) {
 		Map<String, String> nerMap = new HashMap<String, String>();
 		for (CoreLabel token: sentence.get(TokensAnnotation.class)) {
@@ -742,6 +845,8 @@ public class NLPUtils {
 		String ans = "";
 		
 		for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
+			if(findExpandedEntity(sentenceMap, entity) == null)
+				continue;
 			for(String token: findExpandedEntity(sentenceMap, entity).split(" "))
 				if(!entity.contains(token))
 					ans += token + " ";
@@ -781,11 +886,15 @@ public class NLPUtils {
             	for(CorefMention m: s) {
             		String clust2 = "";
                     tks = document.get(SentencesAnnotation.class).get(m.sentNum-1).get(TokensAnnotation.class);
-                    for(int i = m.startIndex-1; i < m.endIndex-1; i++)
+                    boolean flag = false;
+                    for(int i = m.startIndex-1; i < m.endIndex-1; i++) {
+                    	if(head.toLowerCase().contains(tks.get(i).get(TextAnnotation.class).toLowerCase()))
+                    		flag = true;
                         clust2 += tks.get(i).get(TextAnnotation.class) + " ";
+                    }
                     clust2 = clust2.trim();
                     //don't need the self mention
-                    if(clust.equals(clust2))
+                    if(clust.equals(clust2) || flag)
                         continue;
                     if(containsTokens(clust, head) && !m.mentionType.equals(MentionType.valueOf("PRONOMINAL")))
                     	corefs.add(clust2);
@@ -842,23 +951,26 @@ public class NLPUtils {
     	return b.toString().trim();
     }
 
-	public void extractPERRelation(String sentence, String entity) {
+	//Handle Path passing through entities
+	public IntCounter<SlotPattern> extractPERRelation(String sentence, String entity) {
 		// TODO Auto-generated method stub
 		//sentence = deAccent(sentence);
 		//System.out.println(sentence);
+		IntCounter<SlotPattern> patterns = new IntCounter<SlotPattern>();
 		try {
 			if(sentence.length() > 400)
-				return;
+				return patterns;
 			Annotation document = new Annotation(sentence);
 			processor.annotate(document);
 			//LogInfo.begin_track("Current entity: " + entity);
 			for(CoreMap map:document.get(SentencesAnnotation.class)) {				
 				Set<String> persons = getPersons(map);
+
 				if(persons.size() > 1 && persons.contains(entity)) {
 					LogInfo.logs("Entity :" + entity);
 					LogInfo.logs("Sentence :" + map);
 					LogInfo.logs("People :" + persons);	
-					SemanticGraph graph = map.get(SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation.class);
+					//SemanticGraph graph = map.get(SemanticGraphCoreAnnotations.CollapsedCCProcessedDependenciesAnnotation.class);
 					
 					for(String person:persons) {
 						if(!person.equals(entity)) {
@@ -866,8 +978,11 @@ public class NLPUtils {
 							List<IndexedWord> indexWords2 = findWordsInSemanticGraph(map, entity, null);
 							
 							LogInfo.begin_track("Finding relation: " + entity + " # " + person);
-							List<SlotPattern> patterns = findRelation(graph, indexWords1, indexWords2);
-							LogInfo.logs("Found patterns" + patterns);
+							List<SlotPattern> patts = findRelation(map, indexWords1, indexWords2);
+							for(SlotPattern pattern: patts)
+								patterns.incrementCount(pattern);
+							
+							LogInfo.logs("Found patterns" + patts);
 							LogInfo.end_track();
 							
 						}
@@ -878,8 +993,11 @@ public class NLPUtils {
 			//LogInfo.end_track();
 		}
 		catch(Exception ex){
-			System.out.println(ex.getMessage());
+			System.out.println("Exception");
+			ex.printStackTrace();
 		}
+		System.out.println("Returning " + patterns);
+		return patterns;
 	}
 	
 }
