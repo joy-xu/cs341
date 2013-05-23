@@ -1,10 +1,13 @@
 package retrieWin.SSF;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import retrieWin.SSF.Constants.EdgeDirection;
 import retrieWin.SSF.Constants.PatternType;
+import retrieWin.Utils.FileUtils;
 
 public class SlotPattern  implements Serializable {
 	/**
@@ -73,11 +76,12 @@ public class SlotPattern  implements Serializable {
 	public String toString() {
 		String ret = "[";
 		ret += "pattern = " + pattern + ", ";
-		ret += " confidenceScore = " + confidenceScore + ", ";
+		ret += "confidenceScore = " + confidenceScore + ", ";
+		ret += "patternType = " + patternType + ", ";
 		ret += "rules = {" + rules.toString();
 		ret += "}]";
 		return ret;
-	}
+	}	
 	
 	@Override
 	public int hashCode() {
