@@ -1,6 +1,10 @@
 package retrieWin.SSF;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -9,6 +13,8 @@ import retrieWin.Indexer.TrecTextDocument;
 import retrieWin.SSF.Constants.EntityType;
 import retrieWin.SSF.Constants.NERType;
 import retrieWin.SSF.Constants.SlotName;
+import retrieWin.SSF.SlotPattern.Rule;
+import retrieWin.Utils.FileUtils;
 
 public class Slot implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -32,6 +38,25 @@ public class Slot implements Serializable {
 		ans += patterns + "\n";
 	
 		return ans;
+	}
+	
+	public void addSlotPatterns(String fileName) {
+		patterns = new ArrayList<SlotPattern>();
+		SlotPattern pat;
+		String line;
+		
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(fileName));
+			while((line = reader.readLine()) != null) {
+				pat = new SlotPattern(line);
+				patterns.add(pat);
+			}
+			reader.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return;
+		}
+		System.out.println("Updated patterns to:" + patterns);
 	}
 	
 	public List<String> normalize(List<String> vals) {

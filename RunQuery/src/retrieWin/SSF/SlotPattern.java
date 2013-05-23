@@ -27,6 +27,20 @@ public class SlotPattern  implements Serializable {
 		public EdgeDirection direction;
 		public String edgeType;
 		
+		public Rule() {
+			
+		}
+		
+		public Rule(String str) {
+			String val;
+			String[] split;
+			split = str.split(",", 2);
+			val = split[0].split("=")[1].trim().replaceAll("\\[|\\]|\\{|\\}", "");
+			edgeType = val;
+			val = split[1].split("=")[1].trim().replaceAll("\\[|\\]|\\{|\\}", "");
+			direction = val.equals("Out") ? Constants.EdgeDirection.Out : Constants.EdgeDirection.In;
+		}
+		
 		@Override
 		public String toString() {
 			String ret = "[";
@@ -52,6 +66,42 @@ public class SlotPattern  implements Serializable {
 		@Override
 		public int hashCode() {
 			return edgeType.hashCode() + direction.toString().hashCode();
+		}
+	}
+	public SlotPattern() {
+		
+	}
+	
+	public SlotPattern(String str) {
+		String var, val;
+		String[] split;
+		boolean rulesAdded = false;
+		split = str.split(",", 2);
+		while(split.length > 0 && !rulesAdded) {
+			var = split[0].split("=", 2)[0].trim().replaceAll("\\[|\\]", "");
+			val = split[0].split("=", 2)[1].trim();
+			
+			if(var.equals("pattern"))
+				pattern = val;
+			else if(var.equals("confidenceScore"))
+				confidenceScore = Double.valueOf(val);
+			else if(var.equals("patternType")) {
+				if(!val.equals("null"))
+					patternType = Constants.PatternType.valueOf(val);
+			}
+			else if(var.equals("rules")) {
+				rulesAdded = true;
+				for(String r: val.split("\\],")) {
+					addRule(new Rule(r));
+				}
+			}
+			
+			if(split.length == 1)
+				break;
+			else if(split[1].trim().startsWith("rules"))
+				split = new String[]{split[1]};
+			else
+				split = split[1].split(",", 2);
 		}
 	}
 	
@@ -106,7 +156,9 @@ public class SlotPattern  implements Serializable {
 		this.rules = rules;
 	}
 	
-	public void adRule(Rule rule) {
+	public void addRule(Rule rule) {
+		if(rules == null)
+			rules = new ArrayList<SlotPattern.Rule>();
 		rules.add(rule);
 	}
 
