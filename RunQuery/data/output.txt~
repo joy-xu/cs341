@@ -1,0 +1,83 @@
+[pattern = edit,  confidenceScore = 0.0012610340479192938, rules = {[[edgeType = dep, direction = In], [edgeType = prep_by, direction = Out]]}]
+[pattern = story,  confidenceScore = 0.0012610340479192938, rules = {[[edgeType = conj_and, direction = Out], [edgeType = conj_and, direction = Out]]}]
+[pattern = life,  confidenceScore = 0.0012610340479192938, rules = {[[edgeType = dep, direction = Out], [edgeType = prep_from, direction = Out]]}]
+[pattern = nominate,  confidenceScore = 0.0012610340479192938, rules = {[[edgeType = rcmod, direction = In], [edgeType = agent, direction = Out]]}]
+[pattern = life,  confidenceScore = 0.0025220680958385876 rules = {[[edgeType = npadvmod, direction = Out], [edgeType = prep_from, direction = Out]]}]
+[pattern = maximize,  confidenceScore = 0.0012610340479192938, rules = {[[edgeType = prep_to, direction = Out], [edgeType = nsubj, direction = Out]]}]
+[pattern = bring,  confidenceScore = 0.0012610340479192938, rules = {[[edgeType = dobj, direction = Out], [edgeType = nsubj, direction = Out]]}]
+[pattern = by,  confidenceScore = 0.0012610340479192938, rules = {[[edgeType = pobj, direction = Out], [edgeType = pobj, direction = Out]]}]
+[pattern = entitle,  confidenceScore = 0.0012610340479192938, rules = {[[edgeType = prep_to, direction = Out], [edgeType = nsubj, direction = Out]]}]
+[pattern = author,  confidenceScore = 0.0012610340479192938, rules = {[[edgeType = nsubj, direction = Out], [edgeType = nsubj, direction = Out]]}]
+[pattern = introduction,  confidenceScore = 0.0012610340479192938, rules = {[[edgeType = dep, direction = In], [edgeType = dep, direction = Out]]}] : 0.0012610340479192938
+[pattern = more,  confidenceScore = 0.0025220680958385876 rules = {[[edgeType = conj_and, direction = Out], [edgeType = conj_and, direction = Out]]}] : 0.0025220680958385876
+[pattern = see,  confidenceScore = 0.0012610340479192938, rules = {[[edgeType = prep_on, direction = Out], [edgeType = rcmod, direction = In]]}] : 0.0012610340479192938
+[pattern = condemn,  confidenceScore = 0.0025220680958385876 rules = {[[edgeType = nsubj, direction = Out], [edgeType = dobj, direction = Out]]}] : 0.0025220680958385876
+[pattern = father,  confidenceScore = 0.0025220680958385876 rules = {[[edgeType = dep, direction = Out], [edgeType = appos, direction = Out]]}] : 0.0025220680958385876
+[pattern = include,  confidenceScore = 0.0025220680958385876 rules = {[[edgeType = dobj, direction = Out], [edgeType = dobj, direction = Out]]}] : 0.01008827238335435
+[pattern = mother,  confidenceScore = 0.0025220680958385876 rules = {[[edgeType = dep, direction = Out], [edgeType = appos, direction = Out]]}] : 0.0025220680958385876
+[pattern = read,  confidenceScore = 0.0025220680958385876 rules = {[[edgeType = prep_on, direction = Out], [edgeType = nsubj, direction = Out]]}] : 0.0025220680958385876
+[pattern = dapt,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = dobj, direction = Out], [edgeType = nsubj, direction = Out]]}] : 0.0012610340479192938
+[pattern = feature,  confidenceScore = 0.005044136191677175, rules = {[[edgeType = dep, direction = Out], [edgeType = dep, direction = Out]]}] : 0.005044136191677175
+[pattern = father,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = appos, direction = Out], [edgeType = appos, direction = Out]]}] : 0.0012610340479192938
+[pattern = segretain,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = dep, direction = In], [edgeType = dep, direction = Out]]}] : 0.0012610340479192938
+[pattern = party,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = dep, direction = Out], [edgeType = dep, direction = Out]]}] : 0.0012610340479192938
+[pattern = father,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = conj_and, direction = Out], [edgeType = appos, direction = Out]]}] : 0.0012610340479192938
+[pattern = debate,  confidenceScore = 0.0025220680958385876 rules = {[[edgeType = dobj, direction = Out], [edgeType = nsubj, direction = Out]]}] : 0.0025220680958385876
+[pattern = father,  confidenceScore = 0.0025220680958385876 rules = {[[edgeType = nsubj, direction = Out], [edgeType = appos, direction = Out]]}] : 0.0025220680958385876
+[pattern = accompany,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = nsubj, direction = Out], [edgeType = prep_by, direction = Out]]}] : 0.0012610340479192938
+[pattern = dean,  confidenceScore = 0.0025220680958385876 rules = {[[edgeType = conj_and, direction = Out], [edgeType = conj_and, direction = Out]]}] : 0.0025220680958385876
+[pattern = report,  confidenceScore = 0.0025220680958385876 rules = {[[edgeType = prep_from, direction = Out], [edgeType = nsubj, direction = Out]]}] : 0.0025220680958385876
+[pattern = return,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = prep_of, direction = Out], [edgeType = prep_of, direction = Out]]}] : 0.0012610340479192938
+[pattern = nominate,  confidenceScore = 0.0025220680958385876 rules = {[[edgeType = nsubjpass, direction = Out], [edgeType = agent, direction = Out]]}] : 0.0025220680958385876
+[pattern = announce,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = nsubj, direction = Out], [edgeType = prep_by, direction = Out]]}] : 0.0012610340479192938
+[pattern = aide,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = conj_and, direction = Out], [edgeType = poss, direction = Out]]}] : 0.0012610340479192938
+[pattern = invent,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = nsubj, direction = Out], [edgeType = dobj, direction = Out]]}] : 0.0012610340479192938
+[pattern = announce,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = nsubj, direction = Out], [edgeType = dobj, direction = Out]]}] : 0.0012610340479192938
+[pattern = script,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = prep_by, direction = Out], [edgeType = prep_by, direction = Out]]}] : 0.0012610340479192938
+[pattern = hit,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = prep_over, direction = Out], [edgeType = nsubj, direction = Out]]}] : 0.0012610340479192938
+[pattern = list,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = dobj, direction = Out], [edgeType = agent, direction = Out]]}] : 0.0012610340479192938
+[pattern = dine,  confidenceScore = 0.0201765447667087, rules = {[[edgeType = conj_and, direction = Out], [edgeType = conj_and, direction = Out]]}] : 0.0201765447667087
+[pattern = suspend,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = nsubjpass, direction = Out], [edgeType = agent, direction = Out]]}] : 0.0012610340479192938
+[pattern = announce,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = conj_and, direction = Out], [edgeType = prep_by, direction = Out]]}] : 0.0012610340479192938
+[pattern = see,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = prep_on, direction = Out], [edgeType = nsubj, direction = Out]]}] : 0.0012610340479192938
+[pattern = speak,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = prep_before, direction = Out], [edgeType = nsubj, direction = Out]]}] : 0.0012610340479192938
+[pattern = accompany,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = conj_and, direction = Out], [edgeType = prep_by, direction = Out]]}] : 0.0012610340479192938
+[pattern = play,  confidenceScore = 0.005044136191677175, rules = {[[edgeType = partmod, direction = In], [edgeType = agent, direction = Out]]}] : 0.005044136191677175
+[pattern = grant,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = conj_and, direction = Out], [edgeType = conj_and, direction = Out]]}] : 0.0012610340479192938
+[pattern = editing,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = prep_by, direction = Out], [edgeType = prep_by, direction = Out]]}] : 0.0012610340479192938
+[pattern = speak,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = prep_to, direction = Out], [edgeType = nsubj, direction = Out]]}] : 0.0012610340479192938
+[pattern = teach,  confidenceScore = 0.0037831021437578815, rules = {[[edgeType = nsubj, direction = Out], [edgeType = nsubj, direction = Out]]}] : 0.0037831021437578815
+[pattern = leader,  confidenceScore = 0.0025220680958385876 rules = {[[edgeType = dep, direction = Out], [edgeType = dep, direction = Out]]}] : 0.0025220680958385876
+[pattern = include,  confidenceScore = 0.0025220680958385876 rules = {[[edgeType = prep_besides, direction = Out], [edgeType = dobj, direction = Out]]}] : 0.0025220680958385876
+[pattern = mother,  confidenceScore = 0.0025220680958385876 rules = {[[edgeType = nsubj, direction = Out], [edgeType = appos, direction = Out]]}] : 0.0025220680958385876
+[pattern = official,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = prep_along_with, direction = In], [edgeType = prep_such_as, direction = Out]]}] : 0.0012610340479192938
+[pattern = fight,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = dep, direction = Out], [edgeType = dep, direction = Out]]}] : 0.0012610340479192938
+[pattern = mother,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = conj_and, direction = Out], [edgeType = appos, direction = Out]]}] : 0.0012610340479192938
+[pattern = work,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = prep_with, direction = Out], [edgeType = rcmod, direction = In]]}] : 0.0012610340479192938
+[pattern = entrepreneur,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = dep, direction = Out], [edgeType = dep, direction = Out]]}] : 0.0012610340479192938
+[pattern = talk,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = prep_to, direction = Out], [edgeType = nsubj, direction = Out]]}] : 0.0012610340479192938
+[pattern = call,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = prep_for, direction = Out], [edgeType = prep_by, direction = Out]]}] : 0.0012610340479192938
+[pattern = run,  confidenceScore = 0.007566204287515763, rules = {[[edgeType = dobj, direction = Out], [edgeType = dobj, direction = Out]]}] : 0.007566204287515763
+[pattern = daughter,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = poss, direction = Out], [edgeType = appos, direction = In]]}] : 0.0012610340479192938
+[pattern = represent,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = nsubj, direction = Out], [edgeType = dobj, direction = Out]]}] : 0.0012610340479192938
+[pattern = present,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = prep_by, direction = Out], [edgeType = prep_by, direction = Out]]}] : 0.0012610340479192938
+[pattern = mother,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = appos, direction = Out], [edgeType = appos, direction = Out]]}] : 0.0012610340479192938
+[pattern = capture,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = nsubjpass, direction = Out], [edgeType = agent, direction = Out]]}] : 0.0012610340479192938
+[pattern = write,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = nsubj, direction = Out], [edgeType = nsubj, direction = Out]]}] : 0.0012610340479192938
+[pattern = secret,  confidenceScore = 0.0025220680958385876 rules = {[[edgeType = prep_by, direction = Out], [edgeType = prep_by, direction = Out]]}] : 0.0025220680958385876
+[pattern = aide,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = nsubj, direction = Out], [edgeType = poss, direction = Out]]}] : 0.0012610340479192938
+[pattern = life,  confidenceScore = 0.0037831021437578815, rules = {[[edgeType = conj_and, direction = Out], [edgeType = conj_and, direction = Out]]}] : 0.0037831021437578815
+[pattern = father,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = poss, direction = Out], [edgeType = appos, direction = Out]]}] : 0.0012610340479192938
+[pattern = invent,  confidenceScore = 0.0037831021437578815, rules = {[[edgeType = dobj, direction = Out], [edgeType = dobj, direction = Out]]}] : 0.0037831021437578815
+[pattern = issue,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = dobj, direction = Out], [edgeType = nsubj, direction = Out]]}] : 0.0012610340479192938
+[pattern = comment,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = prep_on, direction = Out], [edgeType = prep_by, direction = Out]]}] : 0.0012610340479192938
+[pattern = serve,  confidenceScore = 0.0037831021437578815, rules = {[[edgeType = prep_on, direction = Out], [edgeType = nsubj, direction = Out]]}] : 0.0037831021437578815
+[pattern = greet,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = nsubjpass, direction = Out], [edgeType = agent, direction = Out]]}] : 0.0012610340479192938
+[pattern = serve,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = prep_on, direction = Out], [edgeType = rcmod, direction = In]]}] : 0.0012610340479192938
+[pattern = script,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = prep_with, direction = In], [edgeType = prep_by, direction = Out]]}] : 0.0012610340479192938
+[pattern = partner,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = conj_and, direction = In], [edgeType = appos, direction = Out]]}] : 0.0012610340479192938
+[pattern = star,  confidenceScore = 0.0025220680958385876 rules = {[[edgeType = dobj, direction = Out], [edgeType = dobj, direction = Out]]}] : 0.0025220680958385876
+[pattern = child,  confidenceScore = 0.0 rules = {[[edgeType = conj_and, direction = Out], [edgeType = conj_and, direction = Out]]}] : 0.011349306431273645
+[pattern = comment,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = nsubj, direction = Out], [edgeType = prep_by, direction = Out]]}] : 0.0012610340479192938
+[pattern = implication,  confidenceScore = 0.0025220680958385876 rules = {[[edgeType = poss, direction = Out], [edgeType = amod, direction = Out]]}] : 0.0025220680958385876
+[pattern = bases,  confidenceScore = 0.0012610340479192938 rules = {[[edgeType = conj_and, direction = Out], [edgeType = conj_and, direction = Out]]}] : 0.0012610340479192938
