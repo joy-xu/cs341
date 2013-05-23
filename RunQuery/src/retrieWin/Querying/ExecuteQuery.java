@@ -39,6 +39,11 @@ public class ExecuteQuery {
 		}
 	}
 	
+	public void emptyData()
+	{
+		storedFiles = null;
+	}
+	
 	public Set<String> queryIndex(String query, int resultsRequested) {
 		Set<String> results = new HashSet<String>();
 		try {
@@ -65,7 +70,10 @@ public class ExecuteQuery {
 		for (String docNo:queryResults)
 		{
 			if (storedFiles.containsKey(docNo))
-				output.add(storedFiles.get(docNo));
+			{
+				
+				output.add(new TrecTextDocument(storedFiles.get(docNo)));
+			}
 			else
 				System.out.println("File not found. You are definitely doing something wrong");
 		}
