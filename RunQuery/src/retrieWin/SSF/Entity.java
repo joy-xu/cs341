@@ -34,6 +34,7 @@ public class Entity  implements Serializable {
 		this.group = group;
 		this.disambiguations = disambiguations;
 		this.expansions = expansions;
+		this.slotValues = new HashMap<SlotName, List<String>>();
 	}
 	
 	private List<TrecTextDocument> disambiguate(List<TrecTextDocument> results) {
@@ -54,6 +55,8 @@ public class Entity  implements Serializable {
 	
 	public List<String> updateSlot(Slot slot, List<String> candidates) {
 		List<String> added = new ArrayList<String>();
+		if(!slotValues.containsKey(slot.getName()))
+				slotValues.put(slot.getName(), new ArrayList<String>());
 		for(String candidate: candidates) {
 			//get normalized concept for the slot candidate
 			if(slotValues.get(slot.getName()).contains(candidate))

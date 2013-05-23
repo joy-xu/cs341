@@ -2,10 +2,8 @@ package retrieWin.PatternBuilder;
 
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 
 import java.util.ArrayList;
 
@@ -15,21 +13,20 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Future;
+
 
 import retrieWin.Indexer.ProcessTrecTextDocument;
 import retrieWin.Indexer.TrecTextDocument;
-
 
 import retrieWin.Querying.QueryBuilder;
 import retrieWin.SSF.Constants;
 import retrieWin.SSF.Entity;
 import retrieWin.SSF.SlotPattern;
-import retrieWin.SSF.SlotPattern.Rule;
 import retrieWin.Utils.NLPUtils;
-import retrieWin.Utils.PriorityQueue;
 import retrieWin.Utils.Utils;
 import retrieWin.SSF.Constants.EntityType;
 import retrieWin.Utils.FileUtils;
@@ -39,15 +36,15 @@ import fig.basic.LogInfo;
 import fig.basic.Option;
 import fig.exec.Execution;
 
-public class ContactMeetPlaceTime implements Runnable{
+public class PersonOrganizationAffiliation implements Runnable{
 	@Option(gloss="working Directory") public String workingDirectory;
-	@Option(gloss="output File") public String outputFile;
+	@Option(gloss="output file") public String outputFile;
 	List<Entity> entities;
 	public static void main(String[] args) {
-		Execution.run(args, "Main", new ContactMeetPlaceTime());
+		Execution.run(args, "Main", new PersonOrganizationAffiliation());
 	}
 	
-	public ContactMeetPlaceTime(){
+	public PersonOrganizationAffiliation(){
 		readEntities();
 	}
 
@@ -57,175 +54,22 @@ public class ContactMeetPlaceTime implements Runnable{
 		//runBootstrap();
 		if (!workingDirectory.endsWith("/"))
 			workingDirectory = workingDirectory + "/";
-		//gatherResults();
-		List<String> filename_nonSchools = new ArrayList<String>();
-		List<String> filenames = new ArrayList<String>();
-		
-		filenames.add("output_20120721");
-		filenames.add("outputDay2_20120722");
-		
-		
-		filename_nonSchools.add("output_nonSchools");
-		filename_nonSchools.add("output_nonSchools_20120721");
-		
-		aggregateResults(filenames,filename_nonSchools);
-		//writeHumanReadableResults(filename);
+		gatherResults();
+	
 		LogInfo.end_track();
-	}
-	
-	
-	public void aggregateResults(List<String> filenames, List<String> nonSchoolFilenames)
-	{
-		Map<SlotPattern,Set<String>> allPatterns = new HashMap<SlotPattern,Set<String>>();
-		for (String filename:filenames)
-		{
-			@SuppressWarnings("unchecked")
-			Map<SlotPattern,Set<String>> currentPattern = (Map<SlotPattern,Set<String>>)FileUtils.readFile(filename);
-			for (SlotPattern p:currentPattern.keySet())
-			{
-				if (allPatterns.containsKey(p))
-				{
-					Set<String> existing = allPatterns.get(p);
-					existing.addAll(currentPattern.get(p));
-					allPatterns.put(p, existing);
-				}
-				else
-				{
-					allPatterns.put(p, currentPattern.get(p));
-				}
-			}
-		}
-		Map<SlotPattern,Set<String>> allPatternsNonSchools = new HashMap<SlotPattern,Set<String>>();
-		for (String filename:nonSchoolFilenames)
-		{
-			@SuppressWarnings("unchecked")
-			Map<SlotPattern,Set<String>> currentPattern = (Map<SlotPattern,Set<String>>)FileUtils.readFile(filename);
-			for (SlotPattern p:currentPattern.keySet())
-			{
-				if (allPatternsNonSchools.containsKey(p))
-				{
-					Set<String> existing = allPatternsNonSchools.get(p);
-					existing.addAll(currentPattern.get(p));
-					allPatternsNonSchools.put(p, existing);
-				}
-				else
-				{
-					allPatternsNonSchools.put(p, currentPattern.get(p));
-				}
-			}
-		}
-		double totalCount = 0;
-		Map<SlotPattern,Double> patternCounts = new HashMap<SlotPattern,Double>();
-		for (SlotPattern pattern:allPatterns.keySet())
-		{
-			totalCount += allPatterns.get(pattern).size();
-			if (patternCounts.containsKey(pattern))
-			{
-				patternCounts.put(pattern, patternCounts.get(pattern)+allPatterns.get(pattern).size());
-			}
-			else
-			{
-				patternCounts.put(pattern, (double)allPatterns.get(pattern).size());
-			}
-		}
-		
-		// Add 1.5 times the count of non schools
-		for (SlotPattern pattern:allPatternsNonSchools.keySet())
-		{
-			totalCount += 1.5*allPatternsNonSchools.get(pattern).size();
-			if (patternCounts.containsKey(pattern))
-			{
-				patternCounts.put(pattern, patternCounts.get(pattern)+(1.5*allPatternsNonSchools.get(pattern).size()));
-			}
-			else
-			{
-				patternCounts.put(pattern, 1.5*allPatternsNonSchools.get(pattern).size());
-			}
-		}
-		Map<SlotPattern,Double> patternWeights = new HashMap<SlotPattern,Double>();
-		PriorityQueue<SlotPattern> pq = new PriorityQueue<SlotPattern>();
-		for (SlotPattern p: patternCounts.keySet())
-		{
-			double confidence = patternCounts.get(p)/totalCount;
-			patternWeights.put(p,confidence);
-			pq.add(p,confidence);
-		}
-		try
-		{
-			BufferedWriter buf = new BufferedWriter(new FileWriter(outputFile));
-			while(!pq.isEmpty())
-			{
-				SlotPattern p = pq.next();
-				double confidence = patternWeights.get(p);
-				p.setConfidenceScore(confidence);
-				buf.write(p.toString());
-				buf.newLine();
-			}
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
-		
-	}
-	
-	
-	public void writeHumanReadableResults(List<String> filenames)
-	{
-		Map<SlotPattern,Set<String>> allPatterns = new HashMap<SlotPattern,Set<String>>();
-		for (String filename:filenames)
-		{
-			@SuppressWarnings("unchecked")
-			Map<SlotPattern,Set<String>> currentPattern = (Map<SlotPattern,Set<String>>)FileUtils.readFile(filename);
-			for (SlotPattern p:currentPattern.keySet())
-			{
-				if (allPatterns.containsKey(p))
-				{
-					Set<String> existing = allPatterns.get(p);
-					existing.addAll(currentPattern.get(p));
-					allPatterns.put(p, existing);
-				}
-				else
-				{
-					allPatterns.put(p, currentPattern.get(p));
-				}
-			}
-		}
-		try
-		{
-			BufferedWriter buf = new BufferedWriter(new FileWriter(outputFile));
-			for (SlotPattern p:allPatterns.keySet())
-			{
-				buf.write("pattern$" + p.getPattern()+"\n");
-				List<Rule> rules = p.getRules();
-				buf.write("rule1$" + rules.get(0).edgeType + "$" + rules.get(0).direction + "\n");
-				buf.write("rule2$" + rules.get(1).edgeType + "$" + rules.get(1).direction + "\n");
-				Set<String> sentences = allPatterns.get(p);
-				for (String sentence:sentences)
-				{
-					buf.write(sentence + "\n");
-				}
-				buf.write("\n");
-			}
-		}
-		catch (Exception e)
-		{
-			e.printStackTrace();
-		}
 	}
 	
 	public void gatherResults() {
 		
 		
 		NLPUtils nlp = new NLPUtils();
-		List<String> relations = new ArrayList<String>();
+		
 		IntCounter<SlotPattern> patternWeights = new IntCounter<SlotPattern>();
 		Map<SlotPattern,Set<String>> allPatterns = new HashMap<SlotPattern,Set<String>>();
-		relations.add("prep_at");
-		//relations.add("prep_in");
+		
 		List<String> folders = new ArrayList<String>();
 		
-		for (int j = 23;j<24;j++)
+		for (int j = 25;j<26;j++)
 		{
 		for (int i = 0;i<24;i++)
 		{
@@ -255,26 +99,41 @@ public class ContactMeetPlaceTime implements Runnable{
 		*/
 		int numthreads = 16;
 		ExecutorService exc = Executors.newFixedThreadPool(numthreads);
+		
+		List<Future<Map<SlotPattern,Set<String>>>> futuresList = new ArrayList<Future<Map<SlotPattern,Set<String>>>>();
 		for (Entity e:entities)
 		{
-			exc.execute(new ParallelNLPParsers(e, AllTrecDocs,nlp,relations, allPatterns));
+			Callable<Map<SlotPattern,Set<String>>> c = new ParallelNLPParsers(e, AllTrecDocs,nlp);
+			Future<Map<SlotPattern,Set<String>>> s = exc.submit(c);
+			futuresList.add(s);
 		}
-		exc.shutdown();
-		while(true)
+		for (Future<Map<SlotPattern,Set<String>>> f:futuresList)
 		{
-			try 
-			{
-				if (exc.awaitTermination(1, TimeUnit.MINUTES))
-						break;
-				System.out.println("Waiting in NLPParser");
+			Map<SlotPattern,Set<String>> thisResult = new HashMap<SlotPattern,Set<String>>();
+			try{
+				thisResult = f.get();
 			}
-			catch(InterruptedException ie)
+			catch (Exception excep)
 			{
-				ie.printStackTrace();
-				System.out.println("Waiting in NLPParser - Thread interrupted");
+				excep.printStackTrace();
+			}
+			for (SlotPattern p:thisResult.keySet())
+			{
+				if (allPatterns.containsKey(p))
+				{
+					Set<String> existing = allPatterns.get(p);
+					existing.addAll(thisResult.get(p));
+					allPatterns.put(p,existing);
+				}
+				else
+				{
+					allPatterns.put(p, thisResult.get(p));
+				}
 			}
 		}
 		
+		exc.shutdown();
+
 		for (SlotPattern pattern:allPatterns.keySet())
 		{
 			patternWeights.incrementCount(pattern,allPatterns.get(pattern).size());
@@ -292,7 +151,6 @@ public class ContactMeetPlaceTime implements Runnable{
 			System.out.println(patternWeights.getCountAsString(pattern));
 		}
 		
-		
 		FileUtils.writeFile(allPatterns, outputFile);
 		try{
 			
@@ -309,9 +167,9 @@ public class ContactMeetPlaceTime implements Runnable{
 			System.out.println("Writing to S3 failed");
 			e.printStackTrace();
 		}
-		
-		
 	}
+	
+	
 	public List<String> getDisambiguations(String entity) {
 		String baseFolder = "data/entities_expanded/";
 		List<String> disambiguations = new ArrayList<String>();
@@ -372,25 +230,23 @@ public class ContactMeetPlaceTime implements Runnable{
 	}
 	
 	
-	private static class ParallelNLPParsers implements Runnable{
-		Map<SlotPattern,Set<String>> allPatterns;
+	private static class ParallelNLPParsers implements Callable<Map<SlotPattern,Set<String>>>{
+		
 		List<TrecTextDocument> trecDocs = new ArrayList<TrecTextDocument>();
 		Entity ent;
 		NLPUtils nlp;
-		List<String> relations;
-		public ParallelNLPParsers(Entity e, Map<String,List<TrecTextDocument>> queryResults, NLPUtils nlpin, 
-				List<String> relIn, Map<SlotPattern,Set<String>> out)
+		
+		public ParallelNLPParsers(Entity e, Map<String,List<TrecTextDocument>> queryResults, NLPUtils nlpin)
 		{
-			allPatterns = out;
 			ent = e;
 			nlp = nlpin;
-			relations = relIn;
+			
 			String query = QueryBuilder.buildOrQuery(e.getExpansions());
 			if (queryResults.containsKey(query))
 				trecDocs = queryResults.get(query);
 		}
 		
-		private synchronized void addToPatternMap(Map<SlotPattern,List<String>> patterns)
+		private void addToPatternMap(Map<SlotPattern,Set<String>> allPatterns, Map<SlotPattern,List<String>> patterns)
 		{
 			for (SlotPattern pattern:patterns.keySet())
 			{
@@ -407,10 +263,12 @@ public class ContactMeetPlaceTime implements Runnable{
 			}
 		}
 		
-		public void run()
-		{
+		@Override
+		public Map<SlotPattern,Set<String>> call() throws Exception {
+
 			Set<String> uniqueSentences = new HashSet<String>();
 			Map<String, Set<String>> expansionToSentences = new HashMap<String,Set<String>>();
+			Map<SlotPattern,Set<String>> allPatterns = new HashMap<SlotPattern,Set<String>>();
 			if (!trecDocs.isEmpty())
 			{
 				for(String expansion:ent.getExpansions()) 
@@ -431,18 +289,76 @@ public class ContactMeetPlaceTime implements Runnable{
 					}
 				}
 				//System.out.println("Query: " + ent.getExpansions().get(0) + " Size of results: " + uniqueSentences.size());
+				
 				for (String expansion:expansionToSentences.keySet())
 				{
+					int numthreads = 16;
+					ExecutorService exc = Executors.newFixedThreadPool(numthreads);
+					
+					List<Future<Map<SlotPattern,List<String>>>> futuresList = new ArrayList<Future<Map<SlotPattern,List<String>>>>();
+					Map<SlotPattern,List<String>> thisThreadResults = new HashMap<SlotPattern,List<String>>();
 					//System.out.println("Expansion: " + expansion);
 					Set<String> currentExpansionSet = expansionToSentences.get(expansion);
 					for (String sentence:currentExpansionSet)
 					{
-						Map<SlotPattern,List<String>> patterns = nlp.findSlotPatternGivenEntityAndRelation(sentence, expansion, relations);
-						addToPatternMap(patterns);	
+						Callable<Map<SlotPattern,List<String>>> c = new NLPSentenceParser(sentence,expansion,nlp);
+						Future<Map<SlotPattern,List<String>>> s = exc.submit(c);
+						futuresList.add(s);
 					}
+					for (Future<Map<SlotPattern,List<String>>> f:futuresList)
+					{
+						Map<SlotPattern,List<String>> thisResult = new HashMap<SlotPattern,List<String>>();
+						try
+						{
+							thisResult = f.get();
+						}
+						catch (Exception excep)
+						{
+							excep.printStackTrace();
+						}
+						for (SlotPattern p:thisResult.keySet())
+						{
+							if (thisThreadResults.containsKey(p))
+							{
+								List<String> existing = thisThreadResults.get(p);
+								existing.addAll(thisResult.get(p));
+								thisThreadResults.put(p,existing);
+							}
+							else
+							{
+								thisThreadResults.put(p, thisResult.get(p));
+							}
+						}
+					}
+					exc.shutdown();
+					addToPatternMap(allPatterns,thisThreadResults);
 				}
 			}
+			return allPatterns;
+		}
+	}
+
+	
+private static class NLPSentenceParser implements Callable<Map<SlotPattern,List<String>>>{
+		
+		String sentence;
+		String expansion;
+		
+		NLPUtils nlp;
+		public NLPSentenceParser(String sen, String exp, NLPUtils nlpin)
+		{
+			nlp = nlpin;
+			sentence = sen;
+			expansion = exp;
+		}
+		
+		@Override
+		public Map<SlotPattern,List<String>> call() throws Exception {
+
+			return nlp.findRelationToOrganization(sentence, expansion);
 		}
 	}
 }
+
+
 

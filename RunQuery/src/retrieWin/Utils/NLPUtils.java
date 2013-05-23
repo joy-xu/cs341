@@ -142,6 +142,82 @@ public class NLPUtils {
 		return patterns;
 	
 	}
+	
+	public Map<SlotPattern,List<String>> findRelationToOrganization(String sentence,String entity)
+	{
+		Map<SlotPattern,List<String>> patterns = new HashMap<SlotPattern,List<String>>();
+		try {
+			if(sentence.length() > 400)
+				return patterns;
+			Annotation document = new Annotation(sentence);
+			processor.annotate(document);
+
+			Map<Integer, Set<Integer>> corefsEntity = getCorefs(document, entity);
+			
+			
+			int sentNum = 0;
+			for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
+				String sentenceFromMap = sentenceMap.toString().trim();
+
+				if(sentenceFromMap.startsWith("Tags :") || sentenceFromMap.length() > 300)
+				{
+					sentNum++;
+					continue;
+				}
+				SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
+				List<IndexedWord> words = findWordsInSemanticGraph(sentenceMap,entity,corefsEntity.get(sentNum));
+				//System.out.println(sentenceFromMap.length() + "##" + sentenceFromMap);
+				if (words.isEmpty())
+				{
+					sentNum++;
+					continue;
+				}
+				List<String> candidates = new ArrayList<String>();
+				Map<String,String> nermap = createNERMap(sentenceMap);
+				for (String candidateWord:nermap.keySet())
+				{
+				//	System.out.println("word: " + candidateWord + " ner: " + nermap.get(candidateWord));
+					if (nermap.get(candidateWord).equals("ORGANIZATION"))
+					{
+						candidates.add(candidateWord);
+					}
+				}
+				Set<IndexedWord> allOrgWords = new HashSet<IndexedWord>();
+				for (String candidate:candidates)
+				{
+					List<IndexedWord> orgWords = findWordsInSemanticGraph(sentenceMap,candidate,null);
+					allOrgWords.addAll(orgWords);
+				}
+				List<IndexedWord> allOrgWordsList = new ArrayList<IndexedWord>(allOrgWords);
+				List<SlotPattern> currentPatterns = findRelation(sentenceMap,words,allOrgWordsList);
+				for (SlotPattern p :currentPatterns)
+				{
+					if (patterns.containsKey(p))
+					{
+						List<String> s = patterns.get(p);
+						s.add(sentenceFromMap);
+						patterns.put(p, s);
+					}
+					else
+					{
+						List<String> s = new ArrayList<String>();
+						s.add(sentenceFromMap);
+						patterns.put(p, s);
+					}
+				}		
+				sentNum++;
+			}
+		}
+		catch(Exception ex) 
+		{
+			System.out.println("Exception at : " + sentence);
+			ex.printStackTrace();
+		}
+			
+		return patterns;
+	
+	}
+	
 	public Map<SlotPattern,List<String>> findSlotPatternGivenEntityAndRelation(String sentence, String entity, List<String> edgeTypes)
 	{		
 		String deAccented = sentence;
@@ -162,8 +238,13 @@ public class NLPUtils {
 				
 				
 				if(sentenceFromMap.startsWith("Tags :") || sentenceFromMap.length() > 300)
+				{
+					sentNum++;
 					continue;
-				//SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
+
+				}
+				SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
+
 				
 				List<IndexedWord> words = findWordsInSemanticGraph(sentenceMap,entity,corefsEntity.get(sentNum));
 				//System.out.println(sentenceFromMap.length() + "##" + sentenceFromMap);
@@ -764,6 +845,8 @@ public class NLPUtils {
 		String ans = "";
 		
 		for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
+			if(findExpandedEntity(sentenceMap, entity) == null)
+				continue;
 			for(String token: findExpandedEntity(sentenceMap, entity).split(" "))
 				if(!entity.contains(token))
 					ans += token + " ";
@@ -803,11 +886,15 @@ public class NLPUtils {
             	for(CorefMention m: s) {
             		String clust2 = "";
                     tks = document.get(SentencesAnnotation.class).get(m.sentNum-1).get(TokensAnnotation.class);
-                    for(int i = m.startIndex-1; i < m.endIndex-1; i++)
+                    boolean flag = false;
+                    for(int i = m.startIndex-1; i < m.endIndex-1; i++) {
+                    	if(head.toLowerCase().contains(tks.get(i).get(TextAnnotation.class).toLowerCase()))
+                    		flag = true;
                         clust2 += tks.get(i).get(TextAnnotation.class) + " ";
+                    }
                     clust2 = clust2.trim();
                     //don't need the self mention
-                    if(clust.equals(clust2))
+                    if(clust.equals(clust2) || flag)
                         continue;
                     if(containsTokens(clust, head) && !m.mentionType.equals(MentionType.valueOf("PRONOMINAL")))
                     	corefs.add(clust2);
@@ -912,4 +999,5 @@ public class NLPUtils {
 		System.out.println("Returning " + patterns);
 		return patterns;
 	}
+	
 }
