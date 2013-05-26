@@ -43,7 +43,7 @@ public class SSF implements Runnable{
 	public void initialize() {
 		readEntities();
 		readSlots();
-		coreNLP = new NLPUtils();
+		//coreNLP = new NLPUtils();
 		conceptExtractor = new Concept();
 	}
 	
@@ -154,51 +154,6 @@ public class SSF implements Runnable{
 		//System.out.println(slots); */
 	}
 	
-	public void updateSlotPatterns(Constants.SlotName slotName, String fileName) {
-		readSlots();
-		List<SlotPattern> patterns = new ArrayList<SlotPattern>();
-		SlotPattern pat;
-		Rule rule1, rule2;
-		String line;
-		
-		/*try {
-			BufferedReader reader = new BufferedReader(new FileReader(fileName));
-			while((line = reader.readLine()) != null) {
-				pat = new SlotPattern();
-				pat.setPattern(line.trim().split("\\|")[0]);
-				rule1 = new Rule();
-				rule1.edgeType = line.trim().split("\\|")[1].split(":")[0];
-				if(!rule1.edgeType.isEmpty())
-					rule1.direction = (line.trim().split("\\|")[1].split(":")[1].equals("v") ? Constants.EdgeDirection.In : Constants.EdgeDirection.Out);
-				rule2 = new Rule();
-				//System.out.println(Arrays.asList(line.trim().split("\\|")[2].split(":")));
-				rule2.edgeType = line.trim().split("\\|")[2].split(":")[0];
-				if(!rule2.edgeType.isEmpty())
-					rule2.direction = (line.trim().split("\\|")[2].split(":")[1].equals("v") ? Constants.EdgeDirection.In : Constants.EdgeDirection.Out);
-				
-				pat.setRules(Arrays.asList(rule1, rule2));
-				pat.setConfidenceScore(Double.parseDouble(line.trim().split("\\|")[2].split(":")[2].trim()));
-				patterns.add(pat);
-			}
-			reader.close();
-		} catch (Exception e) {
-			e.printStackTrace();
-			return;
-		}
-		System.out.println(patterns);
-		for(Slot slot: slots) {
-			if(!slot.getName().equals(slotName))
-				continue;
-			slot.setPatterns(patterns);
-		}*/
-		for(Slot slot: slots) {
-			if(!slot.getName().equals(slotName))
-				continue;
-			slot.setEntityType(Constants.EntityType.PER);
-			slot.setSourceNERTypes(Arrays.asList(Constants.NERType.PERSON));
-		}
-		FileUtils.writeFile(slots, Constants.slotsSerializedFile);
-	}
 	
 	private boolean containsUppercaseToken(String str) {
 		for(String token: str.split(" ")) {
@@ -399,14 +354,25 @@ public class SSF implements Runnable{
 		Indexer.createUnfilteredIndex(downloadHours, workingDirectory, saveAsDirectory, indexLocation);
 	}
 	
+	
+	private void updateSlots() {
+		readSlots();
+		for(Slot slot: slots) {
+			if(slot.getName().equals(Constants.SlotName.Awards_Won))
+				slot.addSlotPatterns("data/slots/awards_won");
+		}
+		System.out.println(slots);
+		FileUtils.writeFile(slots, Constants.slotsSerializedFile);
+	}
+	
 	public static void main(String[] args) {
 		if (!System.getenv().containsKey("LD_LIBRARY_PATH"))
 		{
 			System.out.println("Environment variable not set");
 			return;
 		}
-		//new SSF().updateSlotPatterns(Constants.SlotName.Titles, "data/founder_of");
-		Execution.run(args, "Main", new SSF());
+		new SSF().updateSlots();
+		//Execution.run(args, "Main", new SSF());
 	}
 
 	@Override
