@@ -1,10 +1,19 @@
 package retrieWin.Querying;
 
 import java.util.*;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
+import retrieWin.Indexer.Downloader;
 import retrieWin.Indexer.ThriftReader;
 import retrieWin.Indexer.TrecTextDocument;
+import retrieWin.SSF.Entity;
+import retrieWin.SSF.SlotPattern;
 import retrieWin.Utils.FileUtils;
+import retrieWin.Utils.NLPUtils;
 
 import lemurproject.indri.QueryEnvironment;
 import lemurproject.indri.QueryRequest;
@@ -88,6 +97,8 @@ public class ExecuteQuery {
 	
 	public List<TrecTextDocument> executeQuery(String query, int numResults, String workingDirectory) {
     	Set<String> queryResults = queryIndex(query, numResults);
+    	System.out.println("Results for query: " + query + ": " + queryResults.size());
+  
     	Map<String, Set<String>> fileMap = new HashMap<String, Set<String>>();
     	Map<String, Set<String>> streamIDMap = new HashMap<String, Set<String>>();
     	
@@ -117,13 +128,81 @@ public class ExecuteQuery {
 			streamIDMap.put(filename, set);
     	}
     	
-    	
-    	List<TrecTextDocument> result = new ArrayList<TrecTextDocument>();
+    	int numthreads = 16;
+		ExecutorService exc = Executors.newFixedThreadPool(numthreads);
     	for(String folder:fileMap.keySet()) {
     		for(String file:fileMap.get(folder)) {
-				result.addAll(ThriftReader.GetFilteredFiles(folder, file, workingDirectory, streamIDMap.get(file)));
+    			exc.execute(new Downloader(folder,file,workingDirectory));
     		}
     	}
+		exc.shutdown();
+		while(true)
+		{
+			try 
+			{
+				if (exc.awaitTermination(1, TimeUnit.MINUTES))
+						break;
+				System.out.println("Waiting in Downloader");
+			}
+			catch(InterruptedException ie)
+			{
+				ie.printStackTrace();
+				System.out.println("Waiting in Downloader - Thread interrupted");
+			}
+		}
+		
+    	List<TrecTextDocument> result = new ArrayList<TrecTextDocument>();
+    	
+    	numthreads = 16;
+		exc = Executors.newFixedThreadPool(numthreads);
+		
+		List<Future<List<TrecTextDocument>>> futuresList = new ArrayList<Future<List<TrecTextDocument>>>();
+    	for(String folder:fileMap.keySet()) {
+    		for(String file:fileMap.get(folder)) {
+    			Callable<List<TrecTextDocument>> c = new GetFilteredFilesParallel(folder,file,workingDirectory,streamIDMap.get(file));
+				Future<List<TrecTextDocument>> s = exc.submit(c);
+				futuresList.add(s);
+    		}
+    	}
+    	
+    	for (Future<List<TrecTextDocument>> f:futuresList)
+		{
+			List<TrecTextDocument> thisResult = new ArrayList<TrecTextDocument>();
+			try
+			{
+				thisResult = f.get();
+			}
+			catch (Exception excep)
+			{
+				excep.printStackTrace();
+			}
+			result.addAll(thisResult);
+		}
+		exc.shutdown();
     	return result;
 	}
+	
+	
+private static class GetFilteredFilesParallel implements Callable<List<TrecTextDocument>>{
+		
+		String folder;
+		String file;
+		String wd;
+		Set<String> streamIDs;
+		
+		public GetFilteredFilesParallel(String fldIn, String fIn, String wdIn, Set<String> streamIdIn)
+		{
+			folder = fldIn;
+			file = fIn;
+			wd = wdIn;
+			streamIDs = streamIdIn;
+		}
+		
+		@Override
+		public List<TrecTextDocument> call() throws Exception {
+
+			return ThriftReader.GetFilteredFiles(folder, file, wd, streamIDs);
+		}
+	}
+
 }

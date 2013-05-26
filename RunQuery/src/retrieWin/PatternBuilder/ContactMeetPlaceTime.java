@@ -15,14 +15,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import retrieWin.Indexer.ProcessTrecTextDocument;
 import retrieWin.Indexer.TrecTextDocument;
 
 
+import retrieWin.Querying.ExecuteQuery;
 import retrieWin.Querying.QueryBuilder;
 import retrieWin.SSF.Constants;
 import retrieWin.SSF.Entity;
@@ -31,16 +34,19 @@ import retrieWin.SSF.SlotPattern.Rule;
 import retrieWin.Utils.NLPUtils;
 import retrieWin.Utils.PriorityQueue;
 import retrieWin.Utils.Utils;
+import retrieWin.SSF.Constants.EdgeDirection;
 import retrieWin.SSF.Constants.EntityType;
 import retrieWin.Utils.FileUtils;
 
 import edu.stanford.nlp.stats.IntCounter;
+import edu.stanford.nlp.util.Pair;
 import fig.basic.LogInfo;
 import fig.basic.Option;
 import fig.exec.Execution;
 
 public class ContactMeetPlaceTime implements Runnable{
 	@Option(gloss="working Directory") public String workingDirectory;
+	@Option(gloss="Index Location") public String indexLocation;
 	@Option(gloss="output File") public String outputFile;
 	List<Entity> entities;
 	public static void main(String[] args) {
@@ -67,12 +73,224 @@ public class ContactMeetPlaceTime implements Runnable{
 		
 		filename_nonSchools.add("output_nonSchools");
 		filename_nonSchools.add("output_nonSchools_20120721");
-		
-		aggregateResults(filenames,filename_nonSchools);
-		//writeHumanReadableResults(filename);
+		doBootStrap();
+		//aggregateResults(filenames,filename_nonSchools);
+		//writeHumanReadableResults(filenames);
 		LogInfo.end_track();
 	}
 	
+	public List<SlotPattern> populateBootstrapSlotPatterns()
+	{
+		List<SlotPattern> result = new ArrayList<SlotPattern>();
+		Rule r1 = new Rule();
+		r1.edgeType = "nsubj";
+		r1.direction = EdgeDirection.Out;
+		Rule r2 = new Rule();
+		r2.edgeType = "prep_at";
+		r2.direction = EdgeDirection.Out;
+		List<Rule> rules = new ArrayList<Rule>();
+		rules.add(r1);	rules.add(r2);
+		
+		// stay, nsubj, prep-at
+		SlotPattern p = new SlotPattern();
+		p.setConfidenceScore(0.0);
+		p.setPattern("stay");
+		p.setRules(rules);
+		result.add(p);
+		
+		// arrive, nsubj, prep_at
+		p = new SlotPattern();
+		p.setConfidenceScore(0.0);
+		p.setRules(rules);
+		p.setPattern("arrive");
+		result.add(p);
+		
+		// play, nsubj, prep_at
+		p = new SlotPattern();
+		p.setConfidenceScore(0.0);
+		p.setRules(rules);
+		p.setPattern("play");
+		result.add(p);
+		
+		// present, nsubj, prep_at
+		p = new SlotPattern();
+		p.setConfidenceScore(0.0);
+		p.setRules(rules);
+		p.setPattern("present");
+		result.add(p);
+		
+		// gather, nsubj, prep_at
+		p = new SlotPattern();
+		p.setConfidenceScore(0.0);
+		p.setRules(rules);
+		p.setPattern("gather");
+		result.add(p);
+		
+		// gave
+		p = new SlotPattern();
+		p.setConfidenceScore(0.0);
+		p.setRules(rules);
+		p.setPattern("gave");
+		result.add(p);
+		
+		// spoke
+		p = new SlotPattern();
+		p.setConfidenceScore(0.0);
+		p.setRules(rules);
+		p.setPattern("spoke");
+		result.add(p);
+		
+		
+		r1 = new Rule();
+		r1.edgeType = "nsubjpass";
+		r1.direction = EdgeDirection.Out;
+		r2 = new Rule();
+		r2.edgeType = "prep_at";
+		r2.direction = EdgeDirection.Out;
+		rules = new ArrayList<Rule>();
+		rules.add(r1);	rules.add(r2);
+		// held, nsubjpass, prep_at
+		p = new SlotPattern();
+		p.setConfidenceScore(0.0);
+		p.setRules(rules);
+		p.setPattern("held");
+		result.add(p);
+		
+		// award, nsubjpass, prep_at
+		p = new SlotPattern();
+		p.setConfidenceScore(0.0);
+		p.setRules(rules);
+		p.setPattern("award");
+		result.add(p);
+		
+		// present, nsubjpass, prep_at
+		p = new SlotPattern();
+		p.setConfidenceScore(0.0);
+		p.setRules(rules);
+		p.setPattern("present");
+		result.add(p);
+		
+		return result;
+	}
+	public void doBootStrap()
+	{
+		List<SlotPattern> patterns = populateBootstrapSlotPatterns();
+		Map<Pair<String,String>,List<String>> results = new HashMap<Pair<String,String>,List<String>>();
+		
+		ExecuteQuery eq = new ExecuteQuery(indexLocation);
+		int numResults = 1000;
+		Map<SlotPattern,List<String>> patternToStringMap = new HashMap<SlotPattern,List<String>>();
+		for (SlotPattern p:patterns)
+		{
+			System.out.println("Starting query for : " + p.getPattern());
+			String query = String.format("#1(%s)", p.getPattern());
+			System.out.println("Query String: " + query);
+			List<TrecTextDocument> trecDocs = eq.executeQuery(query,numResults, workingDirectory);
+			List<String> sentences = ProcessTrecTextDocument.getCleanedSentences(
+					ProcessTrecTextDocument.extractRelevantSentences(trecDocs, p.getPattern()));
+			patternToStringMap.put(p, sentences);
+			System.out.println("Done querying for: " + p.getPattern());
+		}
+		
+		NLPUtils nlp = new NLPUtils();
+		
+		for (SlotPattern p:patternToStringMap.keySet())
+		{
+			int numthreads = 16;
+			ExecutorService exc = Executors.newFixedThreadPool(numthreads);
+			
+			List<Future<Map<Pair<String,String>,List<String>>>> futuresList = new ArrayList<Future<Map<Pair<String,String>,List<String>>>>();
+			
+			
+			for (String sentence:patternToStringMap.get(p))
+			{
+				Callable<Map<Pair<String,String>,List<String>>> c = new parallelBootstrapper(sentence,p,nlp);
+				Future<Map<Pair<String,String>,List<String>>> s = exc.submit(c);
+				futuresList.add(s);
+			}
+		
+			for (Future<Map<Pair<String,String>,List<String>>> f:futuresList)
+			{
+				Map<Pair<String,String>,List<String>> thisResult = new HashMap<Pair<String,String>,List<String>>();
+				try
+				{
+					thisResult = f.get();
+				}
+				catch (Exception excep)
+				{
+					excep.printStackTrace();
+				}
+				for (Pair<String,String> pr:thisResult.keySet())
+				{
+					if (results.containsKey(pr))
+					{
+						List<String> existing = results.get(pr);
+						existing.addAll(thisResult.get(pr));
+						results.put(pr,existing);
+					}
+					else
+					{
+						results.put(pr, thisResult.get(pr));
+					}
+				}
+			}
+			exc.shutdown();
+		}
+		
+		PriorityQueue<Pair<String,String>> resultsQueue = new PriorityQueue<Pair<String,String>>();
+		for (Pair<String,String> pr:results.keySet())
+		{
+			resultsQueue.add(pr,(double)(results.get(pr).size()));
+		}
+		
+		try
+		{
+			BufferedWriter buf = new BufferedWriter(new FileWriter(outputFile));
+			while(!resultsQueue.isEmpty())
+			{
+				Pair<String,String> pr = resultsQueue.next();
+				List<String> sentences = results.get(pr);
+				String pairLine = String.format("%s:%s:%d", pr.first,pr.second,sentences.size());
+				buf.write(pairLine);
+				buf.newLine();
+				for (String s:sentences)
+				{
+					String sentenceLine = String.format("$%s", s);
+					buf.write(sentenceLine);
+					buf.newLine();
+				}
+			}
+			
+			buf.close();
+		}
+		catch (Exception e)
+		{
+			System.out.println("Failed writing to file");
+			e.printStackTrace();
+		}
+	}
+	
+private static class parallelBootstrapper implements Callable<Map<Pair<String,String>,List<String>>>{
+		
+		String sentence;
+		SlotPattern pattern;
+		
+		NLPUtils nlp;
+		public parallelBootstrapper(String sen, SlotPattern pin, NLPUtils nlpin)
+		{
+			nlp = nlpin;
+			sentence = sen;
+			pattern = pin;
+		}
+		
+		@Override
+		public Map<Pair<String,String>,List<String>> call() throws Exception {
+
+			return nlp.getTwoSidesForPatternWord(sentence, pattern);
+		}
+	}
+
+
 	
 	public void aggregateResults(List<String> filenames, List<String> nonSchoolFilenames)
 	{

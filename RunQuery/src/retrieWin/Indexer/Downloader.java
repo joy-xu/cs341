@@ -3,10 +3,24 @@ package retrieWin.Indexer;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import retrieWin.Querying.QueryBuilder;
+import retrieWin.SSF.Entity;
+import retrieWin.SSF.SlotPattern;
+import retrieWin.Utils.NLPUtils;
 
 
-public class Downloader {
+public class Downloader implements Runnable{
 	
+	public String fld;
+	public String f;
+	public String wd;
 	public static String downloadfile(String folder, String filename, String downloadDirectory)
 	{
 		String downloadfile = downloadDirectory + filename;
@@ -71,5 +85,17 @@ public class Downloader {
 			return null;
 		}
     	return unxzfile;
+	}
+
+	public Downloader(String fldIn, String fIn, String wdIn)
+	{
+		fld = fldIn;
+		f = fIn;
+		wd = wdIn;
+	}
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		downloadfile(fld,f,wd);
 	}
 }

@@ -45,6 +45,7 @@ import edu.stanford.nlp.trees.GrammaticalRelation;
 import edu.stanford.nlp.trees.Tree;
 import edu.stanford.nlp.trees.TreeCoreAnnotations;
 import edu.stanford.nlp.util.CoreMap;
+import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.StringUtils;
 import fig.basic.LogInfo;
 
@@ -1000,4 +1001,63 @@ public class NLPUtils {
 		return patterns;
 	}
 	
+	public Map<Pair<String,String>,List<String>> getTwoSidesForPatternWord(String sentence, SlotPattern pattern)
+	{
+		Map<Pair<String,String>,List<String>> result = new HashMap<Pair<String,String>,List<String>>();
+		try {
+			if(sentence.length() > 400)
+				return result;
+			Annotation document = new Annotation(sentence);
+			processor.annotate(document);
+			for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
+				
+				String sentenceFromMap = sentenceMap.toString().trim();
+				
+				
+				if(sentenceFromMap.startsWith("Tags :") || sentenceFromMap.length() > 300)
+				{
+					continue;
+				}
+				SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
+
+				
+				IndexedWord patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
+				//System.out.println(sentenceFromMap.length() + "##" + sentenceFromMap);
+				if (patternWord == null)
+					return result;
+				
+				Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
+				Set<IndexedWord> rule1Set = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(0), graph);
+				Set<IndexedWord> rule2Set = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(1), graph);
+				
+				for (IndexedWord r1:rule1Set)
+				{
+					String phrase1 = findExpandedEntity(sentenceMap,r1.originalText());
+					for (IndexedWord r2:rule2Set)
+					{
+						String phrase2 = findExpandedEntity(sentenceMap, r2.originalText());
+						Pair<String,String> p = new Pair<String,String>(phrase1,phrase2);
+						if (result.containsKey(p))
+						{
+							List<String> existing = result.get(p);
+							existing.add(sentenceFromMap);
+							result.put(p, existing);
+						}
+						else
+						{
+							List<String> newList = new ArrayList<String>();
+							newList.add(sentenceFromMap);
+							result.put(p, newList);
+						}
+					}
+				}
+			}
+		}
+		catch(Exception ex) {
+			//System.out.println(ex.getMessage());
+			ex.printStackTrace();
+		}
+		
+		return result;
+	}
 }
