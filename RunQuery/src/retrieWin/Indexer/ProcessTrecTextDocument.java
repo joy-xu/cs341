@@ -78,15 +78,24 @@ public class ProcessTrecTextDocument {
 	public static List<String> extractRelevantSentences(Collection<TrecTextDocument> documents, String entity1) 
 	{
 		List<String> returnString = new ArrayList<String>();
+		List<String> entitySplits = Arrays.asList(entity1.split(" "));
 		for (TrecTextDocument t:documents)
 		{
 			List<String> currentAllSentences = t.sentences;
 			for (int j = 0;j<currentAllSentences.size();j++)
 			{
 				String currentSentence = currentAllSentences.get(j);
-				if (currentSentence.toLowerCase().contains(entity1.toLowerCase()))
+				String[] colonSeparated = currentSentence.split("(\\s+:\\s+)|\\-|\\.{3}");
+				for (int sen = 0;sen<colonSeparated.length;sen++)
 				{
-					returnString.add(currentSentence);
+					for (String entitySplit:entitySplits)
+					{
+						if (colonSeparated[sen].toLowerCase().contains(entitySplit.toLowerCase()))
+						{
+							returnString.add(colonSeparated[sen]);
+							break;
+						}
+					}
 				}
 			}
 		}
@@ -96,15 +105,24 @@ public class ProcessTrecTextDocument {
 	public static Map<String, String> extractRelevantSentencesWithDocID(Collection<TrecTextDocument> documents, String entity1) 
 	{
 		Map<String, String> returnString = new HashMap<String, String>();
+		List<String> entitySplits = Arrays.asList(entity1.split(" "));
 		for (TrecTextDocument t:documents)
 		{
 			List<String> currentAllSentences = t.sentences;
 			for (int j = 0;j<currentAllSentences.size();j++)
 			{
 				String currentSentence = currentAllSentences.get(j);
-				if (currentSentence.toLowerCase().contains(entity1.toLowerCase()))
+				String[] colonSeparated = currentSentence.split(":");
+				for (int sen = 0;sen<colonSeparated.length;sen++)
 				{
-					returnString.put(currentSentence, t.docNumber);
+					for (String entitySplit:entitySplits)
+					{
+						if (colonSeparated[sen].toLowerCase().contains(entitySplit.toLowerCase()))
+						{
+							returnString.put(colonSeparated[sen],t.docNumber);
+							break;
+						}
+					}
 				}
 			}
 		}
@@ -146,7 +164,16 @@ public class ProcessTrecTextDocument {
 			
 			sentence = sentence.replaceAll("\\[\\s*\\[", "");
 			sentence = sentence.replaceAll("\\]\\s*\\]","");
-					
+			
+			// Remove (Reuters something something)
+			sentence = sentence.replaceAll("\\(\\s*REUTERS[^\\)]*\\)", "");
+			
+			// Remove (AP something something)
+			sentence = sentence.replaceAll("\\(\\s*AP[^\\)]*\\)", "");
+			
+			// Remove (Getty Images something something)
+			sentence = sentence.replaceAll("\\([^(?!GETTY)].*GETTY[^\\)]*\\)", "");
+			
 			results.addAll(Arrays.asList(sentence.split("[|]+")));
 			//System.out.println("Process : "+ sentence);
 			//for(String s:))

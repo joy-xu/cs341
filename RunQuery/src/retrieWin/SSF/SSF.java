@@ -54,6 +54,32 @@ public class SSF implements Runnable{
 			entities = (List<Entity>)FileUtils.readFile(file.getAbsolutePath().toString());
 		}
 		else {
+			// Read from expansions file
+			Map<String,Set<String>> namesToExpansions = new HashMap<String,Set<String>>();
+			String expFileName = "data/entities_expansions";
+			try{
+				BufferedReader buf = new BufferedReader(new FileReader(expFileName));
+				String line;
+				while((line = buf.readLine())!=null)
+				{
+					String[] tok = line.split(":");
+					String name = tok[0];
+					Set<String> expansions = new HashSet<String>();
+					String[] dollahSep = tok[1].split("$");
+					for (int j = 0;j<dollahSep.length;j++)
+					{
+						if (dollahSep[j].length() <= 0) continue;
+						expansions.add(dollahSep[j].toLowerCase());
+					}
+					namesToExpansions.put(name,expansions);
+				}
+				buf.close();
+			}
+			catch (Exception e)
+			{
+				System.out.println("Entities expansion file not present");
+				e.printStackTrace();
+			}
 			String fileName = "data/entities.csv";
 			entities = new ArrayList<Entity>();
 			try {
@@ -63,8 +89,10 @@ public class SSF implements Runnable{
 					String[] splits = line.split("\",\"");
 					EntityType type = splits[1].replace("\"", "").equals("PER") ? EntityType.PER : (splits[1].equals("ORG") ? EntityType.ORG : EntityType.FAC);
 					String name = splits[0].replace("\"", "").replace("http://en.wikipedia.org/wiki/", "").replace("https://twitter.com/", "");
+					//List<String> equivalents = Utils.getEquivalents(splits[3].replace("\"", ""));
+					List<String> equivalents = new ArrayList<String>(namesToExpansions.get(name));
 					Entity entity = new Entity(splits[0].replace("\"", ""), name, type, splits[2].replace("\"", ""),
-							Utils.getEquivalents(splits[3].replace("\"", "")), getDisambiguations(name));
+							equivalents, getDisambiguations(name));
 					entities.add(entity);
 				}
 				reader.close();
@@ -74,14 +102,6 @@ public class SSF implements Runnable{
 			}
 			FileUtils.writeFile(entities, Constants.entitiesSerilizedFile);
 		}
-		/* for(Entity e:entities) {
-			System.out.println(e.getName());
-			System.out.println(e.getTargetID());
-			System.out.println(e.getGroup());
-			System.out.println(e.getEntityType());
-			System.out.println(e.getExpansions());
-			System.out.println(e.getDisambiguations());
-		} */
 	}
 	
 	public List<String> getDisambiguations(String entity) {
@@ -283,16 +303,17 @@ public class SSF implements Runnable{
 
 		Indexer.createIndex(timestamp,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities);
 		
-		/** read in existing information for entities **/
+		/*
+		/** read in existing information for entities 
 		System.out.println("Reading entities...");
 		readEntities();
 		
-		/** read in slot information **/
+		/** read in slot information 
 		System.out.println("Reading slots...");
 		readSlots();
 		System.out.println(slots);
 		
-		/** for each entity, for each slot, for each entity expansion**/
+		/** for each entity, for each slot, for each entity expansion
 		System.out.println("Finding slot values...");
 		for(Entity entity: entities) {
 			//get all relevant documents for the entity
@@ -340,6 +361,7 @@ public class SSF implements Runnable{
 				System.out.println(entity.getName() + "," + slot.getName() + ":" + entity.updateSlot(slot, finalCandidateList));
 			}
 		}
+		*/
 	}
 	
 	void buildLargeIndex() {
@@ -371,8 +393,8 @@ public class SSF implements Runnable{
 			System.out.println("Environment variable not set");
 			return;
 		}
-		new SSF().updateSlots();
-		//Execution.run(args, "Main", new SSF());
+		//new SSF().updateSlots();
+		Execution.run(args, "Main", new SSF());
 	}
 
 	@Override

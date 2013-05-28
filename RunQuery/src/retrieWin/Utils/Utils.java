@@ -62,6 +62,8 @@ public class Utils {
 				case 2:
 					equivalents.add(qTerms.get(0) + " " + qTerms.get(1));
 					equivalents.add(qTerms.get(1) + " " + qTerms.get(0));
+					equivalents.add(qTerms.get(0));
+					equivalents.add(qTerms.get(1));
 					break;
 				default:
 					for(int i = 0; i < numTerms; i++) {

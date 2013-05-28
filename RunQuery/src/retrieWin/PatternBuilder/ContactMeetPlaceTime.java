@@ -76,7 +76,64 @@ public class ContactMeetPlaceTime implements Runnable{
 		doBootStrap();
 		//aggregateResults(filenames,filename_nonSchools);
 		//writeHumanReadableResults(filenames);
+		//aggregateBootstrapResults("bootstrapResults");
 		LogInfo.end_track();
+	}
+	
+	public void aggregateBootstrapResults(String filename)
+	{
+		Map<Pair<String,String>,Set<String>> allPairs = new HashMap<Pair<String,String>,Set<String>>(); 
+		try{
+		BufferedReader buf = new BufferedReader(new FileReader(filename));
+		String line;
+		Pair<String,String> newPair = new Pair<String,String>();
+		while((line = buf.readLine())!=null)
+		{
+			if (!line.startsWith("$"))
+			{
+				String[] tokens = line.split(":");
+				newPair = new Pair<String,String>(tokens[0],tokens[1]);
+				allPairs.put(newPair, new HashSet<String>());
+			}
+			else
+			{
+				String sentence = line.substring(1);
+				Set<String> existing = allPairs.get(newPair);
+				existing.add(sentence);
+				allPairs.put(newPair, existing);
+			}
+		}
+		
+		buf.close();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		PriorityQueue<Pair<String,String>> pq = new PriorityQueue<Pair<String,String>>();
+		
+		for (Pair<String,String> pr : allPairs.keySet())
+		{
+			pq.add(pr, allPairs.get(pr).size());
+		}
+		
+		try
+		{
+			BufferedWriter wbuf = new BufferedWriter(new FileWriter(outputFile));
+			while(!pq.isEmpty())
+			{
+				Pair<String,String> p = pq.next();
+				String output = String.format("%s:%s",p.first,p.second);
+				wbuf.write(output);
+				wbuf.newLine();
+			}
+			wbuf.close();
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
 	}
 	
 	public List<SlotPattern> populateBootstrapSlotPatterns()
@@ -130,14 +187,14 @@ public class ContactMeetPlaceTime implements Runnable{
 		p = new SlotPattern();
 		p.setConfidenceScore(0.0);
 		p.setRules(rules);
-		p.setPattern("gave");
+		p.setPattern("give");
 		result.add(p);
 		
 		// spoke
 		p = new SlotPattern();
 		p.setConfidenceScore(0.0);
 		p.setRules(rules);
-		p.setPattern("spoke");
+		p.setPattern("speak");
 		result.add(p);
 		
 		
@@ -153,7 +210,7 @@ public class ContactMeetPlaceTime implements Runnable{
 		p = new SlotPattern();
 		p.setConfidenceScore(0.0);
 		p.setRules(rules);
-		p.setPattern("held");
+		p.setPattern("hold");
 		result.add(p);
 		
 		// award, nsubjpass, prep_at
@@ -170,20 +227,53 @@ public class ContactMeetPlaceTime implements Runnable{
 		p.setPattern("present");
 		result.add(p);
 		
+		r1 = new Rule();
+		r1.edgeType = "poss";
+		r1.direction = EdgeDirection.Out;
+		r2 = new Rule();
+		r2.edgeType = "prep_at";
+		r2.direction = EdgeDirection.Out;
+		rules = new ArrayList<Rule>();
+		rules.add(r1);	rules.add(r2);
+		// held, nsubjpass, prep_at
+		p = new SlotPattern();
+		p.setConfidenceScore(0.0);
+		p.setRules(rules);
+		p.setPattern("speech");
+		result.add(p);
+		
+		p = new SlotPattern();
+		p.setConfidenceScore(0.0);
+		p.setRules(rules);
+		p.setPattern("talk");
+		result.add(p);
+		
+		p = new SlotPattern();
+		p.setConfidenceScore(0.0);
+		p.setRules(rules);
+		p.setPattern("presentation");
+		result.add(p);
+		
+		p = new SlotPattern();
+		p.setConfidenceScore(0.0);
+		p.setRules(rules);
+		p.setPattern("appearance");
+		result.add(p);
+		
 		return result;
 	}
 	public void doBootStrap()
 	{
 		List<SlotPattern> patterns = populateBootstrapSlotPatterns();
-		Map<Pair<String,String>,List<String>> results = new HashMap<Pair<String,String>,List<String>>();
-		
+		Map<Pair<String,String>,Set<String>> results = new HashMap<Pair<String,String>,Set<String>>();
+		NLPUtils nlp = new NLPUtils();
 		ExecuteQuery eq = new ExecuteQuery(indexLocation);
-		int numResults = 1000;
+		int numResults = 100;
 		Map<SlotPattern,List<String>> patternToStringMap = new HashMap<SlotPattern,List<String>>();
 		for (SlotPattern p:patterns)
 		{
 			System.out.println("Starting query for : " + p.getPattern());
-			String query = String.format("#1(%s)", p.getPattern());
+			String query = String.format("#10(%s at)", p.getPattern());
 			System.out.println("Query String: " + query);
 			List<TrecTextDocument> trecDocs = eq.executeQuery(query,numResults, workingDirectory);
 			List<String> sentences = ProcessTrecTextDocument.getCleanedSentences(
@@ -192,7 +282,7 @@ public class ContactMeetPlaceTime implements Runnable{
 			System.out.println("Done querying for: " + p.getPattern());
 		}
 		
-		NLPUtils nlp = new NLPUtils();
+		//NLPUtils nlp = new NLPUtils();
 		
 		for (SlotPattern p:patternToStringMap.keySet())
 		{
@@ -224,13 +314,13 @@ public class ContactMeetPlaceTime implements Runnable{
 				{
 					if (results.containsKey(pr))
 					{
-						List<String> existing = results.get(pr);
+						Set<String> existing = results.get(pr);
 						existing.addAll(thisResult.get(pr));
 						results.put(pr,existing);
 					}
 					else
 					{
-						results.put(pr, thisResult.get(pr));
+						results.put(pr, new HashSet<String>(thisResult.get(pr)));
 					}
 				}
 			}
@@ -249,7 +339,7 @@ public class ContactMeetPlaceTime implements Runnable{
 			while(!resultsQueue.isEmpty())
 			{
 				Pair<String,String> pr = resultsQueue.next();
-				List<String> sentences = results.get(pr);
+				Set<String> sentences = results.get(pr);
 				String pairLine = String.format("%s:%s:%d", pr.first,pr.second,sentences.size());
 				buf.write(pairLine);
 				buf.newLine();
@@ -259,6 +349,7 @@ public class ContactMeetPlaceTime implements Runnable{
 					buf.write(sentenceLine);
 					buf.newLine();
 				}
+				buf.newLine();
 			}
 			
 			buf.close();
@@ -563,20 +654,59 @@ private static class parallelBootstrapper implements Callable<Map<Pair<String,St
 			entities = (List<Entity>)FileUtils.readFile(file.getAbsolutePath().toString());
 		}
 		else {
+			// Read from expansions file
+			Map<String,Set<String>> namesToExpansions = new HashMap<String,Set<String>>();
+			String expFileName = "data/entities_expansions";
+			try{
+				BufferedReader buf = new BufferedReader(new FileReader(expFileName));
+				String line;
+				while((line = buf.readLine())!=null)
+				{
+					String[] tok = line.split(":");
+					String name = tok[0];
+					Set<String> expansions = new HashSet<String>();
+					String[] dollahSep = tok[1].split("$");
+					for (int j = 0;j<dollahSep.length;j++)
+					{
+						if (dollahSep[j].length() <= 0) continue;
+						expansions.add(dollahSep[j].toLowerCase());
+					}
+					namesToExpansions.put(name,expansions);
+				}
+				buf.close();
+			}
+			catch (Exception e)
+			{
+				e.printStackTrace();
+			}
 			String fileName = "data/entities.csv";
 			entities = new ArrayList<Entity>();
 			try {
 				BufferedReader reader = new BufferedReader(new FileReader(fileName));
+				//BufferedWriter wbuf = new BufferedWriter(new FileWriter("entities_final"));
 				String line = "";
 				while((line = reader.readLine()) != null) {
 					String[] splits = line.split("\",\"");
 					EntityType type = splits[1].replace("\"", "").equals("PER") ? EntityType.PER : (splits[1].equals("ORG") ? EntityType.ORG : EntityType.FAC);
 					String name = splits[0].replace("\"", "").replace("http://en.wikipedia.org/wiki/", "").replace("https://twitter.com/", "");
+					//List<String> equivalents = Utils.getEquivalents(splits[3].replace("\"", ""));
+					List<String> equivalents = new ArrayList<String>(namesToExpansions.get(name));
 					Entity entity = new Entity(splits[0].replace("\"", ""), name, type, splits[2].replace("\"", ""),
-							Utils.getEquivalents(splits[3].replace("\"", "")), getDisambiguations(name));
+							equivalents, getDisambiguations(name));
 					entities.add(entity);
+					/*
+					wbuf.write(name + ":");
+					for (String s:equivalents)
+					{
+						wbuf.write(s);
+						wbuf.write("$");
+					}
+					wbuf.newLine();
+					wbuf.flush();
+					*/
 				}
 				reader.close();
+				//wbuf.close();
 			}
 			catch (Exception ex) {
 				System.out.println(ex.getMessage());

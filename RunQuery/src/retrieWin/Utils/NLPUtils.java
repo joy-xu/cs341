@@ -384,7 +384,7 @@ public class NLPUtils {
 	//TODO - Improve if needed!
 	public IndexedWord findWordsInSemanticGraphForSlotPattern(SemanticGraph graph, String pattern) {
 		for(IndexedWord word: graph.vertexSet()) {
-			if(pattern.compareToIgnoreCase(word.originalText()) == 0) {
+			if(pattern.compareToIgnoreCase(word.lemma()) == 0) {
 				return word;
 			}
 		}
@@ -1027,9 +1027,25 @@ public class NLPUtils {
 					return result;
 				
 				Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
-				Set<IndexedWord> rule1Set = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(0), graph);
-				Set<IndexedWord> rule2Set = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(1), graph);
+				Set<IndexedWord> rule1SetTemp = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(0), graph);
+				Set<IndexedWord> rule2SetTemp = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(1), graph);
 				
+				// Remove pronouns
+				Set<IndexedWord> rule1Set = new HashSet<IndexedWord>();
+				for (IndexedWord w:rule1SetTemp)
+				{
+					if (w.tag().equals("PRP") || w.tag().equals("PRP$") || w.tag().equals("WP") || w.tag().equals("WP$"))
+						continue;
+					rule1Set.add(w);
+				}
+				
+				Set<IndexedWord> rule2Set = new HashSet<IndexedWord>();
+				for (IndexedWord w:rule2SetTemp)
+				{
+					if (w.tag().equals("PRP") || w.tag().equals("PRP$") || w.tag().equals("WP") || w.tag().equals("WP$"))
+						continue;
+					rule2Set.add(w);
+				}
 				for (IndexedWord r1:rule1Set)
 				{
 					String phrase1 = findExpandedEntity(sentenceMap,r1.originalText());

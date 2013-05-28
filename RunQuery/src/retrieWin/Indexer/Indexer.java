@@ -203,7 +203,7 @@ public class Indexer {
 		
 		ExecuteQuery queryExecutor = new ExecuteQuery(indexFolder);
 		
-		ExecutorService e = Executors.newFixedThreadPool(16);
+		ExecutorService e = Executors.newFixedThreadPool(4);
 		Set<TrecTextDocument> allResults = new HashSet<TrecTextDocument>();
 		
 		for (Entity entity:allEntities)
