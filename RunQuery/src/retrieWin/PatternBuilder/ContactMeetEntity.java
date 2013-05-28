@@ -195,6 +195,32 @@ public class ContactMeetEntity implements Runnable{
 			entities = (List<Entity>)FileUtils.readFile(file.getAbsolutePath().toString());
 		}
 		else {
+			// Read from expansions file
+			Map<String,Set<String>> namesToExpansions = new HashMap<String,Set<String>>();
+			String expFileName = "data/entities_expansions";
+			try{
+				BufferedReader buf = new BufferedReader(new FileReader(expFileName));
+				String line;
+				while((line = buf.readLine())!=null)
+				{
+					String[] tok = line.split(":");
+					String name = tok[0];
+					Set<String> expansions = new HashSet<String>();
+					String[] dollahSep = tok[1].split("$");
+					for (int j = 0;j<dollahSep.length;j++)
+					{
+						if (dollahSep[j].length() <= 0) continue;
+						expansions.add(dollahSep[j].toLowerCase());
+					}
+					namesToExpansions.put(name,expansions);
+				}
+				buf.close();
+			}
+			catch (Exception e)
+			{
+				System.out.println("Entities expansion file not present");
+				e.printStackTrace();
+			}
 			String fileName = "data/entities.csv";
 			entities = new ArrayList<Entity>();
 			try {
@@ -204,8 +230,10 @@ public class ContactMeetEntity implements Runnable{
 					String[] splits = line.split("\",\"");
 					EntityType type = splits[1].replace("\"", "").equals("PER") ? EntityType.PER : (splits[1].equals("ORG") ? EntityType.ORG : EntityType.FAC);
 					String name = splits[0].replace("\"", "").replace("http://en.wikipedia.org/wiki/", "").replace("https://twitter.com/", "");
+					//List<String> equivalents = Utils.getEquivalents(splits[3].replace("\"", ""));
+					List<String> equivalents = new ArrayList<String>(namesToExpansions.get(name));
 					Entity entity = new Entity(splits[0].replace("\"", ""), name, type, splits[2].replace("\"", ""),
-							Utils.getEquivalents(splits[3].replace("\"", "")), getDisambiguations(name));
+							equivalents, getDisambiguations(name));
 					entities.add(entity);
 				}
 				reader.close();
@@ -215,14 +243,6 @@ public class ContactMeetEntity implements Runnable{
 			}
 			FileUtils.writeFile(entities, Constants.entitiesSerilizedFile);
 		}
-		/* for(Entity e:entities) {
-			System.out.println(e.getName());
-			System.out.println(e.getTargetID());
-			System.out.println(e.getGroup());
-			System.out.println(e.getEntityType());
-			System.out.println(e.getExpansions());
-			System.out.println(e.getDisambiguations());
-		} */
 	}
 	
 	

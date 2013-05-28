@@ -71,14 +71,15 @@ public class NLPUtils {
 
 			Map<Integer, Set<Integer>> corefsEntity = getCorefs(document, entity);
 			
-			
-			int sentNum = 0;
-			for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
+	
+			//int sentNum = 0;
+			List<CoreMap> allSentenceMaps = document.get(SentencesAnnotation.class);
+			for(int sentNum = 0;sentNum < allSentenceMaps.size();sentNum++) {
+				CoreMap sentenceMap = allSentenceMaps.get(sentNum);
 				String sentenceFromMap = sentenceMap.toString().trim();
 
 				if(sentenceFromMap.startsWith("Tags :") || sentenceFromMap.length() > 300)
 				{
-					sentNum++;
 					continue;
 				}
 				SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
@@ -131,7 +132,6 @@ public class NLPUtils {
 						}
 					}
 				}
-				sentNum++;
 			}
 		}
 		catch(Exception ex) 
@@ -156,13 +156,13 @@ public class NLPUtils {
 			Map<Integer, Set<Integer>> corefsEntity = getCorefs(document, entity);
 			
 			
-			int sentNum = 0;
-			for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
+			List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
+			for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
+				CoreMap sentenceMap = allSentenceMap.get(sentNum);
 				String sentenceFromMap = sentenceMap.toString().trim();
 
 				if(sentenceFromMap.startsWith("Tags :") || sentenceFromMap.length() > 300)
 				{
-					sentNum++;
 					continue;
 				}
 				SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
@@ -170,7 +170,6 @@ public class NLPUtils {
 				//System.out.println(sentenceFromMap.length() + "##" + sentenceFromMap);
 				if (words.isEmpty())
 				{
-					sentNum++;
 					continue;
 				}
 				List<String> candidates = new ArrayList<String>();
@@ -206,7 +205,6 @@ public class NLPUtils {
 						patterns.put(p, s);
 					}
 				}		
-				sentNum++;
 			}
 		}
 		catch(Exception ex) 
@@ -233,16 +231,15 @@ public class NLPUtils {
 			Map<Integer, Set<Integer>> corefsEntity = getCorefs(document, entity);
 			
 			
-			int sentNum = 0;
-			for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
+			List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
+			for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
+				CoreMap sentenceMap = allSentenceMap.get(sentNum);
 				String sentenceFromMap = sentenceMap.toString().trim();
 				
 				
 				if(sentenceFromMap.startsWith("Tags :") || sentenceFromMap.length() > 300)
 				{
-					sentNum++;
 					continue;
-
 				}
 				SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
 
@@ -286,7 +283,6 @@ public class NLPUtils {
 						}
 					}
 				}
-				sentNum++;
 			}
 		}
 		catch(Exception ex) {
@@ -309,8 +305,9 @@ public class NLPUtils {
 			Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
 			Map<Integer, Set<Integer>> corefsEntity2 = getCorefs(document, entity2);
 			
-			int sentNum = 0;
-			for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
+			List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
+			for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
+				CoreMap sentenceMap = allSentenceMap.get(sentNum);
 				String sentenceFromMap = sentenceMap.toString().trim();
 				//System.out.println(sentenceFromMap.length() + "##" + sentenceFromMap);
 				if(sentenceFromMap.startsWith("Tags :") || sentenceFromMap.length() > 300)
@@ -318,7 +315,6 @@ public class NLPUtils {
 				//SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
 				patterns.addAll(findRelation(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), findWordsInSemanticGraph(sentenceMap, entity2, corefsEntity2.get(sentNum))));
 				findShortRelation(sentenceMap, findWordsInSemanticGraphSimple(sentenceMap, entity1), findWordsInSemanticGraphSimple(sentenceMap, entity2));
-				sentNum++;
 			}
 		}
 		catch(Exception ex) {
@@ -578,10 +574,10 @@ public class NLPUtils {
 			processor.annotate(document);
 			Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
 			
-			int sentNum = 0;
-			for(CoreMap sentenceMap : document.get(SentencesAnnotation.class)) {
+			List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
+			for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
+				CoreMap sentenceMap = allSentenceMap.get(sentNum);
 				values.addAll(findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, targetNERTypes));
-				sentNum++;
 			}
 		/*}
 		catch(Exception ex) {
