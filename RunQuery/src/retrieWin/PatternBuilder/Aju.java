@@ -53,12 +53,12 @@ public class Aju implements Runnable{
 		LogInfo.logs("Index location     : " + indexLocation);
 		LogInfo.logs("Number of results  : " + numResults);
 		
-		//NLPUtils obj = new NLPUtils();
-		//obj.findSlotPattern("Narrated by Oscar winner Meryl Streep , the film takes audiences into the lives of a mother polar bear and her twin seven-month-old cubs as never before captured on film, as they navigate the changing Arctic wilderness they call home.", "Meryl Streep", "Oscar");
+		NLPUtils obj = new NLPUtils();
+		obj.findSlotPattern("Bill Gates' neighbor Steve Jobs complained that his dog was too loud.", "Bill Gates", "Steve Jobs");
 		//obj.findSlotPattern("Oldest Oscar Winner Meryl Streep Adds Sense of History With Best Actress Oscar Scarlett Johansson Lands Hitchcock Movie", "Meryl Streep", "Oscar");
 		//The movie showcases this enigmatic lady's personal demons, her struggle with dementia and her family relationships through Meryl Streep 's Oscar winning performance.
 		
-		runBootstrapForPair();
+		//runBootstrapForPair();
 		//runBootStrapforEntityAndNER();
 	
 		LogInfo.end_track();
@@ -172,7 +172,7 @@ public class Aju implements Runnable{
 	}
 		
 	public void runBootstrapForPair() {
-		List<Pair<String,String>> bootstrapList = getBootstrapInput("src/seedSet/slot_Awards_Won");
+		List<Pair<String,String>> bootstrapList = getBootstrapInput("src/seedSet/slot_Founded_by");
 		NLPUtils utils = new NLPUtils();
 
 		HashMap<SlotPattern, Double> weights = new HashMap<SlotPattern,Double>(), minWeights = new HashMap<SlotPattern,Double>();
@@ -217,12 +217,13 @@ public class Aju implements Runnable{
 
 			for(SlotPattern key:weights.keySet()) {
 				double score = (weights.get(key) - minWeights.get(key) ) * (numAppearances.getCount(key) -1) ;
+				//double score = (weights.get(key) ) * (numAppearances.getCount(key)) ;
 				key.setConfidenceScore(score);
 				weights.put(key, score );
 				//totalNormalizedCounts.put(key, (totalNormalizedCounts.get(key) ) *  numAppearances.getCount(key));
 				if(weights.get(key) > 0) {
-					LogInfo.logs(key + " : " + weights.get(key));
-					writer.write(key + " : " + weights.get(key) + "\n");
+					LogInfo.logs(key );
+					writer.write(key + "\n");
 				}
 			}
 			writer.close();
