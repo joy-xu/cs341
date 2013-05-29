@@ -626,11 +626,11 @@ private static class parallelBootstrapper implements Callable<Map<Pair<String,St
 		
 	}
 	public List<String> getDisambiguations(String entity) {
-		String baseFolder = "data/entities_expanded/";
+		String baseFolder = "data/entities_expanded_new/";
 		List<String> disambiguations = new ArrayList<String>();
 		
 		try {
-			File file = new File(baseFolder + entity + ".expansion");
+			File file = new File(baseFolder + entity);
 			System.out.println(file.getAbsolutePath());
 			if(file.exists()) {
 				System.out.println("file exists");
@@ -665,7 +665,7 @@ private static class parallelBootstrapper implements Callable<Map<Pair<String,St
 					String[] tok = line.split(":");
 					String name = tok[0];
 					Set<String> expansions = new HashSet<String>();
-					String[] dollahSep = tok[1].split("$");
+					String[] dollahSep = tok[1].split("\\$");
 					for (int j = 0;j<dollahSep.length;j++)
 					{
 						if (dollahSep[j].length() <= 0) continue;

@@ -65,7 +65,7 @@ public class SSF implements Runnable{
 					String[] tok = line.split(":");
 					String name = tok[0];
 					Set<String> expansions = new HashSet<String>();
-					String[] dollahSep = tok[1].split("$");
+					String[] dollahSep = tok[1].split("\\$");
 					for (int j = 0;j<dollahSep.length;j++)
 					{
 						if (dollahSep[j].length() <= 0) continue;
@@ -95,7 +95,7 @@ public class SSF implements Runnable{
 							equivalents, getDisambiguations(name));
 					entities.add(entity);
 				}
-				reader.close();
+				reader.close();	
 			}
 			catch (Exception ex) {
 				System.out.println(ex.getMessage());
@@ -105,14 +105,14 @@ public class SSF implements Runnable{
 	}
 	
 	public List<String> getDisambiguations(String entity) {
-		String baseFolder = "data/entities_expanded/";
+		String baseFolder = "data/entities_expanded_new/";
 		List<String> disambiguations = new ArrayList<String>();
 		
 		try {
-			File file = new File(baseFolder + entity + ".expansion");
+			File file = new File(baseFolder + entity);
 			System.out.println(file.getAbsolutePath());
 			if(file.exists()) {
-				System.out.println("file exists");
+				System.out.println("file exists");	
 				BufferedReader reader = new BufferedReader(new FileReader(file));
 				String line = "";
 				while((line = reader.readLine()) != null) {
