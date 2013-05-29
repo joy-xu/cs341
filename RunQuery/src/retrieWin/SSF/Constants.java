@@ -16,8 +16,9 @@ public class Constants  implements Serializable {
 	
 	public enum PatternType {
 		WordInBetween,
-		ShortPattern,
-		Possessive
+		SourceInBetween,
+		TargetInBetween,
+		WithoutPatternWord
 	}
 	
 	public final static String defaultWorkingDirectory = "tmp/";
