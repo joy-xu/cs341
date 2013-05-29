@@ -492,7 +492,7 @@ public class NLPUtils {
 				}
 			}
 		}
-		System.out.println(patterns);
+		//System.out.println(patterns);
 		return patterns;
 	}
 	
