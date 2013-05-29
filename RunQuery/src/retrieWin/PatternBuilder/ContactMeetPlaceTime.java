@@ -626,11 +626,11 @@ private static class parallelBootstrapper implements Callable<Map<Pair<String,St
 		
 	}
 	public List<String> getDisambiguations(String entity) {
-		String baseFolder = "data/entities_expanded/";
+		String baseFolder = "data/entities_expanded_new/";
 		List<String> disambiguations = new ArrayList<String>();
 		
 		try {
-			File file = new File(baseFolder + entity + ".expansion");
+			File file = new File(baseFolder + entity);
 			System.out.println(file.getAbsolutePath());
 			if(file.exists()) {
 				System.out.println("file exists");
