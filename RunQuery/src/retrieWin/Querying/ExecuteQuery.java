@@ -127,15 +127,17 @@ public class ExecuteQuery {
 			set.add(streamID);
 			streamIDMap.put(filename, set);
     	}
-    	
+    	List<TrecTextDocument> result = new ArrayList<TrecTextDocument>();
     	int numthreads = 16;
 		ExecutorService exc = Executors.newFixedThreadPool(numthreads);
     	for(String folder:fileMap.keySet()) {
     		for(String file:fileMap.get(folder)) {
     			exc.execute(new Downloader(folder,file,workingDirectory));
+    			//result.addAll(ThriftReader.GetFilteredFiles(folder,file,workingDirectory,streamIDMap.get(file)));
     		}
     	}
-		exc.shutdown();
+		
+    	exc.shutdown();
 		while(true)
 		{
 			try 
@@ -151,7 +153,7 @@ public class ExecuteQuery {
 			}
 		}
 		
-    	List<TrecTextDocument> result = new ArrayList<TrecTextDocument>();
+    	//List<TrecTextDocument> result = new ArrayList<TrecTextDocument>();
     	
     	numthreads = 16;
 		exc = Executors.newFixedThreadPool(numthreads);
@@ -179,6 +181,7 @@ public class ExecuteQuery {
 			result.addAll(thisResult);
 		}
 		exc.shutdown();
+		
     	return result;
 	}
 	
