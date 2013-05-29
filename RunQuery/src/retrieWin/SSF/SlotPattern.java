@@ -17,7 +17,7 @@ public class SlotPattern  implements Serializable {
 	private double confidenceScore;
 	private List<Rule> rules;
 	private String pattern;
-	PatternType patternType = PatternType.WordInBetween;
+	private PatternType patternType = PatternType.WordInBetween;
 	
 	public static class Rule implements Serializable{
 		/**
@@ -87,7 +87,7 @@ public class SlotPattern  implements Serializable {
 				confidenceScore = Double.valueOf(val);
 			else if(var.equals("patternType")) {
 				if(!val.equals("null"))
-					patternType = Constants.PatternType.valueOf(val);
+					setPatternType(Constants.PatternType.valueOf(val));
 			}
 			else if(var.equals("rules")) {
 				rulesAdded = true;
@@ -127,7 +127,7 @@ public class SlotPattern  implements Serializable {
 		String ret = "[";
 		ret += "pattern = " + pattern + ", ";
 		ret += "confidenceScore = " + confidenceScore + ", ";
-		ret += "patternType = " + patternType + ", ";
+		ret += "patternType = " + getPatternType() + ", ";
 		ret += "rules = {" + rules.toString();
 		ret += "}]";
 		return ret;
@@ -176,5 +176,13 @@ public class SlotPattern  implements Serializable {
 
 	public void setConfidenceScore(double confidenceScore) {
 		this.confidenceScore = confidenceScore;
+	}
+
+	public PatternType getPatternType() {
+		return patternType;
+	}
+
+	public void setPatternType(PatternType patternType) {
+		this.patternType = patternType;
 	}
 }

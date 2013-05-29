@@ -11,6 +11,8 @@ import java.util.Set;
 
 import retrieWin.SSF.Constants.EdgeDirection;
 import retrieWin.SSF.Constants.NERType;
+import retrieWin.SSF.Constants.PatternType;
+import retrieWin.SSF.Constants;
 import retrieWin.SSF.Entity;
 import retrieWin.SSF.SlotPattern;
 import retrieWin.SSF.SlotPattern.Rule;
@@ -314,7 +316,7 @@ public class NLPUtils {
 					continue;
 				//SemanticGraph graph = sentenceMap.get(CollapsedCCProcessedDependenciesAnnotation.class);
 				patterns.addAll(findRelation(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), findWordsInSemanticGraph(sentenceMap, entity2, corefsEntity2.get(sentNum))));
-				findShortRelation(sentenceMap, findWordsInSemanticGraphSimple(sentenceMap, entity1), findWordsInSemanticGraphSimple(sentenceMap, entity2));
+				patterns.addAll(findShortRelation(sentenceMap, findWordsInSemanticGraphSimple(sentenceMap, entity1), findWordsInSemanticGraphSimple(sentenceMap, entity2)));
 			}
 		}
 		catch(Exception ex) {
@@ -387,17 +389,13 @@ public class NLPUtils {
 		return null;
 	}
 	
-	void findShortRelation(CoreMap map, List<IndexedWord> words1, List<IndexedWord> words2) {
+	//   -----------------------
+	//   |         -----------  |
+	//   V         V          | |
+	//Microsoft founder Bill Gates
+	List<SlotPattern> findShortRelation(CoreMap map, List<IndexedWord> words1, List<IndexedWord> words2) {
 		SemanticGraph graph = map.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		List<SlotPattern> patterns = new ArrayList<SlotPattern>();
-		List<IndexedWord> shortestPath = new ArrayList<IndexedWord>();
-		SlotPattern pattern = new SlotPattern();
-		Rule rule1 = new Rule();
-		Rule rule2 = new Rule();
-		boolean rulesCreated = false;
-		IndexedWord word1 = null, wordN = null;
-		
-		List<IndexedWord> shortestUncleanedPath = null;
 		
 		for(IndexedWord w1: words1) {
 			for(IndexedWord w2: words2) {
@@ -405,26 +403,93 @@ public class NLPUtils {
 				List<IndexedWord> nodes2to1 = graph.getShortestDirectedPathNodes(w2, w1);
 
 				if(nodes1to2 != null && nodes1to2.size() == 2) {
-					System.out.println("Two sized 1 to 2");
-					System.out.println(graph.getChildList(nodes1to2.get(0)));
-					for(IndexedWord w: graph.getChildList(nodes1to2.get(0))) {
-						if(!words1.contains(w) && !words2.contains(w)) {
-							System.out.println("Found " + w);
+					//System.out.println("Two sized 1 to 2");
+					//System.out.println(graph.getChildList(nodes1to2.get(0)));
+					if(graph.getChildList(nodes1to2.get(0)).size() > 1) {
+						for(IndexedWord w: graph.getChildList(nodes1to2.get(0))) {
+							if(!words1.contains(w) && !words2.contains(w)) {
+								SlotPattern pattern = new SlotPattern();
+								pattern.setPattern(w.lemma().toLowerCase().replaceAll("[^a-z]", ""));
+	
+								//pattern.setPattern(word.originalText());
+								//System.out.println(word.originalText() + ":" + word.tag());
+								pattern.setPatternType(PatternType.SourceInBetween);
+								Rule rule1 = new Rule();
+								//Out with respect to the entity
+								rule1.direction = EdgeDirection.Out;
+								rule1.edgeType = graph.getEdge(w1, w2).getRelation().getShortName();
+								
+								
+								Rule rule2 = new Rule();
+								//Out with respect to the entity
+								rule2.direction = EdgeDirection.Out;
+								rule2.edgeType = graph.getEdge(w1, w).getRelation().getShortName();
+								
+								pattern.setRules(Arrays.asList(rule1, rule2));
+								patterns.add(pattern);
+								//System.out.println("Found " + pattern);
+							}
 						}
+					}
+					else{
+						SlotPattern pattern = new SlotPattern();
+						pattern.setPatternType(PatternType.WithoutPatternWord);
+						Rule rule1 = new Rule();
+						//Out with respect to the entity
+						rule1.direction = EdgeDirection.Out;
+						rule1.edgeType = graph.getEdge(w1, w2).getRelation().getShortName();
+						
+						pattern.setRules(Arrays.asList(rule1));
+						patterns.add(pattern);
 					}
 				}
 				
 				if(nodes2to1 != null && nodes2to1.size() == 2) {
-					System.out.println("Two sized 2 to 1");
-					System.out.println(graph.getChildList(nodes2to1.get(0)));
-					for(IndexedWord w: graph.getChildList(nodes2to1.get(0))) {
-						if(!words1.contains(w) && !words2.contains(w)) {
-							System.out.println("Found " + w);
+					//System.out.println("Two sized 2 to 1");
+					//System.out.println(graph.getChildList(nodes2to1.get(0)));
+					if(graph.getChildList(nodes2to1.get(0)).size() > 1) {
+						for(IndexedWord w: graph.getChildList(nodes2to1.get(0))) {
+							if(!words1.contains(w) && !words2.contains(w)) {
+								SlotPattern pattern = new SlotPattern();
+								pattern.setPattern(w.lemma().toLowerCase().replaceAll("[^a-z]", ""));
+	
+								//pattern.setPattern(word.originalText());
+								//System.out.println(word.originalText() + ":" + word.tag());
+								pattern.setPatternType(PatternType.TargetInBetween);
+								Rule rule1 = new Rule();
+								//Out with respect to the entity
+								rule1.direction = EdgeDirection.In;
+								rule1.edgeType = graph.getEdge(w2, w1).getRelation().getShortName();
+								
+								
+								Rule rule2 = new Rule();
+								//Out with respect to the entity
+								rule2.direction = EdgeDirection.In;
+								rule2.edgeType = graph.getEdge(w2, w).getRelation().getShortName();
+								
+								pattern.setRules(Arrays.asList(rule1, rule2));
+								patterns.add(pattern);
+							}
 						}
+					}
+					else {
+						//System.out.println("Just one child.");
+						SlotPattern pattern = new SlotPattern();
+						pattern.setPatternType(PatternType.WithoutPatternWord);
+						Rule rule1 = new Rule();
+						//In with respect to the entity
+						rule1.direction = EdgeDirection.In;
+						rule1.edgeType = graph.getEdge(w2, w1).getRelation().getShortName();
+						
+						pattern.setRules(Arrays.asList(rule1));
+						patterns.add(pattern);
+						//System.out.println(pattern);
 					}
 				}
 			}
 		}
+		//System.out.println(patterns);
+		return patterns;
 	}
 	
 	public List<SlotPattern> findRelation(CoreMap map, List<IndexedWord> words1, List<IndexedWord> words2) {
@@ -508,10 +573,10 @@ public class NLPUtils {
 				if(edge != null) 
 					rule1.edgeType = edge.toString();
 				else {
-					System.out.println(shortestPath.get(0));
-					System.out.println(word1.index());
-					System.out.println(wordN.index());
-					System.out.println(graph.getEdge(shortestPath.get(0), word1));
+					//System.out.println(shortestPath.get(0));
+					//System.out.println(word1.index());
+					//System.out.println(wordN.index());
+					//System.out.println(graph.getEdge(shortestPath.get(0), word1));
 					rule1.edgeType = graph.getEdge(shortestPath.get(0), word1).toString();
 				}
 				
@@ -530,7 +595,7 @@ public class NLPUtils {
 
 			//pattern.setPattern(word.originalText());
 			//System.out.println(word.originalText() + ":" + word.tag());
-
+			pattern.setPatternType(PatternType.WordInBetween);
 			pattern.setRules(Arrays.asList(rule1, rule2));
 			patterns.add(pattern);
 		}
@@ -597,8 +662,36 @@ public class NLPUtils {
 		Set<String> ans = new HashSet<String>();
 		
 		//for rules with no pattern word
-		if(pattern.getPattern().isEmpty()) {
+		if(pattern.getPatternType().equals(Constants.PatternType.WithoutPatternWord)) {
 			tempSet = getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(0), graph);
+		}
+		else if(pattern.getPatternType().equals(Constants.PatternType.TargetInBetween)) {
+			IndexedWord patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
+			if(patternWord == null)
+				return ans;
+			Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
+			
+			Set<IndexedWord> tempSet1 = getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(0), graph);
+			tempSet = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(1), graph);
+			
+			tempSet.retainAll(tempSet1);
+		}
+		else if(pattern.getPatternType().equals(Constants.PatternType.SourceInBetween)) {
+			//Checking rule1
+			Set<IndexedWord> rule1Set = getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(0), graph);
+			for(IndexedWord w1:words1) {
+				if(rule1Set.contains(w1)) {
+					tempSet.addAll(getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(1), graph));
+				}
+			}
+			
+			//Checking rule2
+			Set<IndexedWord> rule2Set = getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(1), graph);
+			for(IndexedWord w1:words1) {
+				if(rule2Set.contains(w1)) {
+					tempSet.addAll(getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(0), graph));
+				}
+			}
 		}
 		else { 
 			IndexedWord patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
