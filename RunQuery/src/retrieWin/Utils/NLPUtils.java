@@ -12,6 +12,7 @@ import java.util.Set;
 import retrieWin.SSF.Constants.EdgeDirection;
 import retrieWin.SSF.Constants.NERType;
 import retrieWin.SSF.Constants.PatternType;
+import retrieWin.SSF.Constants;
 import retrieWin.SSF.Entity;
 import retrieWin.SSF.SlotPattern;
 import retrieWin.SSF.SlotPattern.Rule;
@@ -661,8 +662,36 @@ public class NLPUtils {
 		Set<String> ans = new HashSet<String>();
 		
 		//for rules with no pattern word
-		if(pattern.getPattern().isEmpty()) {
+		if(pattern.getPatternType().equals(Constants.PatternType.WithoutPatternWord)) {
 			tempSet = getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(0), graph);
+		}
+		else if(pattern.getPatternType().equals(Constants.PatternType.TargetInBetween)) {
+			IndexedWord patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
+			if(patternWord == null)
+				return ans;
+			Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
+			
+			Set<IndexedWord> tempSet1 = getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(0), graph);
+			tempSet = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(1), graph);
+			
+			tempSet.retainAll(tempSet1);
+		}
+		else if(pattern.getPatternType().equals(Constants.PatternType.SourceInBetween)) {
+			//Checking rule1
+			Set<IndexedWord> rule1Set = getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(0), graph);
+			for(IndexedWord w1:words1) {
+				if(rule1Set.contains(w1)) {
+					tempSet.addAll(getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(1), graph));
+				}
+			}
+			
+			//Checking rule2
+			Set<IndexedWord> rule2Set = getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(1), graph);
+			for(IndexedWord w1:words1) {
+				if(rule2Set.contains(w1)) {
+					tempSet.addAll(getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(0), graph));
+				}
+			}
 		}
 		else { 
 			IndexedWord patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
