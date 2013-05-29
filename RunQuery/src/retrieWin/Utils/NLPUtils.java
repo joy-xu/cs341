@@ -444,7 +444,7 @@ public class NLPUtils {
 					}
 				}
 				
-				if(nodes2to1 != null && nodes2to1.size() == 2) {
+				else if(nodes2to1 != null && nodes2to1.size() == 2) {
 					//System.out.println("Two sized 2 to 1");
 					//System.out.println(graph.getChildList(nodes2to1.get(0)));
 					if(graph.getChildList(nodes2to1.get(0)).size() > 1) {
@@ -469,6 +469,10 @@ public class NLPUtils {
 								
 								pattern.setRules(Arrays.asList(rule1, rule2));
 								patterns.add(pattern);
+								
+								//System.out.println(pattern.hashCode());
+								//System.out.println(w1);
+								//System.out.println(w2);
 							}
 						}
 					}
@@ -488,7 +492,7 @@ public class NLPUtils {
 				}
 			}
 		}
-		//System.out.println(patterns);
+		System.out.println(patterns);
 		return patterns;
 	}
 	
