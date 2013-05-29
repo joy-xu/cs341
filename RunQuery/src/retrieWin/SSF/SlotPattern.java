@@ -135,7 +135,9 @@ public class SlotPattern  implements Serializable {
 	
 	@Override
 	public int hashCode() {
-		int hashCode = this.pattern.toLowerCase().hashCode();
+		int hashCode = 0;
+		if(this.pattern != null)
+			hashCode += this.pattern.toLowerCase().hashCode();
 		for(Rule rule:this.rules) {
 			hashCode += rule.hashCode();
 		}
