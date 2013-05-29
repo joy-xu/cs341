@@ -412,7 +412,7 @@ public class NLPUtils {
 	
 								//pattern.setPattern(word.originalText());
 								//System.out.println(word.originalText() + ":" + word.tag());
-								pattern.setPatternType(PatternType.ShortPattern);
+								pattern.setPatternType(PatternType.SourceInBetween);
 								Rule rule1 = new Rule();
 								//Out with respect to the entity
 								rule1.direction = EdgeDirection.Out;
@@ -432,7 +432,7 @@ public class NLPUtils {
 					}
 					else{
 						SlotPattern pattern = new SlotPattern();
-						pattern.setPatternType(PatternType.Possessive);
+						pattern.setPatternType(PatternType.WithoutPatternWord);
 						Rule rule1 = new Rule();
 						//Out with respect to the entity
 						rule1.direction = EdgeDirection.Out;
@@ -454,7 +454,7 @@ public class NLPUtils {
 	
 								//pattern.setPattern(word.originalText());
 								//System.out.println(word.originalText() + ":" + word.tag());
-								pattern.setPatternType(PatternType.ShortPattern);
+								pattern.setPatternType(PatternType.TargetInBetween);
 								Rule rule1 = new Rule();
 								//Out with respect to the entity
 								rule1.direction = EdgeDirection.In;
@@ -474,7 +474,7 @@ public class NLPUtils {
 					else {
 						//System.out.println("Just one child.");
 						SlotPattern pattern = new SlotPattern();
-						pattern.setPatternType(PatternType.Possessive);
+						pattern.setPatternType(PatternType.WithoutPatternWord);
 						Rule rule1 = new Rule();
 						//In with respect to the entity
 						rule1.direction = EdgeDirection.In;
@@ -487,7 +487,7 @@ public class NLPUtils {
 				}
 			}
 		}
-		System.out.println(patterns);
+		//System.out.println(patterns);
 		return patterns;
 	}
 	
