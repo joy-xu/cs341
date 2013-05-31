@@ -117,11 +117,20 @@ public class SlotPattern  implements Serializable {
 	       if (getClass() != obj.getClass())
 	           return false;
 	       final SlotPattern other = (SlotPattern) obj;
-	       if (this.rules.size() != other.rules.size() || !other.pattern.toLowerCase().equals(this.pattern.toLowerCase()))
+	       if (this.rules.size() != other.rules.size() || (this.pattern == null && other.pattern != null) ||
+	    		   (this.pattern != null && other.pattern == null) || 
+	    		   (this.pattern != null && other.pattern != null && !other.pattern.toLowerCase().equals(this.pattern.toLowerCase())))
 	           return false;
-	       if((this.rules.get(0).equals(other.rules.get(0)) && this.rules.get(1).equals(other.rules.get(1))) ||
+	       if(this.rules.size() == 2) {
+	    	   if((this.rules.get(0).equals(other.rules.get(0)) && this.rules.get(1).equals(other.rules.get(1))) ||
 	    		   (this.rules.get(1).equals(other.rules.get(0)) && this.rules.get(0).equals(other.rules.get(1))))
 	    		   return true;
+	       }
+	       else if(this.rules.size() == 1) {
+	    	   if(this.rules.get(0).equals(other.rules.get(0))) {
+	    		   return true;
+	    	   }
+	       }
 	       return false;
 	   }
 	
