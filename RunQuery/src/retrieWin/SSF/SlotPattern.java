@@ -73,6 +73,7 @@ public class SlotPattern  implements Serializable {
 	}
 	
 	public SlotPattern(String str) {
+		str = str.substring(1, str.length()-1);
 		String var, val;
 		String[] split;
 		boolean rulesAdded = false;
@@ -91,8 +92,10 @@ public class SlotPattern  implements Serializable {
 			}
 			else if(var.equals("rules")) {
 				rulesAdded = true;
+				val = val.substring(1, val.length()-1);
 				for(String r: val.split("\\],")) {
-					addRule(new Rule(r));
+					if(!r.isEmpty())
+						addRule(new Rule(r));
 				}
 			}
 			
@@ -128,7 +131,8 @@ public class SlotPattern  implements Serializable {
 		ret += "pattern = " + pattern + ", ";
 		ret += "confidenceScore = " + confidenceScore + ", ";
 		ret += "patternType = " + getPatternType() + ", ";
-		ret += "rules = {" + rules.toString();
+		if(!(rules == null))
+			ret += "rules = {" + rules.toString();
 		ret += "}]";
 		return ret;
 	}	

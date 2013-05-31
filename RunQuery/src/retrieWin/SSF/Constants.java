@@ -18,7 +18,8 @@ public class Constants  implements Serializable {
 		WordInBetween,
 		SourceInBetween,
 		TargetInBetween,
-		WithoutPatternWord
+		WithoutPatternWord,
+		WithoutRules
 	}
 	
 	public final static String defaultWorkingDirectory = "tmp/";
@@ -52,12 +53,12 @@ public class Constants  implements Serializable {
 		Affiliate_Of,
 		Cause_Of_Death,
 		Date_Of_Death,
-		Top_Founders,
 		Contact_Meet_Place_Time,
 		Employee_Of,
 		Contact_Meet_Entity,
 		Awards_Won,
-		Titles
+		Titles,
+		Top_Members
 	}
 	
 	public enum EdgeDirection {

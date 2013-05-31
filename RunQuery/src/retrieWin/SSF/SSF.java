@@ -5,8 +5,11 @@ import fig.basic.*;
 import fig.exec.Execution;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -279,7 +282,7 @@ public class SSF implements Runnable{
 	}
 	
 	public void runSSF(String timestamp) {
-		/** create index for the current hour **/
+		// create index for the current hour
 		System.out.println("Creating index...");
 		String[] splits = timestamp.split("-");
 		String currentFolder = workingDirectory;
@@ -302,26 +305,28 @@ public class SSF implements Runnable{
 			baseDir.mkdirs();
 
 		Indexer.createIndex(timestamp,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities);
-		
-		/*
-		/** read in existing information for entities 
+				
+		// read in existing information for entities 
 		System.out.println("Reading entities...");
 		readEntities();
 		
-		/** read in slot information 
+		// read in slot information 
 		System.out.println("Reading slots...");
 		readSlots();
-		System.out.println(slots);
+		//System.out.println(slots);
 		
-		/** for each entity, for each slot, for each entity expansion
+		// for each entity, for each slot, for each entity expansion
 		System.out.println("Finding slot values...");
 		for(Entity entity: entities) {
+			if(!entity.getName().equals("Alexander_McCall_Smith"))
+				continue;
+			System.out.println("Finding slot values for entity " + entity.getName());
 			//get all relevant documents for the entity
 			List<TrecTextDocument> docs = entity.getRelevantDocuments(timestamp, entities);
-			System.out.println("Retrieved " + docs.size() + " TrecTextDocuments for entity: " + entity.getName());
+			System.out.println("Retrieved " + docs.size() + " relevant documents");
 			if(docs.isEmpty())
 				continue;
-			
+			/*
 			//get relevant sentences for each expansion, ensure no sentence retrieved twice
 			Map<String, Map<String, String>> relevantSentences = new HashMap<String, Map<String, String>>();
 			Set<String> retrievedSentences = new HashSet<String>();
@@ -359,9 +364,8 @@ public class SSF implements Runnable{
 				
 				//updating slots
 				System.out.println(entity.getName() + "," + slot.getName() + ":" + entity.updateSlot(slot, finalCandidateList));
-			}
+			}*/
 		}
-		*/
 	}
 	
 	void buildLargeIndex() {
@@ -377,17 +381,17 @@ public class SSF implements Runnable{
 	}
 	
 	
-	private void updateSlots() {
+	private void updateSlots() throws IOException {
 		readSlots();
-		for(Slot slot: slots) {
-			if(slot.getName().equals(Constants.SlotName.Awards_Won))
-				slot.addSlotPatterns("data/slots/awards_won");
-		}
+		/*for(Slot slot: slots) {
+			if(slot.getName().equals(Constants.SlotName.Founded_By))
+				slot.addSlotPatterns("data/slots/founded_by");
+		}*/
 		System.out.println(slots);
-		FileUtils.writeFile(slots, Constants.slotsSerializedFile);
+		//FileUtils.writeFile(slots, Constants.slotsSerializedFile);
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
 		if (!System.getenv().containsKey("LD_LIBRARY_PATH"))
 		{
 			System.out.println("Environment variable not set");
