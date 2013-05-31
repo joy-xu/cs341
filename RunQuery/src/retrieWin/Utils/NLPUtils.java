@@ -408,25 +408,28 @@ public class NLPUtils {
 					if(graph.getChildList(nodes1to2.get(0)).size() > 1) {
 						for(IndexedWord w: graph.getChildList(nodes1to2.get(0))) {
 							if(!words1.contains(w) && !words2.contains(w)) {
-								SlotPattern pattern = new SlotPattern();
-								pattern.setPattern(w.lemma().toLowerCase().replaceAll("[^a-z]", ""));
-	
-								//pattern.setPattern(word.originalText());
-								//System.out.println(word.originalText() + ":" + word.tag());
-								pattern.setPatternType(PatternType.SourceInBetween);
-								Rule rule1 = new Rule();
-								//Out with respect to the entity
-								rule1.direction = EdgeDirection.Out;
-								rule1.edgeType = graph.getEdge(w1, w2).getRelation().getShortName();
-								
-								
-								Rule rule2 = new Rule();
-								//Out with respect to the entity
-								rule2.direction = EdgeDirection.Out;
-								rule2.edgeType = graph.getEdge(w1, w).getRelation().getShortName();
-								
-								pattern.setRules(Arrays.asList(rule1, rule2));
-								patterns.add(pattern);
+								String patternWord = w.lemma().toLowerCase().replaceAll("[^a-z]", "");
+								if(!patternWord.isEmpty() ) {
+									SlotPattern pattern = new SlotPattern();
+									pattern.setPattern(patternWord);
+		
+									//pattern.setPattern(word.originalText());
+									//System.out.println(word.originalText() + ":" + word.tag());
+									pattern.setPatternType(PatternType.SourceInBetween);
+									Rule rule1 = new Rule();
+									//Out with respect to the entity
+									rule1.direction = EdgeDirection.Out;
+									rule1.edgeType = graph.getEdge(w1, w2).getRelation().getShortName();
+									
+									
+									Rule rule2 = new Rule();
+									//Out with respect to the entity
+									rule2.direction = EdgeDirection.Out;
+									rule2.edgeType = graph.getEdge(w1, w).getRelation().getShortName();
+									
+									pattern.setRules(Arrays.asList(rule1, rule2));
+									patterns.add(pattern);
+								}
 								//System.out.println("Found " + pattern);
 							}
 						}
@@ -450,26 +453,30 @@ public class NLPUtils {
 					if(graph.getChildList(nodes2to1.get(0)).size() > 1) {
 						for(IndexedWord w: graph.getChildList(nodes2to1.get(0))) {
 							if(!words1.contains(w) && !words2.contains(w)) {
-								SlotPattern pattern = new SlotPattern();
-								pattern.setPattern(w.lemma().toLowerCase().replaceAll("[^a-z]", ""));
-	
-								//pattern.setPattern(word.originalText());
-								//System.out.println(word.originalText() + ":" + word.tag());
-								pattern.setPatternType(PatternType.TargetInBetween);
-								Rule rule1 = new Rule();
-								//Out with respect to the entity
-								rule1.direction = EdgeDirection.In;
-								rule1.edgeType = graph.getEdge(w2, w1).getRelation().getShortName();
-								
-								
-								Rule rule2 = new Rule();
-								//Out with respect to the entity
-								rule2.direction = EdgeDirection.In;
-								rule2.edgeType = graph.getEdge(w2, w).getRelation().getShortName();
-								
-								pattern.setRules(Arrays.asList(rule1, rule2));
-								patterns.add(pattern);
-								
+								String patternWord = w.lemma().toLowerCase().replaceAll("[^a-z]", "");
+								if(!patternWord.isEmpty() ) {
+									SlotPattern pattern = new SlotPattern();
+									
+									pattern.setPattern(patternWord);
+		
+									//pattern.setPattern(word.originalText());
+									//System.out.println(word.originalText() + ":" + word.tag());
+									pattern.setPatternType(PatternType.TargetInBetween);
+									Rule rule1 = new Rule();
+									//Out with respect to the entity
+									rule1.direction = EdgeDirection.In;
+									rule1.edgeType = graph.getEdge(w2, w1).getRelation().getShortName();
+									
+									
+									Rule rule2 = new Rule();
+									//Out with respect to the entity
+									rule2.direction = EdgeDirection.In;
+									rule2.edgeType = graph.getEdge(w2, w).getRelation().getShortName();
+									
+									pattern.setRules(Arrays.asList(rule1, rule2));
+									patterns.add(pattern);
+								}
+									
 								//System.out.println(pattern.hashCode());
 								//System.out.println(w1);
 								//System.out.println(w2);
@@ -492,7 +499,10 @@ public class NLPUtils {
 				}
 			}
 		}
-		//System.out.println(patterns);
+		if(patterns.size() > 1) {
+			LogInfo.logs("_Sentence_ : " + map);
+			LogInfo.logs("_Patterns_ : " + patterns);
+		}
 		return patterns;
 	}
 	

@@ -54,12 +54,12 @@ public class Aju implements Runnable{
 		LogInfo.logs("Number of results  : " + numResults);
 		
 		NLPUtils obj = new NLPUtils();
-		obj.findSlotPattern("Bill Gates company Microsoft is the largest employer.", "Bill Gates", "Microsoft");
+		//obj.findSlotPattern("Bill Gates company Microsoft is the largest employer.", "Bill Gates", "Microsoft");
 		//obj.findSlotPattern("Bill Gates' neighbor Steve Jobs complained that his dog was too loud.", "Bill Gates", "Steve Jobs");
 		//obj.findSlotPattern("Oldest Oscar Winner Meryl Streep Adds Sense of History With Best Actress Oscar Scarlett Johansson Lands Hitchcock Movie", "Meryl Streep", "Oscar");
 		//The movie showcases this enigmatic lady's personal demons, her struggle with dementia and her family relationships through Meryl Streep 's Oscar winning performance.
 		
-		//runBootstrapForPair();
+		runBootstrapForPair();
 		//runBootStrapforEntityAndNER();
 	
 		LogInfo.end_track();
@@ -217,8 +217,8 @@ public class Aju implements Runnable{
 			//}
 
 			for(SlotPattern key:weights.keySet()) {
-				double score = (weights.get(key) - minWeights.get(key) ) * (numAppearances.getCount(key) -1) ;
-				//double score = (weights.get(key) ) * (numAppearances.getCount(key)) ;
+				//double score = (weights.get(key) - minWeights.get(key) ) * (numAppearances.getCount(key) -1) ;
+				double score = (weights.get(key) ) * (numAppearances.getCount(key)) ;
 				key.setConfidenceScore(score);
 				weights.put(key, score );
 				//totalNormalizedCounts.put(key, (totalNormalizedCounts.get(key) ) *  numAppearances.getCount(key));

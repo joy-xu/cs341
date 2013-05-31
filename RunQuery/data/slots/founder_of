@@ -1,20 +1,32 @@
-started|dobj:^|nsubj:^ : 0.02380952380952381
-cofounder|appos:v|nn:^ : 0.047619047619047616
-executed|nsubj:^|prep_at:^ : 0.014705882352941175
-built|dobj:^|nsubj:^ : 0.09523809523809523
-cofounder|conj_and:^|nn:^ : 0.014705882352941176
-left|dobj:^|nsubj:^ : 0.022222222222222227
-ceo|appos:^|nn:^ : 0.029411764705882353
-founder|appos:v|nn:^ : 0.011695906432748539
-employee|dep:^|poss:^ : 0.02380952380952381
-ceo|appos:v|prep_of:^ : 0.13986928104575164
-founded|dobj:^|nsubj:^ : 0.4796387520525452
-created|dobj:^|nsubj:^ : 0.07703081232492996
-founded|nsubj:^|prep_by:^ : 0.02380952380952381
-founder|appos:v|prep_of:^ : 0.2095238095238095
-cofounder|appos:v|prep_of:^ : 0.32882205513784457
-personnel|poss:^|prep_after:^ : 0.02380952380952381
-launched|dobj:^|nsubj:^ : 0.02380952380952381
-fame|nn:^|prep_of:v : 0.2
-founder|nn:^|nn:^ : 0.029239766081871343
-|poss:v|::1.0
+[pattern = founder, confidenceScore = 0.004368833227987101, patternType = WordInBetween, rules = {[[edgeType = appos, direction = Out], [edgeType = poss, direction = Out]]}]
+[pattern = cofounder, confidenceScore = 0.1386080838942618, patternType = WordInBetween, rules = {[[edgeType = appos, direction = In], [edgeType = prep_of, direction = Out]]}]
+[pattern = chairman, confidenceScore = 0.07471836520827875, patternType = SourceInBetween, rules = {[[edgeType = nn, direction = Out], [edgeType = nn, direction = Out]]}]
+[pattern = say, confidenceScore = 0.004077471967380224, patternType = SourceInBetween, rules = {[[edgeType = nn, direction = Out], [edgeType = rcmod, direction = Out]]}]
+[pattern = null, confidenceScore = 0.001529051987767584, patternType = WithoutPatternWord, rules = {[[edgeType = poss, direction = In]]}]
+[pattern = chief, confidenceScore = 0.09617273653970901, patternType = SourceInBetween, rules = {[[edgeType = nn, direction = Out], [edgeType = nn, direction = Out]]}]
+[pattern = express, confidenceScore = 0.0044609665427509295, patternType = WordInBetween, rules = {[[edgeType = nsubj, direction = Out], [edgeType = dep, direction = In]]}]
+[pattern = news, confidenceScore = 0.039886467416224244, patternType = SourceInBetween, rules = {[[edgeType = nn, direction = Out], [edgeType = nn, direction = Out]]}]
+[pattern = ceo, confidenceScore = 1.1601919015299056, patternType = SourceInBetween, rules = {[[edgeType = nn, direction = Out], [edgeType = nn, direction = Out]]}]
+[pattern = found, confidenceScore = 7.434944237918215E-4, patternType = WordInBetween, rules = {[[edgeType = prep_by, direction = Out], [edgeType = nsubj, direction = Out]]}]
+[pattern = cofounder, confidenceScore = 0.059642294504679824, patternType = SourceInBetween, rules = {[[edgeType = dep, direction = Out], [edgeType = nn, direction = Out]]}]
+[pattern = boss, confidenceScore = 0.03781522188123253, patternType = SourceInBetween, rules = {[[edgeType = nn, direction = Out], [edgeType = nn, direction = Out]]}]
+[pattern = null, confidenceScore = 0.009947284583315823, patternType = WithoutPatternWord, rules = {[[edgeType = poss, direction = Out]]}]
+[pattern = founder, confidenceScore = 5.113299846627751, patternType = SourceInBetween, rules = {[[edgeType = nn, direction = Out], [edgeType = nn, direction = Out]]}]
+[pattern = founder, confidenceScore = 0.00909090909090909, patternType = WordInBetween, rules = {[[edgeType = dep, direction = In], [edgeType = prep_of, direction = Out]]}]
+[pattern = begin, confidenceScore = 0.001486988847583643, patternType = WordInBetween, rules = {[[edgeType = nsubj, direction = Out], [edgeType = tmod, direction = Out]]}]
+[pattern = consolidate, confidenceScore = 7.434944237918215E-4, patternType = WordInBetween, rules = {[[edgeType = nsubj, direction = Out], [edgeType = tmod, direction = Out]]}]
+[pattern = cofounder, confidenceScore = 2.2865174885485287, patternType = SourceInBetween, rules = {[[edgeType = nn, direction = Out], [edgeType = nn, direction = Out]]}]
+[pattern = chief, confidenceScore = 8.084074373484236E-4, patternType = SourceInBetween, rules = {[[edgeType = nn, direction = Out], [edgeType = amod, direction = Out]]}]
+[pattern = news, confidenceScore = 0.0016168148746968473, patternType = TargetInBetween, rules = {[[edgeType = appos, direction = In], [edgeType = appos, direction = In]]}]
+[pattern = cofound, confidenceScore = 0.002425222312045271, patternType = WordInBetween, rules = {[[edgeType = nsubj, direction = Out], [edgeType = dobj, direction = Out]]}]
+[pattern = news, confidenceScore = 0.001019367991845056, patternType = SourceInBetween, rules = {[[edgeType = nn, direction = Out], [edgeType = dep, direction = Out]]}]
+[pattern = null, confidenceScore = 1.0, patternType = WithoutPatternWord, rules = {[[edgeType = nn, direction = In]]}]
+[pattern = executive, confidenceScore = 0.01001742032331885, patternType = SourceInBetween, rules = {[[edgeType = nn, direction = Out], [edgeType = nn, direction = Out]]}]
+[pattern = null, confidenceScore = 0.048302302719684234, patternType = WithoutPatternWord, rules = {[[edgeType = dep, direction = In]]}]
+[pattern = associated, confidenceScore = 0.0010193679918450564, patternType = SourceInBetween, rules = {[[edgeType = nn, direction = Out], [edgeType = nn, direction = Out]]}]
+[pattern = cofounder, confidenceScore = 0.0044609665427509295, patternType = SourceInBetween, rules = {[[edgeType = poss, direction = Out], [edgeType = nn, direction = Out]]}]
+[pattern = run, confidenceScore = 0.09090909090909091, patternType = WordInBetween, rules = {[[edgeType = nsubj, direction = Out], [edgeType = dobj, direction = Out]]}]
+[pattern = null, confidenceScore = 0.0035677879714576958, patternType = WithoutPatternWord, rules = {[[edgeType = appos, direction = In]]}]
+[pattern = tycoon, confidenceScore = 0.003134796238244514, patternType = SourceInBetween, rules = {[[edgeType = nn, direction = Out], [edgeType = nn, direction = Out]]}]
+[pattern = founder, confidenceScore = 0.7662930417184117, patternType = WordInBetween, rules = {[[edgeType = appos, direction = In], [edgeType = prep_of, direction = Out]]}]
+[pattern = ceo, confidenceScore = 0.010193679918450561, patternType = WordInBetween, rules = {[[edgeType = appos, direction = In], [edgeType = prep_of, direction = Out]]}]
