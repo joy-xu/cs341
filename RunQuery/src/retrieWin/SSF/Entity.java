@@ -41,7 +41,7 @@ public class Entity  implements Serializable {
 		List<TrecTextDocument> filtered = new ArrayList<TrecTextDocument>();
 		int maxScore = getDisambiguations().size();
 		for(TrecTextDocument doc: results) {
-			System.out.println(doc.text);
+			//System.out.println(doc.text);
 			int score = 0;
 			for(String simString: getDisambiguations()) {
 				if(doc.text.toLowerCase().contains(simString.toLowerCase()))
@@ -50,8 +50,8 @@ public class Entity  implements Serializable {
 			//remove documents which most likely don't belong to this entity
 			if((double)score/maxScore > disambiguationThreshold)
 				filtered.add(doc);
-			else
-				System.out.println("This doc failed the test :(");
+			//else
+				//System.out.println("This doc failed the test :(");
 		}
 		return filtered;
 	}

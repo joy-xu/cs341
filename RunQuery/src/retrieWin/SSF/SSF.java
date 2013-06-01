@@ -46,7 +46,7 @@ public class SSF implements Runnable{
 	public void initialize() {
 		readEntities();
 		readSlots();
-		//coreNLP = new NLPUtils();
+		coreNLP = new NLPUtils();
 		conceptExtractor = new Concept();
 	}
 	
@@ -318,15 +318,13 @@ public class SSF implements Runnable{
 		// for each entity, for each slot, for each entity expansion
 		System.out.println("Finding slot values...");
 		for(Entity entity: entities) {
-			if(!entity.getName().equals("Alexander_McCall_Smith"))
-				continue;
 			System.out.println("Finding slot values for entity " + entity.getName());
 			//get all relevant documents for the entity
 			List<TrecTextDocument> docs = entity.getRelevantDocuments(timestamp, entities);
 			System.out.println("Retrieved " + docs.size() + " relevant documents");
 			if(docs.isEmpty())
 				continue;
-			/*
+			
 			//get relevant sentences for each expansion, ensure no sentence retrieved twice
 			Map<String, Map<String, String>> relevantSentences = new HashMap<String, Map<String, String>>();
 			Set<String> retrievedSentences = new HashSet<String>();
@@ -348,9 +346,9 @@ public class SSF implements Runnable{
 				if(!slot.getEntityType().equals(entity.getEntityType()))
 						continue;
 				//TODO: remove this, computing only one slot right now
-				System.out.println("In slot " + slot.getName());
-				if(!slot.getName().equals(Constants.SlotName.Founder_Of) && !slot.getName().equals(Constants.SlotName.Titles))
+				if(slot.getPatterns().isEmpty())
 					continue;
+				System.out.println("In slot " + slot.getName());
 				
 				System.out.println("Finding value for " + slot.getName());
 				//for each expansion, slot pattern, get all possible candidates
@@ -364,7 +362,7 @@ public class SSF implements Runnable{
 				
 				//updating slots
 				System.out.println(entity.getName() + "," + slot.getName() + ":" + entity.updateSlot(slot, finalCandidateList));
-			}*/
+			}
 		}
 	}
 	
@@ -383,12 +381,18 @@ public class SSF implements Runnable{
 	
 	private void updateSlots() throws IOException {
 		readSlots();
-		/*for(Slot slot: slots) {
-			if(slot.getName().equals(Constants.SlotName.Founded_By))
-				slot.addSlotPatterns("data/slots/founded_by");
-		}*/
-		System.out.println(slots);
-		//FileUtils.writeFile(slots, Constants.slotsSerializedFile);
+		for(Slot slot: slots) {
+			String filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
+			System.out.println(filename);
+			File file = new File(filename);
+			if(!file.exists()) 
+				System.out.println("File for " + slot.getName() + " not found.");
+			
+			//if(slot.getName().equals(Constants.SlotName.Founded_By))
+			slot.addSlotPatterns(filename);
+		}
+		//System.out.println(slots);
+		FileUtils.writeFile(slots, Constants.slotsSerializedFile);
 	}
 	
 	public static void main(String[] args) throws IOException {
@@ -397,8 +401,8 @@ public class SSF implements Runnable{
 			System.out.println("Environment variable not set");
 			return;
 		}
-		//new SSF().updateSlots();
-		Execution.run(args, "Main", new SSF());
+		new SSF().updateSlots();
+		//Execution.run(args, "Main", new SSF());
 	}
 
 	@Override

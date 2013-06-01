@@ -1,0 +1,5 @@
+[pattern = die, confidenceScore = 1.0, patternType = WithoutRules, rules = {}]
+[pattern = pass, confidenceScore = 1.0, patternType = WithoutRules, rules = {}]
+[pattern = succumb, confidenceScore = 1.0, patternType = WithoutRules, rules = {}]
+[pattern = death, confidenceScore = 1.0, patternType = WithoutRules, rules = {}]
+[pattern = pass away, confidenceScore = 1.0, patternType = WithoutRules, rules = {}]
