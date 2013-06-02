@@ -647,19 +647,21 @@ public class NLPUtils {
 	}
 	
 	//iterates over sentences and finds values in each sentence
-	public Map<String, Double> findSlotValue(String sentence, String entity1, Slot slot, List<NERType> targetNERTypes, boolean social) throws NoSuchParseException {
+	public Map<String, Double> findSlotValue(String sentence, String entity1, Slot slot, boolean social) throws NoSuchParseException {
 		Map<String, Double> candidates = new HashMap<String, Double>();
 		Annotation document = new Annotation(sentence);
 		processor.annotate(document);
 		//get coreferences for the entity
 		Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
-		
 		List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
 		for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
 			CoreMap sentenceMap = allSentenceMap.get(sentNum);
 			for(SlotPattern pattern: slot.getPatterns()) {
+				if(!pattern.getPattern().equals("award"))
+					continue;
 				//System.out.println(pattern);
-				for(String str: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, targetNERTypes, social)) {
+				for(String str: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot.getTargetNERTypes(), social)) {
+					//System.out.println(str);
 					if(!str.isEmpty()) {
 						if(!candidates.containsKey(str))
 							candidates.put(str, pattern.getConfidenceScore());
@@ -758,6 +760,8 @@ public class NLPUtils {
 		for(IndexedWord w: ansSet) {
 			String phrase = findExpandedEntity(sentence, w.originalText());
 			String temp = "";
+			System.out.println(targetNERTypes);
+			System.out.println(targetNERTypes.contains(NERType.NONE));
 			for(String tok: phrase.split(" "))
 				if(targetNERTypes == null || targetNERTypes.contains(NERType.NONE) || targetNERTypes.contains(NERType.valueOf(nerMap.get(tok)))) 
 					temp += " " + tok;	

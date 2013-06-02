@@ -99,7 +99,7 @@ public class Slot implements Serializable {
 		this.patterns = patterns;
 	}
 
-	List<NERType> getTargetNERTypes() {
+	public List<NERType> getTargetNERTypes() {
 		return targetNERTypes;
 	}
 

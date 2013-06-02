@@ -250,7 +250,7 @@ public class SSF implements Runnable{
 					}
 					//social documents
 					else if(relevantSentences.get(expansion).get(sentence).contains("social")) {
-						Map<String, Double> values = coreNLP.findSlotValue(sentence, expansion, slot, slot.getTargetNERTypes(), true);
+						Map<String, Double> values = coreNLP.findSlotValue(sentence, expansion, slot, true);
 						for(String str: values.keySet()) {
 							//get normalized concept from candidate
 							String concept = conceptExtractor.getConcept(str);
@@ -262,7 +262,7 @@ public class SSF implements Runnable{
 					}
 					//news documents
 					else {
-						Map<String, Double> values = coreNLP.findSlotValue(sentence, expansion, slot, slot.getTargetNERTypes(), false);
+						Map<String, Double> values = coreNLP.findSlotValue(sentence, expansion, slot, false);
 						for(String str: values.keySet()) {
 							//get normalized concept from candidate
 							String concept = conceptExtractor.getConcept(str);
