@@ -24,6 +24,7 @@ import java.util.concurrent.Future;
 import retrieWin.Indexer.ProcessTrecTextDocument;
 import retrieWin.Indexer.TrecTextDocument;
 
+import retrieWin.Querying.ExecuteQuery;
 import retrieWin.Querying.QueryBuilder;
 import retrieWin.SSF.Constants;
 import retrieWin.SSF.Entity;
@@ -31,11 +32,14 @@ import retrieWin.SSF.SlotPattern;
 import retrieWin.Utils.NLPUtils;
 import retrieWin.Utils.PriorityQueue;
 import retrieWin.Utils.Utils;
+import retrieWin.SSF.Constants.EdgeDirection;
 import retrieWin.SSF.Constants.EntityType;
+import retrieWin.SSF.Constants.PatternType;
 import retrieWin.SSF.SlotPattern.Rule;
 import retrieWin.Utils.FileUtils;
 
 import edu.stanford.nlp.stats.IntCounter;
+import edu.stanford.nlp.util.Pair;
 import fig.basic.LogInfo;
 import fig.basic.Option;
 import fig.exec.Execution;
@@ -43,6 +47,7 @@ import fig.exec.Execution;
 public class PersonOrganizationAffiliation implements Runnable{
 	@Option(gloss="working Directory") public String workingDirectory;
 	@Option(gloss="output file") public String outputFile;
+	@Option(gloss="index location") public String indexLocation;
 	List<Entity> entities;
 	public static void main(String[] args) {
 		Execution.run(args, "Main", new PersonOrganizationAffiliation());
@@ -65,11 +70,448 @@ public class PersonOrganizationAffiliation implements Runnable{
 		filenames.add("perOrg_20120722");
 		filenames.add("perOrg_20120723");
 		filenames.add("perOrg_20120725");
-		aggregateResults(filenames);
+		//aggregateResults(filenames);
 		//writeHumanReadableResults(filenames);
+		List<SlotPattern> p = populateBootstrapSlotPatternsTopMembers();
+		writeSlotPatternsToFile(outputFile, p);
+		//doBootStrap();
 		LogInfo.end_track();
 	}
 	
+	
+	public void writeSlotPatternsToFile(String filename, List<SlotPattern> patternsToWrite)
+	{
+		try{
+			BufferedWriter wbuf = new BufferedWriter(new FileWriter(filename));
+			for (SlotPattern p:patternsToWrite)
+			{
+				wbuf.write(p.toString());
+				wbuf.newLine();
+			}
+			wbuf.close();
+		}
+		catch (Exception e)
+		{
+			System.out.println("Couldn't write pattern to file");
+			e.printStackTrace();
+		}
+	}
+	
+	public List<SlotPattern> populateBootstrapSlotPatterns()
+	{
+		List<SlotPattern> result = new ArrayList<SlotPattern>();
+		Rule r1 = new Rule();
+		r1.edgeType = "nsubj";
+		r1.direction = EdgeDirection.Out;
+		Rule r2 = new Rule();
+		r2.edgeType = "prep_at";
+		r2.direction = EdgeDirection.Out;
+		List<Rule> rules = new ArrayList<Rule>();
+		rules.add(r1);	rules.add(r2);
+		
+		// work, nsubj, prep-at
+		SlotPattern p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setPattern("work");
+		p.setRules(rules);
+		p.setPatternType(PatternType.WordInBetween);
+		result.add(p);
+		
+		// employ, nsubj, prep_at
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("employ");
+		p.setPatternType(PatternType.WordInBetween);
+		result.add(p);
+		
+		// teacher, nsubj, prep_at
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("teacher");
+		p.setPatternType(PatternType.WordInBetween);
+		result.add(p);
+		
+		// coach, nsubj, prep_at
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("coach");
+		p.setPatternType(PatternType.WordInBetween);
+		result.add(p);
+		
+		// principal, nsubj, prep_at
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("principal");
+		p.setPatternType(PatternType.WordInBetween);
+		result.add(p);
+		
+		// employee of, member of, affiliated to, works with, works at, plays for, 
+		
+		// play for
+		r1 = new Rule();
+		r1.edgeType = "nsubj";
+		r1.direction = EdgeDirection.Out;
+		r2 = new Rule();
+		r2.edgeType = "prep_for";
+		r2.direction = EdgeDirection.Out;
+		rules = new ArrayList<Rule>();
+		rules.add(r1);	rules.add(r2);
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("play");
+		p.setPatternType(PatternType.WordInBetween);
+		result.add(p);
+		
+		// affiliate, nsubjpass, prep_of
+		r1 = new Rule();
+		r1.edgeType = "nsubj";
+		r1.direction = EdgeDirection.Out;
+		r2 = new Rule();
+		r2.edgeType = "prep_of";
+		r2.direction = EdgeDirection.Out;
+		rules = new ArrayList<Rule>();
+		rules.add(r1);	rules.add(r2);
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("affiliate");
+		p.setPatternType(PatternType.WordInBetween);
+		result.add(p);
+		
+		//manager of
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("manager");
+		p.setPatternType(PatternType.WordInBetween);
+		result.add(p);
+		
+		r1 = new Rule();
+		r1.edgeType = "nsubjpass";
+		r1.direction = EdgeDirection.Out;
+		r2 = new Rule();
+		r2.edgeType = "prep_to";
+		r2.direction = EdgeDirection.Out;
+		rules = new ArrayList<Rule>();
+		rules.add(r1);	rules.add(r2);
+		// affiliated to, nsubjpass, prep_to
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("affiliate");
+		p.setPatternType(PatternType.WordInBetween);
+		result.add(p);
+		
+		// associated with
+		r1 = new Rule();
+		r1.edgeType = "nsubjpass";
+		r1.direction = EdgeDirection.Out;
+		r2 = new Rule();
+		r2.edgeType = "prep_with";
+		r2.direction = EdgeDirection.Out;
+		rules = new ArrayList<Rule>();
+		rules.add(r1);	rules.add(r2);
+		// affiliated to, nsubjpass, prep_to
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("associate");
+		p.setPatternType(PatternType.WordInBetween);
+		result.add(p);
+		
+		return result;
+	}
+	
+	public List<SlotPattern> populateBootstrapSlotPatternsTopMembers()
+	{
+		List<SlotPattern> result = new ArrayList<SlotPattern>();
+		Rule r1 = new Rule();
+		r1.edgeType = "nn";
+		r1.direction = EdgeDirection.Out;
+		Rule r2 = new Rule();
+		r2.edgeType = "nn";
+		r2.direction = EdgeDirection.Out;
+		List<Rule> rules = new ArrayList<Rule>();
+		rules.add(r1);	rules.add(r2);
+		
+		// work, nsubj, prep-at
+		SlotPattern p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setPattern("chairman");
+		p.setRules(rules);
+		p.setPatternType(PatternType.TargetInBetween);
+		result.add(p);
+		
+		// employ, nsubj, prep_at
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("cto");
+		p.setPatternType(PatternType.TargetInBetween);
+		result.add(p);
+		
+		// teacher, nsubj, prep_at
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("ceo");
+		p.setPatternType(PatternType.TargetInBetween);
+		result.add(p);
+		
+		// coach, nsubj, prep_at
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("cfo");
+		p.setPatternType(PatternType.TargetInBetween);
+		result.add(p);
+		
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("officer");
+		p.setPatternType(PatternType.TargetInBetween);
+		result.add(p);
+		
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("president");
+		p.setPatternType(PatternType.TargetInBetween);
+		result.add(p);
+		
+		
+		r1 = new Rule();
+		r1.edgeType = "appos";
+		r1.direction = EdgeDirection.Out;
+		r2 = new Rule();
+		r2.edgeType = "prep_of";
+		r2.direction = EdgeDirection.Out;
+		rules = new ArrayList<Rule>();
+		rules.add(r1);	rules.add(r2);
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setPattern("chairman");
+		p.setRules(rules);
+		p.setPatternType(PatternType.WordInBetween);
+		result.add(p);
+		
+		// employ, nsubj, prep_at
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("cto");
+		p.setPatternType(PatternType.WordInBetween);
+		result.add(p);
+		
+		// teacher, nsubj, prep_at
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("ceo");
+		p.setPatternType(PatternType.WordInBetween);
+		result.add(p);
+		
+		// coach, nsubj, prep_at
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("cfo");
+		p.setPatternType(PatternType.WordInBetween);
+		result.add(p);
+		
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("officer");
+		p.setPatternType(PatternType.WordInBetween);
+		result.add(p);
+		
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("president");
+		p.setPatternType(PatternType.WordInBetween);
+		result.add(p);
+		
+		
+		r1 = new Rule();
+		r1.edgeType = "poss";
+		r1.direction = EdgeDirection.Out;
+		r2 = new Rule();
+		r2.edgeType = "prep-of";
+		r2.direction = EdgeDirection.Out;
+		rules = new ArrayList<Rule>();
+		rules.add(r1);	rules.add(r2);
+		
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("vice-president");
+		p.setPatternType(PatternType.WordInBetween);
+		result.add(p);
+		
+		p = new SlotPattern();
+		p.setConfidenceScore(1.0);
+		p.setRules(rules);
+		p.setPattern("vp");
+		p.setPatternType(PatternType.WordInBetween);
+		result.add(p);
+		
+		
+		// employee of, member of, affiliated to, works with, works at, plays for, 
+		
+	
+		
+		return result;
+	}
+	
+	public void doBootStrap()
+	{
+		List<SlotPattern> patterns = populateBootstrapSlotPatterns();
+		Map<Pair<String,String>,Set<String>> results = new HashMap<Pair<String,String>,Set<String>>();
+		NLPUtils nlp = new NLPUtils();
+		ExecuteQuery eq = new ExecuteQuery(indexLocation);
+		int numResults = 100;
+		Map<SlotPattern,List<String>> patternToStringMap = new HashMap<SlotPattern,List<String>>();
+		for (SlotPattern p:patterns)
+		{
+			System.out.println("Starting query for : " + p.getPattern());
+			String query = String.format("#1(%s)", p.getPattern());
+			System.out.println("Query String: " + query);
+			List<TrecTextDocument> trecDocs = eq.executeQuery(query,numResults, workingDirectory);
+			List<String> sentences = ProcessTrecTextDocument.getCleanedSentences(
+					ProcessTrecTextDocument.extractRelevantSentences(trecDocs, p.getPattern()));
+			patternToStringMap.put(p, sentences);
+			System.out.println("Done querying for: " + p.getPattern());
+		}
+		
+		//NLPUtils nlp = new NLPUtils();
+		int totalCount = 0;
+		Map<SlotPattern, Integer> patternCounts = new HashMap<SlotPattern, Integer>();
+		for (SlotPattern p:patternToStringMap.keySet())
+		{
+			int counter = 0;
+			int numthreads = 16;
+			ExecutorService exc = Executors.newFixedThreadPool(numthreads);
+			
+			List<Future<Map<Pair<String,String>,List<String>>>> futuresList = new ArrayList<Future<Map<Pair<String,String>,List<String>>>>();
+			
+			
+			for (String sentence:patternToStringMap.get(p))
+			{
+				Callable<Map<Pair<String,String>,List<String>>> c = new parallelBootstrapper(sentence,p,nlp);
+				Future<Map<Pair<String,String>,List<String>>> s = exc.submit(c);
+				futuresList.add(s);
+			}
+		
+			for (Future<Map<Pair<String,String>,List<String>>> f:futuresList)
+			{
+				Map<Pair<String,String>,List<String>> thisResult = new HashMap<Pair<String,String>,List<String>>();
+				try
+				{
+					thisResult = f.get();
+				}
+				catch (Exception excep)
+				{
+					excep.printStackTrace();
+				}
+				for (Pair<String,String> pr:thisResult.keySet())
+				{
+					counter += thisResult.get(pr).size();
+					if (results.containsKey(pr))
+					{
+						Set<String> existing = results.get(pr);
+						existing.addAll(thisResult.get(pr));
+						results.put(pr,existing);
+					}
+					else
+					{
+						results.put(pr, new HashSet<String>(thisResult.get(pr)));
+					}
+				}
+			}
+			exc.shutdown();
+			totalCount += counter;
+			patternCounts.put(p, counter);
+		}
+		
+		try{
+			BufferedWriter wbuf = new BufferedWriter(new FileWriter("affiliate_per_org"));
+			for (SlotPattern p:patternCounts.keySet())
+			{
+				p.setConfidenceScore(((double)patternCounts.get(p))/totalCount);
+				wbuf.write(p.toString());
+				wbuf.newLine();
+			}
+			wbuf.close();
+		}
+		catch (Exception e)
+		{
+			System.out.println("Could not write pattern to file");
+			e.printStackTrace();
+		}
+		
+		PriorityQueue<Pair<String,String>> resultsQueue = new PriorityQueue<Pair<String,String>>();
+		for (Pair<String,String> pr:results.keySet())
+		{
+			resultsQueue.add(pr,(double)(results.get(pr).size()));
+		}
+		
+		try
+		{
+			BufferedWriter buf = new BufferedWriter(new FileWriter(outputFile));
+			while(!resultsQueue.isEmpty())
+			{
+				Pair<String,String> pr = resultsQueue.next();
+				Set<String> sentences = results.get(pr);
+				String pairLine = String.format("%s:%s:%d", pr.first,pr.second,sentences.size());
+				buf.write(pairLine);
+				buf.newLine();
+				for (String s:sentences)
+				{
+					String sentenceLine = String.format("$%s", s);
+					buf.write(sentenceLine);
+					buf.newLine();
+				}
+				buf.newLine();
+			}
+			
+			buf.close();
+		}
+		catch (Exception e)
+		{
+			System.out.println("Failed writing to file");
+			e.printStackTrace();
+		}
+	}
+	
+private static class parallelBootstrapper implements Callable<Map<Pair<String,String>,List<String>>>{
+		
+		String sentence;
+		SlotPattern pattern;
+		
+		NLPUtils nlp;
+		public parallelBootstrapper(String sen, SlotPattern pin, NLPUtils nlpin)
+		{
+			nlp = nlpin;
+			sentence = sen;
+			pattern = pin;
+		}
+		
+		@Override
+		public Map<Pair<String,String>,List<String>> call() throws Exception {
+
+			return nlp.getTwoSidesForPatternWord(sentence, pattern);
+		}
+	}
+
+
 	public void aggregateResults(List<String> filenames)
 	{
 		Map<SlotPattern,Set<String>> allPatterns = new HashMap<SlotPattern,Set<String>>();

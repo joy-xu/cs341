@@ -167,14 +167,23 @@ public class ProcessTrecTextDocument {
 			
 			// Remove (Reuters something something)
 			sentence = sentence.replaceAll("\\(\\s*REUTERS[^\\)]*\\)", "");
-			
+			sentence = sentence.replaceAll("\\(\\s*Associated Press[^\\)]*\\)", "");
 			// Remove (AP something something)
 			sentence = sentence.replaceAll("\\(\\s*AP[^\\)]*\\)", "");
 			
 			// Remove (Getty Images something something)
 			sentence = sentence.replaceAll("\\([^(?!GETTY)].*GETTY[^\\)]*\\)", "");
+			sentence = sentence.replaceAll("\\([^(?!Getty)].*Getty[^\\)]*\\)", "");
+			
+			sentence = sentence.replaceAll("Reply [^(?!says)].*says:", "");
+			sentence = sentence.replaceAll("^[0-9]+ of [0-9]+","");
 			
 			results.addAll(Arrays.asList(sentence.split("[|]+")));
+
+			results.addAll(Arrays.asList(sentence.split("\\.{3}")));
+			
+			
+			results.addAll(Arrays.asList(sentence.split("Reply Retweet Share")));
 			//System.out.println("Process : "+ sentence);
 			//for(String s:))
 			//	System.out.println("Output :" + s);
