@@ -116,7 +116,7 @@ public class NLPUtils {
 								rule2.direction = EdgeDirection.Out;
 								rule1.edgeType = edge.toString();
 								rule2.edgeType = parentEdge;
-								pattern.setPattern(parent.originalText());
+								pattern.setPattern(parent.lemma().toLowerCase().replaceAll("[^a-z]", ""));
 								pattern.setRules(Arrays.asList(rule1, rule2));
 								if (patterns.containsKey(pattern))
 								{
