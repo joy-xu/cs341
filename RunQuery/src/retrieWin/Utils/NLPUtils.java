@@ -658,6 +658,7 @@ public class NLPUtils {
 		for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
 			CoreMap sentenceMap = allSentenceMap.get(sentNum);
 			for(SlotPattern pattern: slot.getPatterns()) {
+				System.out.println(pattern);
 				for(String str: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, targetNERTypes, social)) {
 					if(!candidates.containsKey(str))
 						candidates.put(str, pattern.getConfidenceScore());
