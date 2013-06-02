@@ -656,6 +656,7 @@ public class NLPUtils {
 		List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
 		for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
 			CoreMap sentenceMap = allSentenceMap.get(sentNum);
+			System.out.println(sentenceMap.toString());
 			for(SlotPattern pattern: slot.getPatterns()) {
 				if(!pattern.getPattern().equals("award"))
 					continue;
