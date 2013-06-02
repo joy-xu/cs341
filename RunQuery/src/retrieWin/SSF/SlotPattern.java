@@ -16,7 +16,7 @@ public class SlotPattern  implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private double confidenceScore;
 	private List<Rule> rules;
-	private String pattern;
+	private String pattern = "";
 	private PatternType patternType = PatternType.WordInBetween;
 	
 	public static class Rule implements Serializable{

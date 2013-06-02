@@ -221,60 +221,60 @@ public class SSF implements Runnable{
 		for(String expansion: entity.getExpansions()) {
 			for(String sentence: relevantSentences.get(expansion).keySet()) {
 				System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
-				for(SlotPattern pattern: slot.getPatterns()) {
-					try {
-						//for each sentence, find possible slot values and add to candidate list
-						//arxiv documents
-						if(relevantSentences.get(expansion).get(sentence).contains("arxiv")) {
-							if(!slot.getName().equals(Constants.SlotName.Affiliate_Of) || !entity.getEntityType().equals(Constants.EntityType.PER))
-								continue;
-							arxivDocument arxivDoc = new arxivDocument(relevantSentences.get(expansion).get(sentence));
-							if(arxivDoc.getAuthors().contains(expansion)) {
-								for(String author: arxivDoc.getAuthors()) 
-									if(!author.equals(expansion))
-										candidates.put(author, 1.0);
-								for(String ack: arxivDoc.getAcknowledgements())
-									candidates.put(ack, 1.0);
-							}
-							else if(arxivDoc.getAcknowledgements().contains(expansion)) {
-								for(String author: arxivDoc.getAuthors()) 
+				try {
+					//for each sentence, find possible slot values and add to candidate list
+					//arxiv documents
+					if(relevantSentences.get(expansion).get(sentence).contains("arxiv")) {
+						if(!slot.getName().equals(Constants.SlotName.Affiliate_Of) || !entity.getEntityType().equals(Constants.EntityType.PER))
+							continue;
+						arxivDocument arxivDoc = new arxivDocument(relevantSentences.get(expansion).get(sentence));
+						if(arxivDoc.getAuthors().contains(expansion)) {
+							for(String author: arxivDoc.getAuthors()) 
+								if(!author.equals(expansion))
 									candidates.put(author, 1.0);
-							}
-							
-							for(List<String> reference: arxivDoc.getReferences()) {
-									if(reference.contains(expansion)) {
-										for(String author: reference) 
-											if(!author.equals(expansion))
-												candidates.put(author, 1.0);
-									}
-							}
+							for(String ack: arxivDoc.getAcknowledgements())
+								candidates.put(ack, 1.0);
 						}
-						//social documents
-						else if(relevantSentences.get(expansion).get(sentence).contains("social")) {
-							for(String str: coreNLP.findSlotValue(sentence, expansion, pattern, slot.getTargetNERTypes())) {
-								//get normalized concept from candidate
-								String concept = conceptExtractor.getConcept(str);
-								if(!candidates.containsKey(concept))
-									candidates.put(concept, pattern.getConfidenceScore());
-								else
-									candidates.put(concept, candidates.get(concept) + pattern.getConfidenceScore());
-							}
+						else if(arxivDoc.getAcknowledgements().contains(expansion)) {
+							for(String author: arxivDoc.getAuthors()) 
+								candidates.put(author, 1.0);
 						}
-						//news documents
-						else {
-							for(String str: coreNLP.findSlotValue(sentence, expansion, pattern, slot.getTargetNERTypes())) {
-								//get normalized concept from candidate
-								String concept = conceptExtractor.getConcept(str);
-								if(!candidates.containsKey(concept))
-									candidates.put(concept, pattern.getConfidenceScore());
-								else
-									candidates.put(concept, candidates.get(concept) + pattern.getConfidenceScore());
-							}
+						
+						for(List<String> reference: arxivDoc.getReferences()) {
+								if(reference.contains(expansion)) {
+									for(String author: reference) 
+										if(!author.equals(expansion))
+											candidates.put(author, 1.0);
+								}
 						}
-					} catch(NoSuchParseException e) {
-						e.printStackTrace();
-						break;
 					}
+					//social documents
+					else if(relevantSentences.get(expansion).get(sentence).contains("social")) {
+						Map<String, Double> values = coreNLP.findSlotValue(sentence, expansion, slot, slot.getTargetNERTypes(), true);
+						for(String str: values.keySet()) {
+							//get normalized concept from candidate
+							String concept = conceptExtractor.getConcept(str);
+							if(!candidates.containsKey(concept))
+								candidates.put(concept, values.get(str));
+							else
+								candidates.put(concept, candidates.get(concept) + values.get(str));
+						}
+					}
+					//news documents
+					else {
+						Map<String, Double> values = coreNLP.findSlotValue(sentence, expansion, slot, slot.getTargetNERTypes(), false);
+						for(String str: values.keySet()) {
+							//get normalized concept from candidate
+							String concept = conceptExtractor.getConcept(str);
+							if(!candidates.containsKey(concept))
+								candidates.put(concept, values.get(str));
+							else
+								candidates.put(concept, candidates.get(concept) + values.get(str));
+						}
+					}
+				} catch(NoSuchParseException e) {
+					e.printStackTrace();
+					break;
 				}
 			}
 		}
@@ -345,6 +345,9 @@ public class SSF implements Runnable{
 				//compute only for relevant slots for this entity
 				if(!slot.getEntityType().equals(entity.getEntityType()))
 						continue;
+				
+				if(!slot.getName().equals(Constants.SlotName.Cause_Of_Death))
+					continue;
 				//TODO: remove this, computing only one slot right now
 				if(slot.getPatterns().isEmpty())
 					continue;
@@ -382,14 +385,18 @@ public class SSF implements Runnable{
 	private void updateSlots() throws IOException {
 		readSlots();
 		for(Slot slot: slots) {
-			String filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
+			/*String filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 			System.out.println(filename);
 			File file = new File(filename);
 			if(!file.exists()) 
 				System.out.println("File for " + slot.getName() + " not found.");
 			
 			//if(slot.getName().equals(Constants.SlotName.Founded_By))
-			slot.addSlotPatterns(filename);
+			slot.addSlotPatterns(filename);*/
+			
+			for(SlotPattern pat: slot.getPatterns())
+				if(pat.getPattern() == null)
+					pat.setPattern("");
 		}
 		//System.out.println(slots);
 		FileUtils.writeFile(slots, Constants.slotsSerializedFile);
@@ -401,8 +408,8 @@ public class SSF implements Runnable{
 			System.out.println("Environment variable not set");
 			return;
 		}
-		new SSF().updateSlots();
-		//Execution.run(args, "Main", new SSF());
+		//new SSF().updateSlots();
+		Execution.run(args, "Main", new SSF());
 	}
 
 	@Override

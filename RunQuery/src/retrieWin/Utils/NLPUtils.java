@@ -14,6 +14,7 @@ import retrieWin.SSF.Constants.NERType;
 import retrieWin.SSF.Constants.PatternType;
 import retrieWin.SSF.Constants;
 import retrieWin.SSF.Entity;
+import retrieWin.SSF.Slot;
 import retrieWin.SSF.SlotPattern;
 import retrieWin.SSF.SlotPattern.Rule;
 
@@ -645,39 +646,63 @@ public class NLPUtils {
 		return ans;
 	}
 	
-	public List<String> findSlotValue(String sentence, String entity1, SlotPattern pattern, List<NERType> targetNERTypes) throws NoSuchParseException {
-		List<String> values = new ArrayList<String>();
-		//System.out.println(pattern);
-		//try {
-			Annotation document = new Annotation(sentence);
-			processor.annotate(document);
-			Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
-			
-			List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
-			for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
-				CoreMap sentenceMap = allSentenceMap.get(sentNum);
-				values.addAll(findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, targetNERTypes));
+	//iterates over sentences and finds values in each sentence
+	public Map<String, Double> findSlotValue(String sentence, String entity1, Slot slot, List<NERType> targetNERTypes, boolean social) throws NoSuchParseException {
+		Map<String, Double> candidates = new HashMap<String, Double>();
+		Annotation document = new Annotation(sentence);
+		processor.annotate(document);
+		//get coreferences for the entity
+		Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
+		
+		List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
+		for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
+			CoreMap sentenceMap = allSentenceMap.get(sentNum);
+			for(SlotPattern pattern: slot.getPatterns()) {
+				for(String str: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, targetNERTypes, social)) {
+					String ans = "";
+					for(String token: str.split(" "))
+						if(!entity1.contains(token) && !pattern.getPattern().contains(token))
+							ans += token + " ";
+					if(!candidates.containsKey(ans))
+						candidates.put(ans, pattern.getConfidenceScore());
+					else
+						candidates.put(ans, pattern.getConfidenceScore() + candidates.get(ans));
+				}
 			}
-		/*}
-		catch(Exception ex) {
-			System.out.println(ex.getMessage());
-			ex.printStackTrace();
 		}
-		*/
-		return values;
+		return candidates;
 	}
 	
-	private Set<String> findValue(CoreMap sentence, List<IndexedWord> words1, SlotPattern pattern, List<NERType> targetNERTypes) {
-		//System.out.println(pattern);
-		//System.out.println(pattern.getRules());
+	private Set<String> findValue(CoreMap sentence, List<IndexedWord> words1, SlotPattern pattern, List<NERType> targetNERTypes, boolean social) {
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		Set<IndexedWord> ansSet = new HashSet<IndexedWord>();
 		Set<IndexedWord> tempSet = new HashSet<IndexedWord>();
 		Set<String> ans = new HashSet<String>();
 		
+		if(social || pattern.getPatternType().equals(Constants.PatternType.WithoutRules)) {
+			IndexedWord patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
+			if(patternWord == null)
+				return ans;
+			for(IndexedWord w: words1) {
+				if(Math.abs(w.index() - patternWord.index()) < 5) {
+					int i = Math.max(0, patternWord.index()-5);
+					int count = 0;
+					while(count < 10) {
+						try {
+							tempSet.add(graph.getNodeByIndex(i));
+							i++;
+							count++;
+						}
+						catch (Exception e){
+							break;
+						}
+					}
+				}
+			}
+		}
 		//for rules with no pattern word
-		if(pattern.getPatternType().equals(Constants.PatternType.WithoutPatternWord)) {
-			tempSet = getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(0), graph);
+		else if(pattern.getPatternType().equals(Constants.PatternType.WithoutPatternWord)) {
+			tempSet = getWordsSatisfyingRule(new HashSet<IndexedWord>(words1), pattern.getRules(0), graph);
 		}
 		else if(pattern.getPatternType().equals(Constants.PatternType.TargetInBetween)) {
 			IndexedWord patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
@@ -685,50 +710,48 @@ public class NLPUtils {
 				return ans;
 			Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
 			
-			Set<IndexedWord> tempSet1 = getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(0), graph);
-			tempSet = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(1), graph);
+			Set<IndexedWord> tempSet1 = getWordsSatisfyingRule(new HashSet<IndexedWord>(words1), pattern.getRules(0), graph);
+			tempSet = getWordsSatisfyingRule(conjAndPatterns, pattern.getRules(1), graph);
 			
 			tempSet.retainAll(tempSet1);
 		}
 		else if(pattern.getPatternType().equals(Constants.PatternType.SourceInBetween)) {
-			//Checking rule1
-			Set<IndexedWord> rule1Set = getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(0), graph);
-			for(IndexedWord w1:words1) {
-				if(rule1Set.contains(w1)) {
-					tempSet.addAll(getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(1), graph));
-				}
-			}
+			IndexedWord patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
+			if(patternWord == null)
+				return ans;
+			Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
 			
 			//Checking rule2
-			Set<IndexedWord> rule2Set = getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(1), graph);
-			for(IndexedWord w1:words1) {
+			Set<IndexedWord> rule2Set = getWordsSatisfyingRule(new HashSet<IndexedWord>(words1), pattern.getRules(1), graph);
+			for(IndexedWord w1:conjAndPatterns) {
 				if(rule2Set.contains(w1)) {
-					tempSet.addAll(getWordsSatisfyingPattern(new HashSet<IndexedWord>(words1), pattern.getRules(0), graph));
+					tempSet.addAll(getWordsSatisfyingRule(new HashSet<IndexedWord>(words1), pattern.getRules(0), graph));
 				}
 			}
 		}
-		else { 
+		else {//if(pattern.getPatternType().equals(Constants.PatternType.WordInBetween))
 			IndexedWord patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
 			if(patternWord == null)
 				return ans;
 			Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
 			
 			//Checking rule1
-			Set<IndexedWord> rule1Set = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(0), graph);
+			Set<IndexedWord> rule1Set = getWordsSatisfyingRule(conjAndPatterns, pattern.getRules(0), graph);
 			for(IndexedWord w1:words1) {
 				if(rule1Set.contains(w1)) {
-					tempSet.addAll(getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(1), graph));
+					tempSet.addAll(getWordsSatisfyingRule(conjAndPatterns, pattern.getRules(1), graph));
 				}
 			}
 			
 			//Checking rule2
-			Set<IndexedWord> rule2Set = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(1), graph);
+			Set<IndexedWord> rule2Set = getWordsSatisfyingRule(conjAndPatterns, pattern.getRules(1), graph);
 			for(IndexedWord w1:words1) {
 				if(rule2Set.contains(w1)) {
-					tempSet.addAll(getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(0), graph));
+					tempSet.addAll(getWordsSatisfyingRule(conjAndPatterns, pattern.getRules(0), graph));
 				}
 			}
 		}
+		
 		for(IndexedWord w: tempSet) 
 			ansSet.addAll(getConjAndNeighbours(graph, w));
 		
@@ -745,7 +768,7 @@ public class NLPUtils {
 		return ans;
 	}
 	
-	private Set<IndexedWord> getWordsSatisfyingPattern(Set<IndexedWord> words, Rule rule, SemanticGraph graph) {
+	private Set<IndexedWord> getWordsSatisfyingRule(Set<IndexedWord> words, Rule rule, SemanticGraph graph) {
 		//System.out.println(rule);
 		Set<IndexedWord> ans = new HashSet<IndexedWord>();
 		for(IndexedWord word: words)
@@ -1130,8 +1153,8 @@ public class NLPUtils {
 					return result;
 				
 				Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
-				Set<IndexedWord> rule1SetTemp = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(0), graph);
-				Set<IndexedWord> rule2SetTemp = getWordsSatisfyingPattern(conjAndPatterns, pattern.getRules(1), graph);
+				Set<IndexedWord> rule1SetTemp = getWordsSatisfyingRule(conjAndPatterns, pattern.getRules(0), graph);
+				Set<IndexedWord> rule2SetTemp = getWordsSatisfyingRule(conjAndPatterns, pattern.getRules(1), graph);
 				
 				// Remove pronouns
 				Set<IndexedWord> rule1Set = new HashSet<IndexedWord>();
