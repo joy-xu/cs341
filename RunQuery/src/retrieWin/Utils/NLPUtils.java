@@ -653,14 +653,15 @@ public class NLPUtils {
 		processor.annotate(document);
 		//get coreferences for the entity
 		Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
-		
+		//System.out.println(social);
 		List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
 		for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
 			CoreMap sentenceMap = allSentenceMap.get(sentNum);
-			System.out.println(sentenceMap.toString());
+			//System.out.println(sentenceMap.toString());
 			for(SlotPattern pattern: slot.getPatterns()) {
 				//System.out.println(pattern);
 				for(String str: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, targetNERTypes, social)) {
+					System.out.println(sentenceMap.toString());
 					System.out.println(pattern + "|" + str);
 					if(!str.isEmpty()) {
 						if(!candidates.containsKey(str))
@@ -681,6 +682,7 @@ public class NLPUtils {
 		Set<String> ans = new HashSet<String>();
 		
 		if(social || pattern.getPatternType().equals(Constants.PatternType.WithoutRules)) {
+			//System.out.println("here");
 			IndexedWord patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
 			if(patternWord == null)
 				return ans;
