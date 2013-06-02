@@ -250,7 +250,7 @@ public class SSF implements Runnable{
 					}
 					//social documents
 					else if(relevantSentences.get(expansion).get(sentence).contains("social")) {
-						Map<String, Double> values = coreNLP.findSlotValue(sentence, expansion, slot, slot.getTargetNERTypes(), true);
+						Map<String, Double> values = coreNLP.findSlotValue(sentence, expansion, slot, slot.getTargetNERTypes(), (slot.getTargetNERTypes() != null) ? true : false);
 						for(String str: values.keySet()) {
 							//get normalized concept from candidate
 							String concept = conceptExtractor.getConcept(str);
@@ -318,6 +318,8 @@ public class SSF implements Runnable{
 		// for each entity, for each slot, for each entity expansion
 		System.out.println("Finding slot values...");
 		for(Entity entity: entities) {
+			if(!entity.getName().equals("Maurice_Fitzgibbons"))// && !entity.getName().equals("Ken_Fowler"))
+				continue;
 			System.out.println("Finding slot values for entity " + entity.getName());
 			//get all relevant documents for the entity
 			List<TrecTextDocument> docs = entity.getRelevantDocuments(timestamp, entities);
@@ -385,18 +387,16 @@ public class SSF implements Runnable{
 	private void updateSlots() throws IOException {
 		readSlots();
 		for(Slot slot: slots) {
-			/*String filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
+			String filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 			System.out.println(filename);
 			File file = new File(filename);
-			if(!file.exists()) 
+			if(!file.exists()) {
 				System.out.println("File for " + slot.getName() + " not found.");
+				continue;
+			}
 			
 			//if(slot.getName().equals(Constants.SlotName.Founded_By))
-			slot.addSlotPatterns(filename);*/
-			
-			for(SlotPattern pat: slot.getPatterns())
-				if(pat.getPattern() == null)
-					pat.setPattern("");
+			slot.addSlotPatterns(filename);
 		}
 		//System.out.println(slots);
 		FileUtils.writeFile(slots, Constants.slotsSerializedFile);
@@ -408,8 +408,8 @@ public class SSF implements Runnable{
 			System.out.println("Environment variable not set");
 			return;
 		}
-		//new SSF().updateSlots();
-		Execution.run(args, "Main", new SSF());
+		new SSF().updateSlots();
+		//Execution.run(args, "Main", new SSF());
 	}
 
 	@Override

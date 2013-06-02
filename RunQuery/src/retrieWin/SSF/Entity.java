@@ -25,7 +25,7 @@ public class Entity  implements Serializable {
 	private List<String> disambiguations;
 	Map<SlotName, List<String>> slotValues;
 	
-	static double disambiguationThreshold = 0.1;
+	static double disambiguationThreshold = 0.0;
 	
 	public Entity(String targetID, String name, EntityType type, String group, List<String> expansions, List<String> disambiguations) {
 		this.targetID = targetID;
@@ -48,7 +48,7 @@ public class Entity  implements Serializable {
 					score += 1;
 			}
 			//remove documents which most likely don't belong to this entity
-			if((double)score/maxScore > disambiguationThreshold)
+			if((double)score/maxScore >= disambiguationThreshold)
 				filtered.add(doc);
 			//else
 				//System.out.println("This doc failed the test :(");
