@@ -670,10 +670,29 @@ public class NLPUtils {
 								str += " " + tok;
 						}
 						str = str.trim();
-						if(!candidates.containsKey(str))
-							candidates.put(str, pattern.getConfidenceScore());
-						else
-							candidates.put(str, pattern.getConfidenceScore() + candidates.get(str));
+						//Flag to check if we found a matching pattern already
+						if(!str.isEmpty()) {
+							boolean containsKey = false;
+							for(String candidate:candidates.keySet()) {
+									//If we found the pattern already or if a smaller string of the current pattern was found already.
+									//This is checked by checking starts with or endswith.
+									if(candidate.equals(str) || str.startsWith(candidate) || str.endsWith(candidate)){
+									
+										candidates.put(str, pattern.getConfidenceScore() + candidates.get(str));
+										containsKey = true;
+									}
+									//If the current pattern is more compact than the earlier one, take it.
+									else if(candidate.startsWith(str) || candidate.endsWith(str)) {
+										candidates.put(str, candidates.get(candidate));
+										candidates.remove(candidate);
+										containsKey = true;
+									}
+								}
+							
+							if(!containsKey) {
+								candidates.put(str, pattern.getConfidenceScore());
+							}
+						}
 					}
 				}
 			}
@@ -778,7 +797,10 @@ public class NLPUtils {
 						temp += " " + tok;	
 				}
 			}
-			ans.add(temp.trim());
+			if(!temp.trim().isEmpty()) {
+				ans.add(temp.trim());
+				//System.out.println(pattern);
+			}
 		}
 		
 		return ans;

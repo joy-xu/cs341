@@ -71,16 +71,45 @@ public class Aju implements Runnable{
 		//nerTags.add(NERType.);
 		Slot founded_by = null;
 		for(Slot slot: slots) {
-			if(slot.getName().equals(Constants.SlotName.Awards_Won)) {
-				founded_by = slot;
-				//System.out.println(slot);
-				Map<String, Double> values = obj.findSlotValue("Pulitzer prize winner Bill Gates visited the Memorial Auditorium on last Monday.", "Bill Gates", slot, false);
+			if(slot.getName().equals(Constants.SlotName.Founded_By)) {
+				String sentence = "Seagram founder Bill Gates visited the Memorial Auditorium on last Monday.";
+				Map<String, Double> values = obj.findSlotValue(sentence, "Bill Gates", slot, false);
 				if(values != null) {
 					for(String str:values.keySet()) {
-						LogInfo.logs("Found:" + str);
+						LogInfo.logs("Sentence     : " + sentence);
+						LogInfo.logs("Founded by   : " + str);
 					} 
 				}
-		
+			}
+			if(slot.getName().equals(Constants.SlotName.Awards_Won)) {
+				String sentence = "Pulitzer prize winner Bill Gates visited the Memorial Auditorium on last Monday.";
+				Map<String, Double> values = obj.findSlotValue(sentence, "Bill Gates", slot, false);
+				if(values != null) {
+					for(String str:values.keySet()) {
+						LogInfo.logs("Sentence    : " + sentence);
+						LogInfo.logs("Award won   : " + str);
+					} 
+				}
+			}
+			if(slot.getName().equals(Constants.SlotName.Founder_Of)) {
+				String sentence = "Seagram founder Bill Gates visited the Memorial Auditorium on last Monday.";
+				Map<String, Double> values = obj.findSlotValue(sentence, "Seagram", slot, false);
+				if(values != null) {
+					for(String str:values.keySet()) {
+						LogInfo.logs("Sentence    : " + sentence);
+						LogInfo.logs("Founder of  : " + str);
+					} 
+				}
+			}
+			if(slot.getName().equals(Constants.SlotName.Affiliate_Of)) {
+				String sentence = "Seagram founder Bill Gates visited his friend Steve Jobs on last Monday.";
+				Map<String, Double> values = obj.findSlotValue(sentence, "Bill Gates", slot, false);
+				if(values != null) {
+					for(String str:values.keySet()) {
+						LogInfo.logs("Sentence    : " + sentence);
+						LogInfo.logs("Affiliate of: " + str);
+					} 
+				}
 			}
 		}
 	
