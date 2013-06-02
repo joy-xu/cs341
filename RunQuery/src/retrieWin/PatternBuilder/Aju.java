@@ -68,12 +68,13 @@ public class Aju implements Runnable{
 		//obj.findSlotPattern("Bill Gates company Microsoft is the largest employer.", "Bill Gates", "Microsoft");
 		
 		List<NERType> nerTags = new ArrayList<NERType>();
-		nerTags.add(NERType.ORGANIZATION);
+		//nerTags.add(NERType.);
 		Slot founded_by = null;
 		for(Slot slot: slots) {
-			if(slot.getName().equals(Constants.SlotName.Founder_Of)) {
+			if(slot.getName().equals(Constants.SlotName.Awards_Won)) {
 				founded_by = slot;
-				Map<String, Double> values = obj.findSlotValue("Bill Gates founded Seagram Company in 2011.", "Bill Gates", slot, nerTags, false);
+				System.out.println(slot);
+				Map<String, Double> values = obj.findSlotValue("Pulitzer prize was awarded to Bill Gates at the Memorial Auditorium on last Monday.", "Bill Gates", slot, false);
 				if(values != null) {
 					for(String str:values.keySet()) {
 						LogInfo.logs("Found:" + str);
