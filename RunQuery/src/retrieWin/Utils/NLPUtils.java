@@ -659,14 +659,10 @@ public class NLPUtils {
 			CoreMap sentenceMap = allSentenceMap.get(sentNum);
 			for(SlotPattern pattern: slot.getPatterns()) {
 				for(String str: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, targetNERTypes, social)) {
-					String ans = "";
-					for(String token: str.split(" "))
-						if(!entity1.contains(token) && !pattern.getPattern().contains(token))
-							ans += token + " ";
-					if(!candidates.containsKey(ans))
-						candidates.put(ans, pattern.getConfidenceScore());
+					if(!candidates.containsKey(str))
+						candidates.put(str, pattern.getConfidenceScore());
 					else
-						candidates.put(ans, pattern.getConfidenceScore() + candidates.get(ans));
+						candidates.put(str, pattern.getConfidenceScore() + candidates.get(str));
 				}
 			}
 		}
@@ -758,11 +754,11 @@ public class NLPUtils {
 		Map<String, String> nerMap = createNERMap(sentence);
 		for(IndexedWord w: ansSet) {
 			String phrase = findExpandedEntity(sentence, w.originalText());
+			String temp = "";
 			for(String tok: phrase.split(" "))
-				if(targetNERTypes == null || targetNERTypes.contains(NERType.NONE) || targetNERTypes.contains(NERType.valueOf(nerMap.get(tok)))) {
-					ans.add(phrase);
-					break;
-				}	
+				if(targetNERTypes == null || targetNERTypes.contains(NERType.NONE) || targetNERTypes.contains(NERType.valueOf(nerMap.get(tok)))) 
+					temp += " " + tok;	
+			ans.add(temp.trim());
 		}
 		
 		return ans;
