@@ -75,7 +75,7 @@ public class Slot implements Serializable {
 		this.entityType = entityType;
 	}
 
-	SlotName getName() {
+	public SlotName getName() {
 		return name;
 	}
 

@@ -19,7 +19,9 @@ import retrieWin.Indexer.TrecTextDocument;
 import retrieWin.Querying.ExecuteQuery;
 import retrieWin.Querying.QueryBuilder;
 import retrieWin.SSF.Constants;
+import retrieWin.SSF.Constants.NERType;
 import retrieWin.SSF.Entity;
+import retrieWin.SSF.Slot;
 import retrieWin.SSF.SlotPattern;
 import retrieWin.SSF.Constants.EntityType;
 import retrieWin.Utils.FileUtils;
@@ -37,6 +39,7 @@ public class Aju implements Runnable{
 	@Option(gloss="index Location") public String indexLocation;
 	@Option(gloss="number of Results") public int numResults;
 	List<Entity> entities;
+	private List<Slot> slots;
 	public static void main(String[] args) {
 		//System.out.println("Co-founder".toLowerCase().replaceAll("[^a-z]", ""));
 		Execution.run(args, "Main", new Aju());
@@ -44,8 +47,16 @@ public class Aju implements Runnable{
 	
 	public Aju(){
 		readEntities();
+		readSlots();
 	}
 
+	public void readSlots() {
+		File file = new File(Constants.slotsSerializedFile);
+		if(file.exists()) {
+			slots = (List<Slot>)FileUtils.readFile(file.getAbsolutePath().toString());
+		}
+	}
+	
 	@Override
 	public void run() {
 		LogInfo.begin_track("run()");
@@ -55,11 +66,28 @@ public class Aju implements Runnable{
 		
 		NLPUtils obj = new NLPUtils();
 		//obj.findSlotPattern("Bill Gates company Microsoft is the largest employer.", "Bill Gates", "Microsoft");
+		
+		List<NERType> nerTags = new ArrayList<NERType>();
+		nerTags.add(NERType.ORGANIZATION);
+		Slot founded_by = null;
+		for(Slot slot: slots) {
+			if(slot.getName().equals(Constants.SlotName.Founder_Of)) {
+				founded_by = slot;
+				Map<String, Double> values = obj.findSlotValue("Bill Gates founded Seagram Company in 2011.", "Bill Gates", slot, nerTags, false);
+				if(values != null) {
+					for(String str:values.keySet()) {
+						LogInfo.logs("Found:" + str);
+					} 
+				}
+		
+			}
+		}
+	
 		//obj.findSlotPattern("Bill Gates' neighbor Steve Jobs complained that his dog was too loud.", "Bill Gates", "Steve Jobs");
 		//obj.findSlotPattern("Oldest Oscar Winner Meryl Streep Adds Sense of History With Best Actress Oscar Scarlett Johansson Lands Hitchcock Movie", "Meryl Streep", "Oscar");
 		//The movie showcases this enigmatic lady's personal demons, her struggle with dementia and her family relationships through Meryl Streep 's Oscar winning performance.
 		
-		runBootstrapForPair();
+		//runBootstrapForPair();
 		//runBootStrapforEntityAndNER();
 	
 		LogInfo.end_track();
