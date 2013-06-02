@@ -385,14 +385,14 @@ public class SSF implements Runnable{
 	private void updateSlots() throws IOException {
 		readSlots();
 		for(Slot slot: slots) {
-			/*String filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
+			String filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 			System.out.println(filename);
 			File file = new File(filename);
 			if(!file.exists()) 
 				System.out.println("File for " + slot.getName() + " not found.");
 			
 			//if(slot.getName().equals(Constants.SlotName.Founded_By))
-			slot.addSlotPatterns(filename);*/
+			slot.addSlotPatterns(filename);
 			
 			for(SlotPattern pat: slot.getPatterns())
 				if(pat.getPattern() == null)
@@ -408,8 +408,8 @@ public class SSF implements Runnable{
 			System.out.println("Environment variable not set");
 			return;
 		}
-		//new SSF().updateSlots();
-		Execution.run(args, "Main", new SSF());
+		new SSF().updateSlots();
+		//Execution.run(args, "Main", new SSF());
 	}
 
 	@Override
