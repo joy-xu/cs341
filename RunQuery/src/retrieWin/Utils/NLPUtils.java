@@ -383,7 +383,7 @@ public class NLPUtils {
 	//TODO - Improve if needed!
 	public IndexedWord findWordsInSemanticGraphForSlotPattern(SemanticGraph graph, String pattern) {
 		for(IndexedWord word: graph.vertexSet()) {
-			if(pattern.compareToIgnoreCase(word.lemma()) == 0) {
+			if(pattern.compareToIgnoreCase(word.lemma().replaceAll("[^a-z]", "")) == 0) {
 				return word;
 			}
 		}
@@ -657,12 +657,17 @@ public class NLPUtils {
 		List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
 		for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
 			CoreMap sentenceMap = allSentenceMap.get(sentNum);
+			System.out.println(sentenceMap.toString());
 			for(SlotPattern pattern: slot.getPatterns()) {
+				//System.out.println(pattern);
 				for(String str: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, targetNERTypes, social)) {
-					if(!candidates.containsKey(str))
-						candidates.put(str, pattern.getConfidenceScore());
-					else
-						candidates.put(str, pattern.getConfidenceScore() + candidates.get(str));
+					System.out.println(pattern + "|" + str);
+					if(!str.isEmpty()) {
+						if(!candidates.containsKey(str))
+							candidates.put(str, pattern.getConfidenceScore());
+						else
+							candidates.put(str, pattern.getConfidenceScore() + candidates.get(str));
+					}
 				}
 			}
 		}

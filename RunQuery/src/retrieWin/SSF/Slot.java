@@ -56,7 +56,7 @@ public class Slot implements Serializable {
 			e.printStackTrace();
 			return;
 		}
-		System.out.println("Updated patterns to:" + patterns);
+		//System.out.println("Updated patterns to:" + patterns);
 	}
 	
 	public List<String> normalize(List<String> vals) {

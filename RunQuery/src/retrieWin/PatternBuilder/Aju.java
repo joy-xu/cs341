@@ -71,9 +71,9 @@ public class Aju implements Runnable{
 		nerTags.add(NERType.ORGANIZATION);
 		Slot founded_by = null;
 		for(Slot slot: slots) {
-			if(slot.getName().equals(Constants.SlotName.Founded_By)) {
+			if(slot.getName().equals(Constants.SlotName.Founder_Of)) {
 				founded_by = slot;
-				Map<String, Double> values = obj.findSlotValue("Bill Gates founded Seagram company after his initial startup failed miserably.", "Bill Gates", slot, nerTags, false);
+				Map<String, Double> values = obj.findSlotValue("Bill Gates founded Seagram Company in 2011.", "Bill Gates", slot, nerTags, false);
 				if(values != null) {
 					for(String str:values.keySet()) {
 						LogInfo.logs("Found:" + str);
