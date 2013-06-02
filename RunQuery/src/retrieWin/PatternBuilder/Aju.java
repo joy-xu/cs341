@@ -73,8 +73,8 @@ public class Aju implements Runnable{
 		for(Slot slot: slots) {
 			if(slot.getName().equals(Constants.SlotName.Awards_Won)) {
 				founded_by = slot;
-				System.out.println(slot);
-				Map<String, Double> values = obj.findSlotValue("Pulitzer prize was awarded to Bill Gates at the Memorial Auditorium on last Monday.", "Bill Gates", slot, false);
+				//System.out.println(slot);
+				Map<String, Double> values = obj.findSlotValue("Pulitzer prize winner Bill Gates visited the Memorial Auditorium on last Monday.", "Bill Gates", slot, false);
 				if(values != null) {
 					for(String str:values.keySet()) {
 						LogInfo.logs("Found:" + str);
