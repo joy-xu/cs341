@@ -647,23 +647,32 @@ public class NLPUtils {
 	}
 	
 	//iterates over sentences and finds values in each sentence
-	public Map<String, Double> findSlotValue(String sentence, String entity1, Slot slot, List<NERType> targetNERTypes, boolean social) throws NoSuchParseException {
+	public Map<String, Double> findSlotValue(String sentence, String entity1, Slot slot, boolean social) throws NoSuchParseException {
 		Map<String, Double> candidates = new HashMap<String, Double>();
 		Annotation document = new Annotation(sentence);
 		processor.annotate(document);
 		//get coreferences for the entity
 		Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
-		//System.out.println(social);
+
 		List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
 		for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
 			CoreMap sentenceMap = allSentenceMap.get(sentNum);
 			//System.out.println(sentenceMap.toString());
 			for(SlotPattern pattern: slot.getPatterns()) {
+				//if(!pattern.getPattern().equals("award"))
+				//	continue;
 				//System.out.println(pattern);
-				for(String str: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, targetNERTypes, social)) {
-					System.out.println(sentenceMap.toString());
-					System.out.println(pattern + "|" + str);
-					if(!str.isEmpty()) {
+
+				for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot.getTargetNERTypes(), social)) {
+					//System.out.println(str);
+					if(!ans.isEmpty()) {
+						String str = "";
+						for(String tok: ans.split(" ")) {
+							if(!entity1.contains(tok))
+								str += " " + tok;
+						}
+						str = str.trim();
+
 						if(!candidates.containsKey(str))
 							candidates.put(str, pattern.getConfidenceScore());
 						else
@@ -680,10 +689,10 @@ public class NLPUtils {
 		Set<IndexedWord> ansSet = new HashSet<IndexedWord>();
 		Set<IndexedWord> tempSet = new HashSet<IndexedWord>();
 		Set<String> ans = new HashSet<String>();
+		IndexedWord patternWord = null;
 		
 		if(social || pattern.getPatternType().equals(Constants.PatternType.WithoutRules)) {
-			//System.out.println("here");
-			IndexedWord patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
+			patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
 			if(patternWord == null)
 				return ans;
 			for(IndexedWord w: words1) {
@@ -708,7 +717,7 @@ public class NLPUtils {
 			tempSet = getWordsSatisfyingRule(new HashSet<IndexedWord>(words1), pattern.getRules(0), graph);
 		}
 		else if(pattern.getPatternType().equals(Constants.PatternType.TargetInBetween)) {
-			IndexedWord patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
+			patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
 			if(patternWord == null)
 				return ans;
 			Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
@@ -719,7 +728,7 @@ public class NLPUtils {
 			tempSet.retainAll(tempSet1);
 		}
 		else if(pattern.getPatternType().equals(Constants.PatternType.SourceInBetween)) {
-			IndexedWord patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
+			patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
 			if(patternWord == null)
 				return ans;
 			Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
@@ -733,7 +742,7 @@ public class NLPUtils {
 			}
 		}
 		else {//if(pattern.getPatternType().equals(Constants.PatternType.WordInBetween))
-			IndexedWord patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
+			patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
 			if(patternWord == null)
 				return ans;
 			Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
@@ -762,9 +771,16 @@ public class NLPUtils {
 		for(IndexedWord w: ansSet) {
 			String phrase = findExpandedEntity(sentence, w.originalText());
 			String temp = "";
-			for(String tok: phrase.split(" "))
-				if(targetNERTypes == null || targetNERTypes.contains(NERType.NONE) || targetNERTypes.contains(NERType.valueOf(nerMap.get(tok)))) 
-					temp += " " + tok;	
+			for(String tok: phrase.split(" ")) {
+				if(targetNERTypes == null || targetNERTypes.contains(NERType.NONE) || targetNERTypes.contains(NERType.valueOf(nerMap.get(tok)))) {
+					if(patternWord != null) {
+						if(!tok.equals(patternWord.lemma()))
+								temp += " " + tok;	
+					}
+					else 
+						temp += " " + tok;	
+				}
+			}
 			ans.add(temp.trim());
 		}
 		

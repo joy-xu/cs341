@@ -28,6 +28,7 @@ import retrieWin.Indexer.TrecTextDocument;
 import retrieWin.Querying.ExecuteQuery;
 import retrieWin.Querying.QueryBuilder;
 import retrieWin.SSF.Constants;
+import retrieWin.SSF.Constants.PatternType;
 import retrieWin.SSF.Entity;
 import retrieWin.SSF.SlotPattern;
 import retrieWin.SSF.SlotPattern.Rule;
@@ -73,11 +74,31 @@ public class ContactMeetPlaceTime implements Runnable{
 		
 		filename_nonSchools.add("output_nonSchools");
 		filename_nonSchools.add("output_nonSchools_20120721");
-		doBootStrap();
+		List<SlotPattern> p = populateBootstrapSlotPatterns();
+		writeSlotPatternsToFile(outputFile, p);
+		//doBootStrap();
 		//aggregateResults(filenames,filename_nonSchools);
 		//writeHumanReadableResults(filenames);
 		//aggregateBootstrapResults("bootstrapResults");
 		LogInfo.end_track();
+	}
+	
+	public void writeSlotPatternsToFile(String filename, List<SlotPattern> patternsToWrite)
+	{
+		try{
+			BufferedWriter wbuf = new BufferedWriter(new FileWriter(filename));
+			for (SlotPattern p:patternsToWrite)
+			{
+				wbuf.write(p.toString());
+				wbuf.newLine();
+			}
+			wbuf.close();
+		}
+		catch (Exception e)
+		{
+			System.out.println("Couldn't write pattern to file");
+			e.printStackTrace();
+		}
 	}
 	
 	public void aggregateBootstrapResults(String filename)
@@ -150,51 +171,58 @@ public class ContactMeetPlaceTime implements Runnable{
 		
 		// stay, nsubj, prep-at
 		SlotPattern p = new SlotPattern();
-		p.setConfidenceScore(0.0);
+		p.setConfidenceScore(1.0);
 		p.setPattern("stay");
 		p.setRules(rules);
+		p.setPatternType(PatternType.WordInBetween);
 		result.add(p);
 		
 		// arrive, nsubj, prep_at
 		p = new SlotPattern();
-		p.setConfidenceScore(0.0);
+		p.setConfidenceScore(1.0);
 		p.setRules(rules);
 		p.setPattern("arrive");
+		p.setPatternType(PatternType.WordInBetween);
 		result.add(p);
 		
 		// play, nsubj, prep_at
 		p = new SlotPattern();
-		p.setConfidenceScore(0.0);
+		p.setConfidenceScore(1.0);
 		p.setRules(rules);
 		p.setPattern("play");
+		p.setPatternType(PatternType.WordInBetween);
 		result.add(p);
 		
 		// present, nsubj, prep_at
 		p = new SlotPattern();
-		p.setConfidenceScore(0.0);
+		p.setConfidenceScore(1.0);
 		p.setRules(rules);
 		p.setPattern("present");
+		p.setPatternType(PatternType.WordInBetween);
 		result.add(p);
 		
 		// gather, nsubj, prep_at
 		p = new SlotPattern();
-		p.setConfidenceScore(0.0);
+		p.setConfidenceScore(1.0);
 		p.setRules(rules);
 		p.setPattern("gather");
+		p.setPatternType(PatternType.WordInBetween);
 		result.add(p);
 		
 		// gave
 		p = new SlotPattern();
-		p.setConfidenceScore(0.0);
+		p.setConfidenceScore(1.0);
 		p.setRules(rules);
 		p.setPattern("give");
+		p.setPatternType(PatternType.WordInBetween);
 		result.add(p);
 		
 		// spoke
 		p = new SlotPattern();
-		p.setConfidenceScore(0.0);
+		p.setConfidenceScore(1.0);
 		p.setRules(rules);
 		p.setPattern("speak");
+		p.setPatternType(PatternType.WordInBetween);
 		result.add(p);
 		
 		
@@ -208,23 +236,26 @@ public class ContactMeetPlaceTime implements Runnable{
 		rules.add(r1);	rules.add(r2);
 		// held, nsubjpass, prep_at
 		p = new SlotPattern();
-		p.setConfidenceScore(0.0);
+		p.setConfidenceScore(1.0);
 		p.setRules(rules);
 		p.setPattern("hold");
+		p.setPatternType(PatternType.WordInBetween);
 		result.add(p);
 		
 		// award, nsubjpass, prep_at
 		p = new SlotPattern();
-		p.setConfidenceScore(0.0);
+		p.setConfidenceScore(1.0);
 		p.setRules(rules);
 		p.setPattern("award");
+		p.setPatternType(PatternType.WordInBetween);
 		result.add(p);
 		
 		// present, nsubjpass, prep_at
 		p = new SlotPattern();
-		p.setConfidenceScore(0.0);
+		p.setConfidenceScore(1.0);
 		p.setRules(rules);
 		p.setPattern("present");
+		p.setPatternType(PatternType.WordInBetween);
 		result.add(p);
 		
 		r1 = new Rule();
@@ -237,27 +268,31 @@ public class ContactMeetPlaceTime implements Runnable{
 		rules.add(r1);	rules.add(r2);
 		// held, nsubjpass, prep_at
 		p = new SlotPattern();
-		p.setConfidenceScore(0.0);
+		p.setConfidenceScore(1.0);
 		p.setRules(rules);
 		p.setPattern("speech");
+		p.setPatternType(PatternType.WordInBetween);
 		result.add(p);
 		
 		p = new SlotPattern();
-		p.setConfidenceScore(0.0);
+		p.setConfidenceScore(1.0);
 		p.setRules(rules);
 		p.setPattern("talk");
+		p.setPatternType(PatternType.WordInBetween);
 		result.add(p);
 		
 		p = new SlotPattern();
-		p.setConfidenceScore(0.0);
+		p.setConfidenceScore(1.0);
 		p.setRules(rules);
 		p.setPattern("presentation");
+		p.setPatternType(PatternType.WordInBetween);
 		result.add(p);
 		
 		p = new SlotPattern();
-		p.setConfidenceScore(0.0);
+		p.setConfidenceScore(1.0);
 		p.setRules(rules);
 		p.setPattern("appearance");
+		p.setPatternType(PatternType.WordInBetween);
 		result.add(p);
 		
 		return result;
@@ -273,7 +308,7 @@ public class ContactMeetPlaceTime implements Runnable{
 		for (SlotPattern p:patterns)
 		{
 			System.out.println("Starting query for : " + p.getPattern());
-			String query = String.format("#10(%s at)", p.getPattern());
+			String query = String.format("#1(%s)", p.getPattern());
 			System.out.println("Query String: " + query);
 			List<TrecTextDocument> trecDocs = eq.executeQuery(query,numResults, workingDirectory);
 			List<String> sentences = ProcessTrecTextDocument.getCleanedSentences(
