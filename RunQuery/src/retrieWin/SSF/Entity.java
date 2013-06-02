@@ -57,6 +57,8 @@ public class Entity  implements Serializable {
 	}
 	
 	public List<String> updateSlot(Slot slot, List<String> candidates) {
+		if(this.slotValues == null)
+			this.slotValues = new HashMap<SlotName, List<String>>();
 		List<String> added = new ArrayList<String>();
 		if(!slotValues.containsKey(slot.getName()))
 				slotValues.put(slot.getName(), new ArrayList<String>());

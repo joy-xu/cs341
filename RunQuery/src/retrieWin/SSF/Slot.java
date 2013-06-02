@@ -75,7 +75,7 @@ public class Slot implements Serializable {
 		this.entityType = entityType;
 	}
 
-	SlotName getName() {
+	public SlotName getName() {
 		return name;
 	}
 
@@ -91,7 +91,7 @@ public class Slot implements Serializable {
 		this.threshold = threshold;
 	}
 
-	List<SlotPattern> getPatterns() {
+	public List<SlotPattern> getPatterns() {
 		return patterns;
 	}
 
