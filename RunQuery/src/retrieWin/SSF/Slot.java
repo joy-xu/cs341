@@ -48,6 +48,7 @@ public class Slot implements Serializable {
 		try {
 			BufferedReader reader = new BufferedReader(new FileReader(fileName));
 			while((line = reader.readLine()) != null) {
+				if (line.isEmpty())	 continue;
 				pat = new SlotPattern(line);
 				patterns.add(pat);
 			}
