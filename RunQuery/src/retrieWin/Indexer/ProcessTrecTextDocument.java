@@ -113,7 +113,7 @@ public class ProcessTrecTextDocument {
 			for (int j = 0;j<currentAllSentences.size();j++)
 			{
 				String currentSentence = currentAllSentences.get(j);
-				String[] colonSeparated = currentSentence.split(":");
+				String[] colonSeparated = currentSentence.split("(\\s+:\\s+)|\\-|\\.{3}");
 				for (int sen = 0;sen<colonSeparated.length;sen++)
 				{
 					for (String entitySplit:entitySplits)
@@ -127,7 +127,16 @@ public class ProcessTrecTextDocument {
 				}
 			}
 		}
-		return returnString;
+		
+		Map<String,String> cleanedMap = new HashMap<String,String>();
+		for (String s:returnString.keySet())
+		{
+			List<String> listOfSentences = new ArrayList<String>();
+			listOfSentences.add(s);
+			for (String cleaned:getCleanedSentences(listOfSentences))
+				cleanedMap.put(cleaned, returnString.get(s));
+		}
+		return cleanedMap;
 	}
 	
 	public static String deAccent(String str) {
@@ -149,7 +158,7 @@ public class ProcessTrecTextDocument {
 		return (double)capitalized/total;
 	}
 
-	public static List<String> getCleanedSentences(List<String> sentences) {
+	public static List<String> getCleanedSentences(Collection<String> sentences) {
 		List<String> results = new ArrayList<String>();
 		double capitalizaitionThreshold = 0.7;
 		
