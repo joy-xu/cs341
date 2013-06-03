@@ -34,9 +34,9 @@ public class SSF implements Runnable{
 	@Option(gloss="download Hour") public String downloadHour;
 	@Option(gloss="index Location") public String indexLocation;
 	@Option(gloss="index Location") public String saveAsDirectory;
-	List<Slot> slots;
+	private List<Slot> slots;
 	List<Entity> entities;
-	NLPUtils coreNLP;
+	private NLPUtils coreNLP;
 	Concept conceptExtractor;
 	
 	public SSF() {
@@ -46,7 +46,7 @@ public class SSF implements Runnable{
 	public void initialize() {
 		readEntities();
 		readSlots();
-		coreNLP = new NLPUtils();
+		setCoreNLP(new NLPUtils());
 		conceptExtractor = new Concept();
 	}
 	
@@ -134,7 +134,7 @@ public class SSF implements Runnable{
 	public void readSlots() {
 		File file = new File(Constants.slotsSerializedFile);
 		if(file.exists()) {
-			slots = (List<Slot>)FileUtils.readFile(file.getAbsolutePath().toString());
+			setSlots((List<Slot>)FileUtils.readFile(file.getAbsolutePath().toString()));
 		}
 		else {
 			String inputFileName = "data/Slots.csv";
@@ -220,7 +220,7 @@ public class SSF implements Runnable{
 		Map<String, Double> candidates = new HashMap<String, Double>();
 		for(String expansion: entity.getExpansions()) {
 			for(String sentence: relevantSentences.get(expansion).keySet()) {
-				System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
+				//System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
 				try {
 					//for each sentence, find possible slot values and add to candidate list
 					//arxiv documents
@@ -249,9 +249,9 @@ public class SSF implements Runnable{
 						}
 					}
 					//social documents
+
 					else if(relevantSentences.get(expansion).get(sentence).contains("social")) {
 						Map<String, Double> values = coreNLP.findSlotValue(sentence, expansion, slot, (slot.getTargetNERTypes() != null) ? true : false);
-
 						for(String str: values.keySet()) {
 							//get normalized concept from candidate
 							String concept = conceptExtractor.getConcept(str);
@@ -319,8 +319,6 @@ public class SSF implements Runnable{
 		// for each entity, for each slot, for each entity expansion
 		System.out.println("Finding slot values...");
 		for(Entity entity: entities) {
-			if(!entity.getName().equals("Maurice_Fitzgibbons"))// && !entity.getName().equals("Ken_Fowler"))
-				continue;
 			System.out.println("Finding slot values for entity " + entity.getName());
 			//get all relevant documents for the entity
 			List<TrecTextDocument> docs = entity.getRelevantDocuments(timestamp, entities);
@@ -344,7 +342,7 @@ public class SSF implements Runnable{
 			System.out.println("Number of relevant sentences: " + retrievedSentences.size());
 			
 			//iterate to fill slots
-			for(Slot slot: slots) {
+			for(Slot slot: getSlots()) {
 				//compute only for relevant slots for this entity
 				if(!slot.getEntityType().equals(entity.getEntityType()))
 						continue;
@@ -355,10 +353,10 @@ public class SSF implements Runnable{
 				if(slot.getPatterns().isEmpty())
 					continue;
 				System.out.println("In slot " + slot.getName());
-				
+				//System.out.println(slot);
 				System.out.println("Finding value for " + slot.getName());
 				//for each expansion, slot pattern, get all possible candidates
-				Map<String, Double> candidates = findCandidates(entity, slot, relevantSentences, coreNLP, conceptExtractor);
+				Map<String, Double> candidates = findCandidates(entity, slot, relevantSentences, getCoreNLP(), conceptExtractor);
 				
 				//remove candidates below the threshold value
 				List<String> finalCandidateList = new ArrayList<String>();
@@ -387,9 +385,9 @@ public class SSF implements Runnable{
 	
 	private void updateSlots() throws IOException {
 		readSlots();
-		for(Slot slot: slots) {
+		for(Slot slot: getSlots()) {
 			String filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
-			System.out.println(filename);
+			//System.out.println(filename);
 			File file = new File(filename);
 			if(!file.exists()) {
 				System.out.println("File for " + slot.getName() + " not found.");
@@ -398,9 +396,10 @@ public class SSF implements Runnable{
 			
 			//if(slot.getName().equals(Constants.SlotName.Founded_By))
 			slot.addSlotPatterns(filename);
+			
 		}
 		//System.out.println(slots);
-		FileUtils.writeFile(slots, Constants.slotsSerializedFile);
+		FileUtils.writeFile(getSlots(), Constants.slotsSerializedFile);
 	}
 	
 	public static void main(String[] args) throws IOException {
@@ -445,5 +444,21 @@ public class SSF implements Runnable{
 		//buildLargeIndex();
 		
 		LogInfo.end_track();
+	}
+
+	public List<Slot> getSlots() {
+		return slots;
+	}
+
+	public void setSlots(List<Slot> slots) {
+		this.slots = slots;
+	}
+
+	public NLPUtils getCoreNLP() {
+		return coreNLP;
+	}
+
+	public void setCoreNLP(NLPUtils coreNLP) {
+		this.coreNLP = coreNLP;
 	}
 }

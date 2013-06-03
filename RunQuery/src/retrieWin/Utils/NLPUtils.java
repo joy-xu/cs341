@@ -653,6 +653,7 @@ public class NLPUtils {
 		processor.annotate(document);
 		//get coreferences for the entity
 		Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
+
 		List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
 		for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
 			CoreMap sentenceMap = allSentenceMap.get(sentNum);
@@ -661,6 +662,7 @@ public class NLPUtils {
 				//if(!pattern.getPattern().equals("award"))
 				//	continue;
 				//System.out.println(pattern);
+
 				for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot.getTargetNERTypes(), social)) {
 					//System.out.println(str);
 					if(!ans.isEmpty()) {
@@ -672,7 +674,7 @@ public class NLPUtils {
 						str = str.trim();
 						//Flag to check if we found a matching pattern already
 						if(!str.isEmpty()) {
-							boolean containsKey = false;
+							/*boolean containsKey = false;
 							for(String candidate:candidates.keySet()) {
 									//If we found the pattern already or if a smaller string of the current pattern was found already.
 									//This is checked by checking starts with or endswith.
@@ -691,7 +693,12 @@ public class NLPUtils {
 							
 							if(!containsKey) {
 								candidates.put(str, pattern.getConfidenceScore());
-							}
+							}*/
+
+							if(!candidates.containsKey(str))
+								candidates.put(str, pattern.getConfidenceScore());
+							else
+								candidates.put(str, pattern.getConfidenceScore() + candidates.get(str));
 						}
 					}
 				}

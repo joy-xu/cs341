@@ -67,48 +67,73 @@ public class Aju implements Runnable{
 		NLPUtils obj = new NLPUtils();
 		//obj.findSlotPattern("Bill Gates company Microsoft is the largest employer.", "Bill Gates", "Microsoft");
 		
-		List<NERType> nerTags = new ArrayList<NERType>();
+		//List<NERType> nerTags = new ArrayList<NERType>();
 		//nerTags.add(NERType.);
-		Slot founded_by = null;
+		//Slot founded_by = null;
 		for(Slot slot: slots) {
 			if(slot.getName().equals(Constants.SlotName.Founded_By)) {
-				String sentence = "Seagram founder Bill Gates visited the Memorial Auditorium on last Monday.";
-				Map<String, Double> values = obj.findSlotValue(sentence, "Bill Gates", slot, false);
-				if(values != null) {
-					for(String str:values.keySet()) {
-						LogInfo.logs("Sentence     : " + sentence);
-						LogInfo.logs("Founded by   : " + str);
-					} 
+				List<String> sentences = new ArrayList<String>();
+				sentences.add("Seagram Company founder Bill Gates visited the Memorial Auditorium on last Monday.");
+				for(String sentence:sentences) {
+					Map<String, Double> values = obj.findSlotValue(sentence, "Seagram Company", slot, false);
+					LogInfo.logs("Sentence    : " + sentence);
+					if(values != null && values.size() > 0) {
+						for(String str:values.keySet()) {
+							LogInfo.logs("Founded by  : " + str);
+						} 
+					}
+					else {
+						LogInfo.logs("Founded by  : NO RESULTS");
+					}
 				}
 			}
 			if(slot.getName().equals(Constants.SlotName.Awards_Won)) {
-				String sentence = "Pulitzer prize winner Bill Gates visited the Memorial Auditorium on last Monday.";
-				Map<String, Double> values = obj.findSlotValue(sentence, "Bill Gates", slot, false);
-				if(values != null) {
-					for(String str:values.keySet()) {
-						LogInfo.logs("Sentence    : " + sentence);
-						LogInfo.logs("Award won   : " + str);
-					} 
+				List<String> sentences = new ArrayList<String>();
+				sentences.add("Pulitzer prize winner Bill Gates visited the Memorial Auditorium on last Monday.");
+				for(String sentence:sentences) {
+					Map<String, Double> values = obj.findSlotValue(sentence, "Bill Gates", slot, false);
+					LogInfo.logs("Sentence    : " + sentence);
+					if(values != null && values.size() > 0) {
+						for(String str:values.keySet()) {
+							
+							LogInfo.logs("Award won   : " + str);
+						} 
+					}
+					else {
+						LogInfo.logs("Award won   : NO RESULTS");
+					}
 				}
 			}
 			if(slot.getName().equals(Constants.SlotName.Founder_Of)) {
-				String sentence = "Seagram founder Bill Gates visited the Memorial Auditorium on last Monday.";
-				Map<String, Double> values = obj.findSlotValue(sentence, "Seagram", slot, false);
-				if(values != null) {
-					for(String str:values.keySet()) {
-						LogInfo.logs("Sentence    : " + sentence);
-						LogInfo.logs("Founder of  : " + str);
-					} 
+				List<String> sentences = new ArrayList<String>();
+				sentences.add("Seagram Company founder Bill Gates visited the Memorial Auditorium on last Monday.");
+				for(String sentence:sentences) {
+					Map<String, Double> values = obj.findSlotValue(sentence, "Bill Gates", slot, false);
+					LogInfo.logs("Sentence    : " + sentence);
+					if(values != null && values.size() > 0) {
+						for(String str:values.keySet()) {
+							LogInfo.logs("Founder of  : " + str);
+						} 
+					}
+					else {
+						LogInfo.logs("Founder of  : NO RESULTS");
+					}
 				}
 			}
-			if(slot.getName().equals(Constants.SlotName.Affiliate_Of)) {
-				String sentence = "Seagram founder Bill Gates visited his friend Steve Jobs on last Monday.";
-				Map<String, Double> values = obj.findSlotValue(sentence, "Bill Gates", slot, false);
-				if(values != null) {
-					for(String str:values.keySet()) {
-						LogInfo.logs("Sentence    : " + sentence);
-						LogInfo.logs("Affiliate of: " + str);
-					} 
+			if(slot.getName().equals(Constants.SlotName.Affiliate_Of) && slot.getEntityType() == EntityType.PER) {
+				List<String> sentences = new ArrayList<String>();
+				sentences.add("Seagram founder Bill Gates worked with his friend Steve Jobs on last Monday.");
+				for(String sentence:sentences) {
+					Map<String, Double> values = obj.findSlotValue(sentence, "Bill Gates", slot, false);
+					LogInfo.logs("Sentence    : " + sentence);
+					if(values != null && values.size() > 0) {
+						for(String str:values.keySet()) {
+							LogInfo.logs("Affiliate of: " + str);
+						} 
+					}
+					else {
+						LogInfo.logs("Affiliate of: NO RESULTS");
+					}
 				}
 			}
 		}
