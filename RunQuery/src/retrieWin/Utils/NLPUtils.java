@@ -646,6 +646,74 @@ public class NLPUtils {
 		return ans;
 	}
 	
+	public Map<String, Double> findPlaceTimeValue(String sentence, String entity1, Slot slot, boolean social) throws NoSuchParseException {
+		Map<String, Double> candidates = new HashMap<String, Double>();
+		Annotation document = new Annotation(sentence);
+		processor.annotate(document);
+		//get coreferences for the entity
+		Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
+
+		List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
+		for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
+			CoreMap sentenceMap = allSentenceMap.get(sentNum);
+			Set<String> times = getTimeAsTokens(sentenceMap);
+			Set<String> dates = getDateAsTokens(sentenceMap);
+			//System.out.println(sentenceMap.toString());
+			for(SlotPattern pattern: slot.getPatterns()) {
+				//if(!pattern.getPattern().equals("award"))
+				//	continue;
+				//System.out.println(pattern);
+
+				for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot.getTargetNERTypes(), social)) {
+					//System.out.println(str);
+					if(!ans.isEmpty()) {
+						Pair<String,String> datetime = findNearestDateTime(sentenceMap.toString(), ans,dates,times);
+						
+						String str = "";
+						for(String tok: ans.split(" ")) {
+							if(!entity1.contains(tok))
+								str += " " + tok;
+						}
+						str = str + " " + datetime.first;
+						str = str + " " + datetime.second;
+						str = str.trim();
+
+						if(!candidates.containsKey(str))
+							candidates.put(str, pattern.getConfidenceScore());
+						else
+							candidates.put(str, pattern.getConfidenceScore() + candidates.get(str));
+					}
+				}
+			}
+		}
+		return candidates;
+	}
+	
+	public Pair<String,String> findNearestDateTime(String sentence, String ans, Set<String> dates, Set<String> times)
+	{
+		String date = "";
+		String time = "";
+		int ansPos = sentence.indexOf(ans);
+		int bestRange = Integer.MAX_VALUE;
+		Pair<String,String> bestPair = new Pair<String,String>("","");
+		for (String d:dates)
+		{
+			int datePos = sentence.indexOf(d);
+			for (String t:times)
+			{
+				int timePos = sentence.indexOf(t);
+				int minPos = (timePos <= datePos && timePos <= ansPos) ? timePos : (datePos <= ansPos ? datePos : ansPos);
+				int maxPos = (timePos >= datePos && timePos >= ansPos) ? timePos : (datePos >= ansPos ? datePos : ansPos);
+				int currentRange = maxPos - minPos;
+				if (currentRange <= bestRange)
+				{
+					bestRange = currentRange;
+					bestPair = new Pair<String,String>(d,t);
+				}
+			}
+		}
+		return bestPair;
+	}
 	//iterates over sentences and finds values in each sentence
 	public Map<String, Double> findSlotValue(String sentence, String entity1, Slot slot, boolean social) throws NoSuchParseException {
 		Map<String, Double> candidates = new HashMap<String, Double>();
@@ -899,6 +967,52 @@ public class NLPUtils {
         return persons;
 	}
 	
+	public Set<String> getTimeAsTokens(CoreMap sentence)
+	{
+		Set<String> times = new HashSet<String>();
+		String currentTime = "";
+		
+		for (CoreLabel token: sentence.get(TokensAnnotation.class)) {
+	        String word = token.get(TextAnnotation.class);
+	        String ner = token.get(NamedEntityTagAnnotation.class);  
+	        if(NERType.valueOf(ner).equals(NERType.TIME)) {
+	        		currentTime = currentTime + " " + word;
+	        }
+	        else
+	        {
+	        	if (!currentTime.isEmpty())
+	        	{
+	        		times.add(currentTime.trim());
+	        		currentTime = "";
+	        	}
+	        }
+	    
+	    }
+        return times;
+	}
+	public Set<String> getDateAsTokens(CoreMap sentence)
+	{
+		Set<String> times = new HashSet<String>();
+		String currentTime = "";
+		
+		for (CoreLabel token: sentence.get(TokensAnnotation.class)) {
+	        String word = token.get(TextAnnotation.class);
+	        String ner = token.get(NamedEntityTagAnnotation.class);  
+	        if(NERType.valueOf(ner).equals(NERType.DATE)) {
+	        		currentTime = currentTime + " " + word;
+	        }
+	        else
+	        {
+	        	if (!currentTime.isEmpty())
+	        	{
+	        		times.add(currentTime.trim());
+	        		currentTime = "";
+	        	}
+	        }
+	    
+	    }
+        return times;
+	}
 	public Set<String> getPersonsAsTokens(CoreMap sentence) {
 		Set<String> persons = new HashSet<String>();
 		String person = "";
