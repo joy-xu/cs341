@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -144,9 +145,22 @@ public class ProcessTrecTextDocument {
 	    String s = pattern.matcher(nfdNormalizedString).replaceAll("");
 	    return s;
 	}
+	
+	private static double capitalizedContentRatio(String sent) {
+		int total = 0, capitalized = 0;
+		
+		for(String tok: sent.split(" ")) {
+			if(tok.matches("^[A-Z].*$")) 
+				capitalized++;
+			total++;
+		}
+		
+		return (double)capitalized/total;
+	}
 
 	public static List<String> getCleanedSentences(Collection<String> sentences) {
 		List<String> results = new ArrayList<String>();
+		double capitalizaitionThreshold = 0.7;
 		
 		for(String sentence : sentences) {
 			//System.out.println("Input :" + sentence);
@@ -198,6 +212,10 @@ public class ProcessTrecTextDocument {
 			//	System.out.println("Output :" + s);
 			//results.addAll();
 		}
+		
+		for (Iterator<String> it = results.iterator(); it.hasNext(); )
+	        if (capitalizedContentRatio(it.next()) >= capitalizaitionThreshold)
+	            it.remove();
 		return results;
 	}
 }
