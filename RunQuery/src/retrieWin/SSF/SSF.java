@@ -17,10 +17,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import retrieWin.Indexer.Indexer;
 import retrieWin.Indexer.ProcessTrecTextDocument;
+import retrieWin.Indexer.ThriftReader;
 import retrieWin.Indexer.TrecTextDocument;
+import retrieWin.Indexer.Indexer.parallelQuerier;
 import retrieWin.SSF.Constants.EntityType;
 import retrieWin.SSF.Constants.NERType;
 import retrieWin.SSF.Constants.SlotName;
@@ -178,7 +184,7 @@ public class SSF implements Runnable{
 	}
 	
 	
-	private boolean containsUppercaseToken(String str) {
+	private static boolean containsUppercaseToken(String str) {
 		for(String token: str.split(" ")) {
 			if(token.isEmpty())
 				continue;
@@ -188,7 +194,7 @@ public class SSF implements Runnable{
 		return false;
 	}
 	
-	private Map<String, Double> findTitles(Entity entity, Slot slot, Map<String, Map<String, String>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
+	public static Map<String, Double> findTitles(Entity entity, Slot slot, Map<String, Map<String, String>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
 		Map<String, Double> candidates = new HashMap<String, Double>();
 		for(String expansion: entity.getExpansions()) {
 			for(String sentence: relevantSentences.get(expansion).keySet()) {
@@ -212,10 +218,61 @@ public class SSF implements Runnable{
 		return candidates;
 	}
 
+	private static Map<String, Double> findContactMeetPlaceTime(Entity entity, Slot slot, Map<String, Map<String, String>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
+		Map<String, Double> candidates = new HashMap<String, Double>();
+		for(String expansion: entity.getExpansions()) {
+			for(String sentence: relevantSentences.get(expansion).keySet()) {
+				//System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
+				System.out.println("Now processing: " + sentence);
+				try {
+					//for each sentence, find possible slot values and add to candidate list
+					//arxiv documents
+					if(relevantSentences.get(expansion).get(sentence).contains("arxiv")) {
+						continue;
+					}
+					//social documents
+						
+					else if(relevantSentences.get(expansion).get(sentence).contains("social")) {
+						Map<String, Double> values = coreNLP.findPlaceTimeValue(sentence, expansion, slot, false);
+						
+						for(String str: values.keySet()) {
+							//get normalized concept from candidate
+							String concept = conceptExtractor.getConcept(str);
+							if(!candidates.containsKey(concept))
+								candidates.put(concept, values.get(str));
+							else
+								candidates.put(concept, candidates.get(concept) + values.get(str));
+						}
+					}
+					//news documents
+					else {
+						Map<String, Double> values = coreNLP.findPlaceTimeValue(sentence, expansion, slot, false);
+						for(String str: values.keySet()) {
+							//get normalized concept from candidate
+							String concept = conceptExtractor.getConcept(str);
+							if(!candidates.containsKey(concept))
+								candidates.put(concept, values.get(str));
+							else
+								candidates.put(concept, candidates.get(concept) + values.get(str));
+						}
+					}
+				} catch(NoSuchParseException e) {
+					e.printStackTrace();
+					break;
+				}
+			}
+		}
+		return candidates;
+
+	}
 	
-	private Map<String, Double> findCandidates(Entity entity, Slot slot, Map<String, Map<String, String>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
+	
+	public static Map<String, Double> findCandidates(Entity entity, Slot slot, Map<String, Map<String, String>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
 		if(slot.getName().equals(Constants.SlotName.Titles))
 			return findTitles(entity, slot, relevantSentences, coreNLP, conceptExtractor);
+		
+		if (slot.getName().equals(Constants.SlotName.Contact_Meet_Place_Time))
+			return findContactMeetPlaceTime(entity,slot,relevantSentences,coreNLP,conceptExtractor);
 		
 		Map<String, Double> candidates = new HashMap<String, Double>();
 		for(String expansion: entity.getExpansions()) {
@@ -224,6 +281,7 @@ public class SSF implements Runnable{
 				try {
 					//for each sentence, find possible slot values and add to candidate list
 					//arxiv documents
+					System.out.println("Now processing: " + sentence);
 					if(relevantSentences.get(expansion).get(sentence).contains("arxiv")) {
 						if(!slot.getName().equals(Constants.SlotName.Affiliate_Of) || !entity.getEntityType().equals(Constants.EntityType.PER))
 							continue;
@@ -318,13 +376,54 @@ public class SSF implements Runnable{
 		
 		// for each entity, for each slot, for each entity expansion
 		System.out.println("Finding slot values...");
+		
+		ExecutorService e = Executors.newFixedThreadPool(8);
+		
+		
 		for(Entity entity: entities) {
-			System.out.println("Finding slot values for entity " + entity.getName());
+			e.execute(new FillSlotForEntity(entity,timestamp,entities,getCoreNLP(),conceptExtractor,getSlots()));
+		}
+		e.shutdown();
+		while(true)
+		{
+			try {
+				if (e.awaitTermination(1, TimeUnit.MINUTES))
+					break;
+				System.out.println("Waiting");
+			}
+			catch(InterruptedException ie){
+				System.out.println("Waiting - Thread interrupted");
+			}
+		}
+	}
+	
+private static class FillSlotForEntity implements Runnable{
+		
+		Entity entity;
+		String timestamp;
+		List<Entity> entities;
+		NLPUtils nlp;
+		Concept conceptExtractor;
+		List<Slot> allSlots;
+		public FillSlotForEntity(Entity en, String tm, List<Entity> listEntities, NLPUtils nlpIn, Concept cin, List<Slot> slotInput)
+		{
+			entity = en;
+			timestamp = tm;
+			entities = listEntities;
+			nlp = nlpIn;
+			conceptExtractor = cin;
+			allSlots = slotInput;
+		}
+		
+		@Override
+		public void run(){
+
+//			System.out.println("Finding slot values for entity " + entity.getName());
 			//get all relevant documents for the entity
 			List<TrecTextDocument> docs = entity.getRelevantDocuments(timestamp, entities);
-			System.out.println("Retrieved " + docs.size() + " relevant documents");
+			System.out.println("Retrieved " + docs.size() + " relevant documents for entity: " + entity.getName());
 			if(docs.isEmpty())
-				continue;
+				return;
 			
 			//get relevant sentences for each expansion, ensure no sentence retrieved twice
 			Map<String, Map<String, String>> relevantSentences = new HashMap<String, Map<String, String>>();
@@ -339,24 +438,24 @@ public class SSF implements Runnable{
 					}
 				relevantSentences.put(expansion, sentences);
 			}
-			System.out.println("Number of relevant sentences: " + retrievedSentences.size());
+			System.out.println("Number of relevant sentences: " + retrievedSentences.size() + " for entity: " + entity.getName());
 			
 			//iterate to fill slots
-			for(Slot slot: getSlots()) {
+			for(Slot slot: allSlots) {
 				//compute only for relevant slots for this entity
 				if(!slot.getEntityType().equals(entity.getEntityType()))
 						continue;
 				
-				if(!slot.getName().equals(Constants.SlotName.Cause_Of_Death))
+				if(!slot.getName().equals(Constants.SlotName.Contact_Meet_Place_Time))
 					continue;
 				//TODO: remove this, computing only one slot right now
 				if(slot.getPatterns().isEmpty())
 					continue;
-				System.out.println("In slot " + slot.getName());
+				//System.out.println("In slot " + slot.getName());
 				//System.out.println(slot);
-				System.out.println("Finding value for " + slot.getName());
+				System.out.println("Finding value for " + slot.getName() + " for entity: " + entity.getName());
 				//for each expansion, slot pattern, get all possible candidates
-				Map<String, Double> candidates = findCandidates(entity, slot, relevantSentences, getCoreNLP(), conceptExtractor);
+				Map<String, Double> candidates = findCandidates(entity, slot, relevantSentences, nlp, conceptExtractor);
 				
 				//remove candidates below the threshold value
 				List<String> finalCandidateList = new ArrayList<String>();
@@ -368,6 +467,17 @@ public class SSF implements Runnable{
 				System.out.println(entity.getName() + "," + slot.getName() + ":" + entity.updateSlot(slot, finalCandidateList));
 			}
 		}
+	}
+	
+	
+	void doTesting()
+	{
+		 SSF ssf = new SSF();
+		 for(Slot slot: ssf.getSlots()) {
+		 if(!slot.getName().equals(Constants.SlotName.Contact_Meet_Place_Time))
+		 continue;
+		 System.out.println(ssf.getCoreNLP().findSlotValue("", "", slot, false));
+		 }
 	}
 	
 	void buildLargeIndex() {
@@ -408,8 +518,11 @@ public class SSF implements Runnable{
 			System.out.println("Environment variable not set");
 			return;
 		}
+		new SSF().updateSlots();
+		//Execution.run(args, "Main", new SSF());
+		//SSF s= new SSF();
 		//new SSF().updateSlots();
-		Execution.run(args, "Main", new SSF());
+		//Execution.run(args, "Main", new SSF());
 	}
 
 	@Override
@@ -451,6 +564,16 @@ public class SSF implements Runnable{
 	}
 
 	public void setSlots(List<Slot> slots) {
+		/*
+		for (Slot s:slots)
+		{
+			if (s.getName() == Constants.SlotName.Contact_Meet_Place_Time)
+			{
+				for (SlotPattern p:s.getPatterns())
+					System.out.println(p.toString());
+			}
+		}
+		*/
 		this.slots = slots;
 	}
 

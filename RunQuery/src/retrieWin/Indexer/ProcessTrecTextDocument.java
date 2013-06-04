@@ -83,10 +83,11 @@ public class ProcessTrecTextDocument {
 		for (TrecTextDocument t:documents)
 		{
 			List<String> currentAllSentences = t.sentences;
-			for (int j = 0;j<currentAllSentences.size();j++)
+			List<String> cleanedSentences = getCleanedSentences(currentAllSentences);
+			for (int j = 0;j<cleanedSentences.size();j++)
 			{
-				String currentSentence = currentAllSentences.get(j);
-				String[] colonSeparated = currentSentence.split("(\\s+:\\s+)|\\-|\\.{3}");
+				String currentSentence = cleanedSentences.get(j);
+				String[] colonSeparated = currentSentence.split("(\\s+:\\s+)|\\||\\.{3}");
 				for (int sen = 0;sen<colonSeparated.length;sen++)
 				{
 					for (String entitySplit:entitySplits)
@@ -110,10 +111,11 @@ public class ProcessTrecTextDocument {
 		for (TrecTextDocument t:documents)
 		{
 			List<String> currentAllSentences = t.sentences;
-			for (int j = 0;j<currentAllSentences.size();j++)
+			List<String> cleanedSentences = getCleanedSentences(currentAllSentences);
+			for (int j = 0;j<cleanedSentences.size();j++)
 			{
-				String currentSentence = currentAllSentences.get(j);
-				String[] colonSeparated = currentSentence.split("(\\s+:\\s+)|\\-|\\.{3}");
+				String currentSentence = cleanedSentences.get(j);
+				String[] colonSeparated = currentSentence.split("(\\s+:\\s+)|\\||\\.{3}");
 				for (int sen = 0;sen<colonSeparated.length;sen++)
 				{
 					for (String entitySplit:entitySplits)
@@ -127,7 +129,7 @@ public class ProcessTrecTextDocument {
 				}
 			}
 		}
-		
+		/*
 		Map<String,String> cleanedMap = new HashMap<String,String>();
 		for (String s:returnString.keySet())
 		{
@@ -136,7 +138,8 @@ public class ProcessTrecTextDocument {
 			for (String cleaned:getCleanedSentences(listOfSentences))
 				cleanedMap.put(cleaned, returnString.get(s));
 		}
-		return cleanedMap;
+		*/
+		return returnString;
 	}
 	
 	public static String deAccent(String str) {
