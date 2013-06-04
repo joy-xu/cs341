@@ -527,9 +527,11 @@ private static class FillSlotForEntity implements Runnable{
 			System.out.println("Environment variable not set");
 			return;
 		}
+		new SSF().updateSlots();
+		//Execution.run(args, "Main", new SSF());
 		//SSF s= new SSF();
 		//new SSF().updateSlots();
-		Execution.run(args, "Main", new SSF());
+		//Execution.run(args, "Main", new SSF());
 	}
 
 	@Override

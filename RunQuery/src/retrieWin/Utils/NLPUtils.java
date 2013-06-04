@@ -665,12 +665,11 @@ public class NLPUtils {
 				System.out.println("entity found");
 			
 			for(SlotPattern pattern: slot.getPatterns()) {
-				//if(!pattern.getPattern().equals("award"))
-				//	continue;
 				//System.out.println(pattern);
+
 				
 				for(String ans: findValue(sentenceMap, foundWord, pattern, slot.getTargetNERTypes(), social)) {
-					//System.out.println(str);
+
 					if(!ans.isEmpty()) {
 						Pair<String,String> datetime = findNearestDateTime(sentenceMap.toString(), ans,dates,times);
 						
@@ -682,7 +681,9 @@ public class NLPUtils {
 						str = str + " " + datetime.first;
 						str = str + " " + datetime.second;
 						str = str.trim();
-						System.out.println("Found pattern: " + str);	
+
+						System.out.println(pattern + "|" + str);
+
 						if(!candidates.containsKey(str))
 							candidates.put(str, pattern.getConfidenceScore());
 						else
@@ -745,11 +746,34 @@ public class NLPUtils {
 								str += " " + tok;
 						}
 						str = str.trim();
+						//Flag to check if we found a matching pattern already
+						if(!str.isEmpty()) {
+							/*boolean containsKey = false;
+							for(String candidate:candidates.keySet()) {
+									//If we found the pattern already or if a smaller string of the current pattern was found already.
+									//This is checked by checking starts with or endswith.
+									if(candidate.equals(str) || str.startsWith(candidate) || str.endsWith(candidate)){
+									
+										candidates.put(str, pattern.getConfidenceScore() + candidates.get(str));
+										containsKey = true;
+									}
+									//If the current pattern is more compact than the earlier one, take it.
+									else if(candidate.startsWith(str) || candidate.endsWith(str)) {
+										candidates.put(str, candidates.get(candidate));
+										candidates.remove(candidate);
+										containsKey = true;
+									}
+								}
+							
+							if(!containsKey) {
+								candidates.put(str, pattern.getConfidenceScore());
+							}*/
 
-						if(!candidates.containsKey(str))
-							candidates.put(str, pattern.getConfidenceScore());
-						else
-							candidates.put(str, pattern.getConfidenceScore() + candidates.get(str));
+							if(!candidates.containsKey(str))
+								candidates.put(str, pattern.getConfidenceScore());
+							else
+								candidates.put(str, pattern.getConfidenceScore() + candidates.get(str));
+						}
 					}
 				}
 			}
@@ -768,9 +792,10 @@ public class NLPUtils {
 			patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
 			if(patternWord == null)
 				return ans;
+			
 			for(IndexedWord w: words1) {
 				if(Math.abs(w.index() - patternWord.index()) < 5) {
-					int i = Math.max(0, patternWord.index()-5);
+					int i = Math.max(1, patternWord.index()-5);
 					int count = 0;
 					while(count < 10) {
 						try {
@@ -821,18 +846,18 @@ public class NLPUtils {
 			Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
 			
 			//Checking rule1
-			Set<IndexedWord> rule1Set = getWordsSatisfyingRule(conjAndPatterns, pattern.getRules(0), graph);
+			Set<IndexedWord> rule1Set = getWordsSatisfyingRuleNew(conjAndPatterns, pattern.getRules(0), graph);
 			for(IndexedWord w1:words1) {
 				if(rule1Set.contains(w1)) {
-					tempSet.addAll(getWordsSatisfyingRule(conjAndPatterns, pattern.getRules(1), graph));
+					tempSet.addAll(getWordsSatisfyingRuleNew(conjAndPatterns, pattern.getRules(1), graph));
 				}
 			}
 			
 			//Checking rule2
-			Set<IndexedWord> rule2Set = getWordsSatisfyingRule(conjAndPatterns, pattern.getRules(1), graph);
+			Set<IndexedWord> rule2Set = getWordsSatisfyingRuleNew(conjAndPatterns, pattern.getRules(1), graph);
 			for(IndexedWord w1:words1) {
 				if(rule2Set.contains(w1)) {
-					tempSet.addAll(getWordsSatisfyingRule(conjAndPatterns, pattern.getRules(0), graph));
+					tempSet.addAll(getWordsSatisfyingRuleNew(conjAndPatterns, pattern.getRules(0), graph));
 				}
 			}
 		}
@@ -854,7 +879,10 @@ public class NLPUtils {
 						temp += " " + tok;	
 				}
 			}
-			ans.add(temp.trim());
+			if(!temp.trim().isEmpty()) {
+				ans.add(temp.trim());
+				//System.out.println(pattern);
+			}
 		}
 		
 		return ans;
@@ -869,6 +897,36 @@ public class NLPUtils {
 			else
 				ans.addAll(graph.getChildrenWithReln(word, GrammaticalRelation.valueOf(rule.edgeType)));
 
+		return ans;
+	}
+	
+	private Set<IndexedWord> getWordsSatisfyingRuleNew(Set<IndexedWord> words, Rule rule, SemanticGraph graph) {
+		//System.out.println(rule);
+		Set<IndexedWord> ans = new HashSet<IndexedWord>();
+		Set<IndexedWord> frontier = new HashSet<IndexedWord>(words);
+		Set<IndexedWord> newFrontier = new HashSet<IndexedWord>();
+		Set<IndexedWord> seen = new HashSet<IndexedWord>(words);
+		
+		while(!frontier.isEmpty()) {
+			for(IndexedWord word: frontier)
+				if(rule.direction == EdgeDirection.In)
+					ans.addAll(graph.getParentsWithReln(word, GrammaticalRelation.valueOf(rule.edgeType)));
+				else
+					ans.addAll(graph.getChildrenWithReln(word, GrammaticalRelation.valueOf(rule.edgeType)));
+			
+			if(!ans.isEmpty())
+				break;
+			
+			for(IndexedWord word: frontier) {
+				newFrontier = new HashSet<IndexedWord>();
+				newFrontier.addAll(graph.getParents(word));
+				newFrontier.addAll(graph.getChildren(word));
+				newFrontier.removeAll(seen);
+				seen.addAll(newFrontier);
+			}
+			frontier = newFrontier;
+		}
+		
 		return ans;
 	}
 

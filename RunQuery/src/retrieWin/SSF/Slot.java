@@ -68,7 +68,7 @@ public class Slot implements Serializable {
 		throw new NoSuchElementException();
 	}
 
-	EntityType getEntityType() {
+	public EntityType getEntityType() {
 		return entityType;
 	}
 
