@@ -24,7 +24,7 @@ import retrieWin.SSF.Entity;
 public class QueryFactory {
 	
 	public static Map<String,List<TrecTextDocument>> DoQuery(List<String> folders, List<String> queries,
-								String workingDirectory, List<Entity> entities)
+								String workingDirectory, List<Entity> entities, ExecuteQuery eq)
 	{
 		if (!System.getenv().containsKey("LD_LIBRARY_PATH"))
 		{
@@ -38,7 +38,7 @@ public class QueryFactory {
 		List<Future<Map<String,List<TrecTextDocument>>>> futuresList = new ArrayList<Future<Map<String,List<TrecTextDocument>>>>();
 		for (String folder:folders)
 		{
-			Callable<Map<String,List<TrecTextDocument>>> c = new ParallelIndexAndQueryFactory(folder,queries,workingDirectory,entities);
+			Callable<Map<String,List<TrecTextDocument>>> c = new ParallelIndexAndQueryFactory(folder,queries,workingDirectory,entities, eq);
 			Future<Map<String,List<TrecTextDocument>>> s = e.submit(c);
 			futuresList.add(s);
 		}
@@ -80,14 +80,15 @@ public class QueryFactory {
 		List<String> queries;
 		String workingDirectory;
 		List<Entity> entities;
-
+		ExecuteQuery eq;
 		public ParallelIndexAndQueryFactory(String folderIn,List<String> queriesIn,
-									String workingDir,List<Entity> entitiesIn)
+									String workingDir,List<Entity> entitiesIn, ExecuteQuery eqIn)
 		{
 			folder = folderIn;
 			queries = queriesIn;
 			workingDirectory = workingDir;
 			entities = entitiesIn;
+			eq = eqIn;
 		}
 		
 		@Override
@@ -112,9 +113,11 @@ public class QueryFactory {
 			File baseDir = new File(baseFolder);
 			if (!baseDir.exists())
 				baseDir.mkdirs();
-			Indexer.createIndex(folder,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities);
-			ExecuteQuery eq = new ExecuteQuery(indexLocation,trecTextSerializedFile);
-			
+			if (eq == null)
+			{
+				Indexer.createIndex(folder,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities);
+				eq = new ExecuteQuery(indexLocation,trecTextSerializedFile);
+			}
 			int numthreads = queries.size() < 16 ? queries.size():16;
 			System.out.println("Starting threads for folder: " + folder);
 			ExecutorService e = Executors.newFixedThreadPool(numthreads);
@@ -152,7 +155,7 @@ public class QueryFactory {
 				}
 			}
 			System.out.println("Shutting down threads for folder: " + folder);
-			eq.emptyData();
+			//eq.emptyData();
 			//System.gc();
 			e.shutdown();
 			return results;
@@ -174,6 +177,7 @@ public class QueryFactory {
 		@Override
 		public Map<String, List<TrecTextDocument>> call() throws Exception {
 			// TODO Auto-generated method stub
+			
 			List<TrecTextDocument> queryResults = queryExecutor.executeQueryFromStoredFile(query, Integer.MAX_VALUE);
 			//System.out.println("Query Results for: " + query + " : " + queryResults.size());
 			Map<String,List<TrecTextDocument>> output = new HashMap<String,List<TrecTextDocument>>();

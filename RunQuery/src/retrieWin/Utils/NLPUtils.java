@@ -653,17 +653,23 @@ public class NLPUtils {
 		processor.annotate(document);
 		//get coreferences for the entity
 		Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
-
+		System.out.println("Full sentence: " + sentence);
 		List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
 		for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
 			CoreMap sentenceMap = allSentenceMap.get(sentNum);
+			System.out.println("Processing sentence: " + sentenceMap.toString());
 			Set<String> times = getTimeAsTokens(sentenceMap);
 			Set<String> dates = getDateAsTokens(sentenceMap);
 			//System.out.println(sentenceMap.toString());
+			List<IndexedWord> foundWord = findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum));
+			if (foundWord.size()!=0)
+				System.out.println("entity found");
+			
 			for(SlotPattern pattern: slot.getPatterns()) {
 				//System.out.println(pattern);
 					for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot, social, null)) {
 					//System.out.println(str);
+
 					if(!ans.isEmpty()) {
 						Pair<String,String> datetime = findNearestDateTime(sentenceMap.toString(), ans,dates,times);
 						
@@ -675,7 +681,9 @@ public class NLPUtils {
 						str = str + " " + datetime.first;
 						str = str + " " + datetime.second;
 						str = str.trim();
+
 						System.out.println(pattern + "|" + str);
+
 						if(!candidates.containsKey(str))
 							candidates.put(str, pattern.getConfidenceScore());
 						else
@@ -715,60 +723,39 @@ public class NLPUtils {
 	
 	public Map<String, Double> findSlotValue(String sentence, String entity1, Slot slot, boolean social, String defaultVal) throws NoSuchParseException {
 		Map<String, Double> candidates = new HashMap<String, Double>();
-		Annotation document = new Annotation(sentence);
-		processor.annotate(document);
-		//get coreferences for the entity
-		Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
-
-		List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
-		for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
-			CoreMap sentenceMap = allSentenceMap.get(sentNum);
-			//System.out.println(sentenceMap.toString());
-			for(SlotPattern pattern: slot.getPatterns()) {
-				//if(!pattern.getPattern().equals("award"))
-				//	continue;
-				//System.out.println(pattern);
-
-				for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot, social,defaultVal)) {
-					//System.out.println(str);
-					if(!ans.isEmpty()) {
-						String str = "";
-						for(String tok: ans.split(" ")) {
-							if(!entity1.contains(tok))
-								str += " " + tok;
-						}
-						str = str.trim();
-						//Flag to check if we found a matching pattern already
-						if(!str.isEmpty()) {
-							/*boolean containsKey = false;
-							for(String candidate:candidates.keySet()) {
-									//If we found the pattern already or if a smaller string of the current pattern was found already.
-									//This is checked by checking starts with or endswith.
-									if(candidate.equals(str) || str.startsWith(candidate) || str.endsWith(candidate)){
-									
-										candidates.put(str, pattern.getConfidenceScore() + candidates.get(str));
-										containsKey = true;
-									}
-									//If the current pattern is more compact than the earlier one, take it.
-									else if(candidate.startsWith(str) || candidate.endsWith(str)) {
-										candidates.put(str, candidates.get(candidate));
-										candidates.remove(candidate);
-										containsKey = true;
-									}
-								}
-							
-							if(!containsKey) {
-								candidates.put(str, pattern.getConfidenceScore());
-							}*/
-
-							if(!candidates.containsKey(str))
-								candidates.put(str, pattern.getConfidenceScore());
-							else
-								candidates.put(str, pattern.getConfidenceScore() + candidates.get(str));
+		try {
+			Annotation document = new Annotation(sentence);
+			processor.annotate(document);
+			//get coreferences for the entity
+			Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
+	
+			List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
+			for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
+				CoreMap sentenceMap = allSentenceMap.get(sentNum);
+				for(SlotPattern pattern: slot.getPatterns()) {
+					for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot, social,defaultVal)) {
+						//System.out.println(str);
+						if(!ans.isEmpty()) {
+							String str = "";
+							for(String tok: ans.split(" ")) {
+								if(!entity1.contains(tok))
+									str += " " + tok;
+							}
+							str = str.trim();
+							//Flag to check if we found a matching pattern already
+							if(!str.isEmpty()) {
+								if(!candidates.containsKey(str))
+									candidates.put(str, pattern.getConfidenceScore());
+								else
+									candidates.put(str, pattern.getConfidenceScore() + candidates.get(str));
+							}
 						}
 					}
 				}
 			}
+		}
+		catch (Exception e) {
+			LogInfo.logs("Exception thrown. " + e);
 		}
 		return candidates;
 	}

@@ -108,6 +108,7 @@ public class ProcessTrecTextDocument {
 	{
 		Map<String, String> returnString = new HashMap<String, String>();
 		List<String> entitySplits = Arrays.asList(entity1.split(" "));
+		System.out.println("Considering entity expansion: " + entity1);
 		for (TrecTextDocument t:documents)
 		{
 			List<String> currentAllSentences = t.sentences;
@@ -115,18 +116,20 @@ public class ProcessTrecTextDocument {
 			for (int j = 0;j<cleanedSentences.size();j++)
 			{
 				String currentSentence = cleanedSentences.get(j);
-				String[] colonSeparated = currentSentence.split("(\\s+:\\s+)|\\||\\.{3}");
-				for (int sen = 0;sen<colonSeparated.length;sen++)
-				{
+				//String[] colonSeparated = currentSentence.split("(\\s+:\\s+)|\\||\\.{3}");
+				//for (int sen = 0;sen<colonSeparated.length;sen++)
+				//{
+				List<String> tokens = Arrays.asList(currentSentence.toLowerCase().split(" "));
 					for (String entitySplit:entitySplits)
 					{
-						if (colonSeparated[sen].toLowerCase().contains(entitySplit.toLowerCase()))
+						if (tokens.contains(entitySplit.toLowerCase()))
 						{
-							returnString.put(colonSeparated[sen],t.docNumber);
+							System.out.println("Found: " + currentSentence);
+							returnString.put(currentSentence,t.docNumber);
 							break;
 						}
 					}
-				}
+				//}
 			}
 		}
 		/*
@@ -206,16 +209,21 @@ public class ProcessTrecTextDocument {
 			sentence = sentence.replaceAll("Reply [^(?!says)].*says:", "");
 			sentence = sentence.replaceAll("^[0-9]+ of [0-9]+","");
 			
-			results.addAll(Arrays.asList(sentence.split("[|]+")));
-
-			results.addAll(Arrays.asList(sentence.split("\\.{3}")));
+			List<String> firstS = Arrays.asList(sentence.split("[\\|]+"));
+			for (String s:firstS)
+			{
+				List<String> secondS = Arrays.asList(s.split("\\.{3}"));
+				for (String s2:secondS)
+				{
+					results.addAll(Arrays.asList(s2.split("Reply Retweet Share")));
+				}
+			}
 			
-			
-			results.addAll(Arrays.asList(sentence.split("Reply Retweet Share")));
 			//System.out.println("Process : "+ sentence);
 			//for(String s:))
 			//	System.out.println("Output :" + s);
 			//results.addAll();
+			
 		}
 		
 		for (Iterator<String> it = results.iterator(); it.hasNext(); )
