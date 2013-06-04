@@ -652,19 +652,24 @@ public class NLPUtils {
 		processor.annotate(document);
 		//get coreferences for the entity
 		Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
-
+		System.out.println("Full sentence: " + sentence);
 		List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
 		for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
 			CoreMap sentenceMap = allSentenceMap.get(sentNum);
+			System.out.println("Processing sentence: " + sentenceMap.toString());
 			Set<String> times = getTimeAsTokens(sentenceMap);
 			Set<String> dates = getDateAsTokens(sentenceMap);
 			//System.out.println(sentenceMap.toString());
+			List<IndexedWord> foundWord = findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum));
+			if (foundWord.size()!=0)
+				System.out.println("entity found");
+			
 			for(SlotPattern pattern: slot.getPatterns()) {
 				//if(!pattern.getPattern().equals("award"))
 				//	continue;
 				//System.out.println(pattern);
-
-				for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot.getTargetNERTypes(), social)) {
+				
+				for(String ans: findValue(sentenceMap, foundWord, pattern, slot.getTargetNERTypes(), social)) {
 					//System.out.println(str);
 					if(!ans.isEmpty()) {
 						Pair<String,String> datetime = findNearestDateTime(sentenceMap.toString(), ans,dates,times);
@@ -677,7 +682,7 @@ public class NLPUtils {
 						str = str + " " + datetime.first;
 						str = str + " " + datetime.second;
 						str = str.trim();
-
+						System.out.println("Found pattern: " + str);	
 						if(!candidates.containsKey(str))
 							candidates.put(str, pattern.getConfidenceScore());
 						else

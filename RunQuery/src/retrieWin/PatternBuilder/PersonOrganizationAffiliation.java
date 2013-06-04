@@ -658,7 +658,7 @@ private static class parallelBootstrapper implements Callable<Map<Pair<String,St
 			queries.add(query);
 		}
 			
-		Map<String,List<TrecTextDocument>> AllTrecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities);
+		Map<String,List<TrecTextDocument>> AllTrecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities,null);
 		/*
 		for (String q:AllTrecDocs.keySet())
 		{

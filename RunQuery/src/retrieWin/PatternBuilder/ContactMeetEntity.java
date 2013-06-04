@@ -116,7 +116,7 @@ public class ContactMeetEntity implements Runnable{
 			queries.add(query);
 		}
 			
-		Map<String,List<TrecTextDocument>> AllTrecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities);
+		Map<String,List<TrecTextDocument>> AllTrecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities,null);
 		/*
 		for (String q:AllTrecDocs.keySet())
 		{
