@@ -1,4 +1,5 @@
 [pattern = work, confidenceScore = 1.0, patternType = WordInBetween, rules = {[[edgeType = nsubj, direction = Out], [edgeType = prep_at, direction = Out]]}]
+[pattern = work, confidenceScore = 1.0, patternType = WordInBetween, rules = {[[edgeType = nsubj, direction = Out], [edgeType = prep_with, direction = Out]]}]
 [pattern = employ, confidenceScore = 1.0, patternType = WordInBetween, rules = {[[edgeType = nsubj, direction = Out], [edgeType = prep_at, direction = Out]]}]
 [pattern = teacher, confidenceScore = 1.0, patternType = WordInBetween, rules = {[[edgeType = nsubj, direction = Out], [edgeType = prep_at, direction = Out]]}]
 [pattern = coach, confidenceScore = 1.0, patternType = WordInBetween, rules = {[[edgeType = nsubj, direction = Out], [edgeType = prep_at, direction = Out]]}]

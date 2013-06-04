@@ -522,7 +522,7 @@ private static class FillSlotForEntity implements Runnable{
 		//Execution.run(args, "Main", new SSF());
 		//SSF s= new SSF();
 		//new SSF().updateSlots();
-		Execution.run(args, "Main", new SSF());
+		//Execution.run(args, "Main", new SSF());
 	}
 
 	@Override
