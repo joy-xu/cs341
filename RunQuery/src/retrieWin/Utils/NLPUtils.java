@@ -716,61 +716,69 @@ public class NLPUtils {
 	}
 	//iterates over sentences and finds values in each sentence
 	public Map<String, Double> findSlotValue(String sentence, String entity1, Slot slot, boolean social) throws NoSuchParseException {
+		
 		Map<String, Double> candidates = new HashMap<String, Double>();
-		Annotation document = new Annotation(sentence);
-		processor.annotate(document);
-		//get coreferences for the entity
-		Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
-
-		List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
-		for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
-			CoreMap sentenceMap = allSentenceMap.get(sentNum);
-			//System.out.println(sentenceMap.toString());
-			for(SlotPattern pattern: slot.getPatterns()) {
-				//if(!pattern.getPattern().equals("award"))
-				//	continue;
-				//System.out.println(pattern);
-
-				for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot.getTargetNERTypes(), social)) {
-					//System.out.println(str);
-					if(!ans.isEmpty()) {
-						String str = "";
-						for(String tok: ans.split(" ")) {
-							if(!entity1.contains(tok))
-								str += " " + tok;
-						}
-						str = str.trim();
-						//Flag to check if we found a matching pattern already
-						if(!str.isEmpty()) {
-							/*boolean containsKey = false;
-							for(String candidate:candidates.keySet()) {
-									//If we found the pattern already or if a smaller string of the current pattern was found already.
-									//This is checked by checking starts with or endswith.
-									if(candidate.equals(str) || str.startsWith(candidate) || str.endsWith(candidate)){
-									
-										candidates.put(str, pattern.getConfidenceScore() + candidates.get(str));
-										containsKey = true;
+		if(sentence.length() > 400)
+			return candidates;
+		try {
+			Annotation document = new Annotation(sentence);
+			processor.annotate(document);
+			//get coreferences for the entity
+			Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
+	
+			List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
+			for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
+				CoreMap sentenceMap = allSentenceMap.get(sentNum);
+				//System.out.println(sentenceMap.toString());
+				for(SlotPattern pattern: slot.getPatterns()) {
+					//if(!pattern.getPattern().equals("award"))
+					//	continue;
+					//System.out.println(pattern);
+	
+					for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot.getTargetNERTypes(), social)) {
+						//System.out.println(str);
+						if(!ans.isEmpty()) {
+							String str = "";
+							for(String tok: ans.split(" ")) {
+								if(!entity1.contains(tok))
+									str += " " + tok;
+							}
+							str = str.trim();
+							//Flag to check if we found a matching pattern already
+							if(!str.isEmpty()) {
+								/*boolean containsKey = false;
+								for(String candidate:candidates.keySet()) {
+										//If we found the pattern already or if a smaller string of the current pattern was found already.
+										//This is checked by checking starts with or endswith.
+										if(candidate.equals(str) || str.startsWith(candidate) || str.endsWith(candidate)){
+										
+											candidates.put(str, pattern.getConfidenceScore() + candidates.get(str));
+											containsKey = true;
+										}
+										//If the current pattern is more compact than the earlier one, take it.
+										else if(candidate.startsWith(str) || candidate.endsWith(str)) {
+											candidates.put(str, candidates.get(candidate));
+											candidates.remove(candidate);
+											containsKey = true;
+										}
 									}
-									//If the current pattern is more compact than the earlier one, take it.
-									else if(candidate.startsWith(str) || candidate.endsWith(str)) {
-										candidates.put(str, candidates.get(candidate));
-										candidates.remove(candidate);
-										containsKey = true;
-									}
-								}
-							
-							if(!containsKey) {
-								candidates.put(str, pattern.getConfidenceScore());
-							}*/
-
-							if(!candidates.containsKey(str))
-								candidates.put(str, pattern.getConfidenceScore());
-							else
-								candidates.put(str, pattern.getConfidenceScore() + candidates.get(str));
+								
+								if(!containsKey) {
+									candidates.put(str, pattern.getConfidenceScore());
+								}*/
+	
+								if(!candidates.containsKey(str))
+									candidates.put(str, pattern.getConfidenceScore());
+								else
+									candidates.put(str, pattern.getConfidenceScore() + candidates.get(str));
+							}
 						}
 					}
 				}
 			}
+		}
+		catch (Exception e) {
+			LogInfo.logs("Exception thrown. " + e);
 		}
 		return candidates;
 	}

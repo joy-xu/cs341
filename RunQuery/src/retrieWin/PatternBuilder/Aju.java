@@ -355,8 +355,8 @@ public class Aju implements Runnable{
 		//utils.extractPERRelation("The time has come to reassess to impact of former Presiding Justices Aharon Barak and Dorit Beinisch on Human Rights, the justice system, and the rule of law in the State of Israel.");
 		List<String> folders = new ArrayList<String>();
 		for(int d = 1; d <= 1; d++) {
-			for(int i = 0; i < 2; i++)
-				folders.add(String.format("%04d-%02d-%02d-%02d", 2012,6,d,i));
+			for(int i = 0; i < 24; i++)
+				folders.add(String.format("%04d-%02d-%02d-%02d", 2012,10,d,i));
 		}
 		
 		Map<Entity,String> entityToQueries = new HashMap<Entity,String>();
@@ -389,7 +389,7 @@ public class Aju implements Runnable{
 						expansionToSentences.put(expansion, new HashSet<String>());
 
 						List<String> cleanedSentences = ProcessTrecTextDocument.getCleanedSentences(ProcessTrecTextDocument.extractRelevantSentences(trecDocs, expansion));
-						cleanedSentences  = ProcessTrecTextDocument.getCleanedSentences(cleanedSentences);
+						//cleanedSentences  = ProcessTrecTextDocument.getCleanedSentences(cleanedSentences);
 						for (String sentence:cleanedSentences)
 						{
 							if (uniqueSentences.contains(sentence))
@@ -407,7 +407,7 @@ public class Aju implements Runnable{
 						Set<String> currentExpansionSet = expansionToSentences.get(expansion);
 						for (String sentence:currentExpansionSet) {
 							if(sentence.contains(expansion)) {
-								LogInfo.logs(expansion + ":" + sentence);
+								//LogInfo.logs(expansion + ":" + sentence);
 								for(Slot slot: slots) {
 									if(slot.getName().equals(Constants.SlotName.Founded_By)) {
 										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false);
