@@ -150,6 +150,8 @@ public class ProcessTrecTextDocument {
 		int total = 0, capitalized = 0;
 		
 		for(String tok: sent.split(" ")) {
+			if(!tok.matches("^[a-zA-Z0-9]*$"))
+				continue;
 			if(tok.matches("^[A-Z].*$")) 
 				capitalized++;
 			total++;
