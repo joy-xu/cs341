@@ -27,6 +27,7 @@ import retrieWin.Indexer.ProcessTrecTextDocument;
 import retrieWin.Indexer.ThriftReader;
 import retrieWin.Indexer.TrecTextDocument;
 import retrieWin.Indexer.Indexer.parallelQuerier;
+import retrieWin.Querying.ExecuteQuery;
 import retrieWin.SSF.Constants.EntityType;
 import retrieWin.SSF.Constants.NERType;
 import retrieWin.SSF.Constants.SlotName;
@@ -223,7 +224,7 @@ public class SSF implements Runnable{
 		for(String expansion: entity.getExpansions()) {
 			for(String sentence: relevantSentences.get(expansion).keySet()) {
 				//System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
-				System.out.println("Now processing: " + sentence);
+				//System.out.println("Now processing: " + sentence);
 				try {
 					//for each sentence, find possible slot values and add to candidate list
 					//arxiv documents
@@ -281,7 +282,7 @@ public class SSF implements Runnable{
 				try {
 					//for each sentence, find possible slot values and add to candidate list
 					//arxiv documents
-					System.out.println("Now processing: " + sentence);
+					//System.out.println("Now processing: " + sentence);
 					if(relevantSentences.get(expansion).get(sentence).contains("arxiv")) {
 						if(!slot.getName().equals(Constants.SlotName.Affiliate_Of) || !entity.getEntityType().equals(Constants.EntityType.PER))
 							continue;
@@ -364,7 +365,7 @@ public class SSF implements Runnable{
 			baseDir.mkdirs();
 
 		Indexer.createIndex(timestamp,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities);
-				
+		ExecuteQuery eq = new ExecuteQuery(indexLocation,trecTextSerializedFile);		
 		// read in existing information for entities 
 		System.out.println("Reading entities...");
 		readEntities();
@@ -381,7 +382,7 @@ public class SSF implements Runnable{
 		
 		
 		for(Entity entity: entities) {
-			e.execute(new FillSlotForEntity(entity,timestamp,entities,getCoreNLP(),conceptExtractor,getSlots()));
+			e.execute(new FillSlotForEntity(entity,timestamp,entities,getCoreNLP(),conceptExtractor,workingDirectory, getSlots(), eq));
 		}
 		e.shutdown();
 		while(true)
@@ -405,7 +406,10 @@ private static class FillSlotForEntity implements Runnable{
 		NLPUtils nlp;
 		Concept conceptExtractor;
 		List<Slot> allSlots;
-		public FillSlotForEntity(Entity en, String tm, List<Entity> listEntities, NLPUtils nlpIn, Concept cin, List<Slot> slotInput)
+		String workingDirectory;
+		ExecuteQuery eq;
+		public FillSlotForEntity(Entity en, String tm, List<Entity> listEntities, NLPUtils nlpIn, Concept cin, String wd, List<Slot> slotInput
+				, ExecuteQuery eqIn)
 		{
 			entity = en;
 			timestamp = tm;
@@ -413,6 +417,8 @@ private static class FillSlotForEntity implements Runnable{
 			nlp = nlpIn;
 			conceptExtractor = cin;
 			allSlots = slotInput;
+			workingDirectory = wd;
+			eq = eqIn;
 		}
 		
 		@Override
@@ -420,7 +426,9 @@ private static class FillSlotForEntity implements Runnable{
 
 //			System.out.println("Finding slot values for entity " + entity.getName());
 			//get all relevant documents for the entity
-			List<TrecTextDocument> docs = entity.getRelevantDocuments(timestamp, entities);
+			if (!entity.getName().equals("Aharon_Barak"))
+				return;
+			List<TrecTextDocument> docs = entity.getRelevantDocuments(timestamp, workingDirectory, entities, eq);
 			System.out.println("Retrieved " + docs.size() + " relevant documents for entity: " + entity.getName());
 			if(docs.isEmpty())
 				return;
@@ -443,6 +451,7 @@ private static class FillSlotForEntity implements Runnable{
 			//iterate to fill slots
 			for(Slot slot: allSlots) {
 				//compute only for relevant slots for this entity
+				
 				if(!slot.getEntityType().equals(entity.getEntityType()))
 						continue;
 				

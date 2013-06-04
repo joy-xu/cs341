@@ -172,7 +172,7 @@ public class Aju implements Runnable{
 			queries.add(query);
 		}
 			
-		Map<String,List<TrecTextDocument>> AllTrecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities);
+		Map<String,List<TrecTextDocument>> AllTrecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities,null);
 		HashMap<SlotPattern, Double> weights = new HashMap<SlotPattern,Double>();
 		IntCounter<SlotPattern> numAppearances = new IntCounter<SlotPattern>();
 		for(Entity e:entities) {
@@ -370,7 +370,7 @@ public class Aju implements Runnable{
 			queries.add(query);
 		}
 			
-		Map<String,List<TrecTextDocument>> AllTrecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities);
+		Map<String,List<TrecTextDocument>> AllTrecDocs = QueryFactory.DoQuery(folders, queries, workingDirectory, entities,null);
 		//HashMap<SlotPattern, Double> weights = new HashMap<SlotPattern,Double>();
 		//IntCounter<SlotPattern> numAppearances = new IntCounter<SlotPattern>();
 		NLPUtils obj = new NLPUtils();

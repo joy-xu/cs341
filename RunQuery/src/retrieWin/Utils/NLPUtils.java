@@ -652,20 +652,24 @@ public class NLPUtils {
 		processor.annotate(document);
 		//get coreferences for the entity
 		Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
-
+		System.out.println("Full sentence: " + sentence);
 		List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
 		for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
 			CoreMap sentenceMap = allSentenceMap.get(sentNum);
+			System.out.println("Processing sentence: " + sentenceMap.toString());
 			Set<String> times = getTimeAsTokens(sentenceMap);
 			Set<String> dates = getDateAsTokens(sentenceMap);
 			//System.out.println(sentenceMap.toString());
+			List<IndexedWord> foundWord = findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum));
+			if (foundWord.size()!=0)
+				System.out.println("entity found");
+			
 			for(SlotPattern pattern: slot.getPatterns()) {
-				//if(!pattern.getPattern().equals("award"))
-				//	continue;
 				//System.out.println(pattern);
 
-				for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot.getTargetNERTypes(), social)) {
-					//System.out.println(str);
+				
+				for(String ans: findValue(sentenceMap, foundWord, pattern, slot.getTargetNERTypes(), social)) {
+
 					if(!ans.isEmpty()) {
 						Pair<String,String> datetime = findNearestDateTime(sentenceMap.toString(), ans,dates,times);
 						
@@ -677,6 +681,8 @@ public class NLPUtils {
 						str = str + " " + datetime.first;
 						str = str + " " + datetime.second;
 						str = str.trim();
+
+						System.out.println(pattern + "|" + str);
 
 						if(!candidates.containsKey(str))
 							candidates.put(str, pattern.getConfidenceScore());
@@ -794,9 +800,10 @@ public class NLPUtils {
 			patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
 			if(patternWord == null)
 				return ans;
+			
 			for(IndexedWord w: words1) {
 				if(Math.abs(w.index() - patternWord.index()) < 5) {
-					int i = Math.max(0, patternWord.index()-5);
+					int i = Math.max(1, patternWord.index()-5);
 					int count = 0;
 					while(count < 10) {
 						try {
@@ -847,18 +854,18 @@ public class NLPUtils {
 			Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
 			
 			//Checking rule1
-			Set<IndexedWord> rule1Set = getWordsSatisfyingRule(conjAndPatterns, pattern.getRules(0), graph);
+			Set<IndexedWord> rule1Set = getWordsSatisfyingRuleNew(conjAndPatterns, pattern.getRules(0), graph);
 			for(IndexedWord w1:words1) {
 				if(rule1Set.contains(w1)) {
-					tempSet.addAll(getWordsSatisfyingRule(conjAndPatterns, pattern.getRules(1), graph));
+					tempSet.addAll(getWordsSatisfyingRuleNew(conjAndPatterns, pattern.getRules(1), graph));
 				}
 			}
 			
 			//Checking rule2
-			Set<IndexedWord> rule2Set = getWordsSatisfyingRule(conjAndPatterns, pattern.getRules(1), graph);
+			Set<IndexedWord> rule2Set = getWordsSatisfyingRuleNew(conjAndPatterns, pattern.getRules(1), graph);
 			for(IndexedWord w1:words1) {
 				if(rule2Set.contains(w1)) {
-					tempSet.addAll(getWordsSatisfyingRule(conjAndPatterns, pattern.getRules(0), graph));
+					tempSet.addAll(getWordsSatisfyingRuleNew(conjAndPatterns, pattern.getRules(0), graph));
 				}
 			}
 		}
@@ -898,6 +905,36 @@ public class NLPUtils {
 			else
 				ans.addAll(graph.getChildrenWithReln(word, GrammaticalRelation.valueOf(rule.edgeType)));
 
+		return ans;
+	}
+	
+	private Set<IndexedWord> getWordsSatisfyingRuleNew(Set<IndexedWord> words, Rule rule, SemanticGraph graph) {
+		//System.out.println(rule);
+		Set<IndexedWord> ans = new HashSet<IndexedWord>();
+		Set<IndexedWord> frontier = new HashSet<IndexedWord>(words);
+		Set<IndexedWord> newFrontier = new HashSet<IndexedWord>();
+		Set<IndexedWord> seen = new HashSet<IndexedWord>(words);
+		
+		while(!frontier.isEmpty()) {
+			for(IndexedWord word: frontier)
+				if(rule.direction == EdgeDirection.In)
+					ans.addAll(graph.getParentsWithReln(word, GrammaticalRelation.valueOf(rule.edgeType)));
+				else
+					ans.addAll(graph.getChildrenWithReln(word, GrammaticalRelation.valueOf(rule.edgeType)));
+			
+			if(!ans.isEmpty())
+				break;
+			
+			for(IndexedWord word: frontier) {
+				newFrontier = new HashSet<IndexedWord>();
+				newFrontier.addAll(graph.getParents(word));
+				newFrontier.addAll(graph.getChildren(word));
+				newFrontier.removeAll(seen);
+				seen.addAll(newFrontier);
+			}
+			frontier = newFrontier;
+		}
+		
 		return ans;
 	}
 

@@ -81,7 +81,7 @@ public class ExecuteQuery {
 			if (storedFiles.containsKey(docNo))
 			{
 				
-				output.add(new TrecTextDocument(storedFiles.get(docNo)));
+				output.add(storedFiles.get(docNo));
 			}
 			else
 				System.out.println("File not found. You are definitely doing something wrong");
