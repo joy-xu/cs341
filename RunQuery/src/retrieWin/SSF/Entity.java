@@ -61,7 +61,7 @@ public class Entity  implements Serializable {
 			this.slotValues = new HashMap<SlotName, List<String>>();
 		List<String> added = new ArrayList<String>();
 		if(!slotValues.containsKey(slot.getName()))
-				slotValues.put(slot.getName(), new ArrayList<String>());
+			slotValues.put(slot.getName(), new ArrayList<String>());
 		for(String candidate: candidates) {
 			//get normalized concept for the slot candidate
 			if(slotValues.get(slot.getName()).contains(candidate))
