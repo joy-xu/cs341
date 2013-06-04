@@ -12,6 +12,7 @@ import java.util.Set;
 import retrieWin.SSF.Constants.EdgeDirection;
 import retrieWin.SSF.Constants.NERType;
 import retrieWin.SSF.Constants.PatternType;
+import retrieWin.SSF.Constants.SlotName;
 import retrieWin.SSF.Constants;
 import retrieWin.SSF.Entity;
 import retrieWin.SSF.Slot;
@@ -661,7 +662,7 @@ public class NLPUtils {
 			//System.out.println(sentenceMap.toString());
 			for(SlotPattern pattern: slot.getPatterns()) {
 				//System.out.println(pattern);
-					for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot.getTargetNERTypes(), social)) {
+					for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot, social, null)) {
 					//System.out.println(str);
 					if(!ans.isEmpty()) {
 						Pair<String,String> datetime = findNearestDateTime(sentenceMap.toString(), ans,dates,times);
@@ -711,8 +712,8 @@ public class NLPUtils {
 		}
 		return bestPair;
 	}
-	//iterates over sentences and finds values in each sentence
-	public Map<String, Double> findSlotValue(String sentence, String entity1, Slot slot, boolean social) throws NoSuchParseException {
+	
+	public Map<String, Double> findSlotValue(String sentence, String entity1, Slot slot, boolean social, String defaultVal) throws NoSuchParseException {
 		Map<String, Double> candidates = new HashMap<String, Double>();
 		Annotation document = new Annotation(sentence);
 		processor.annotate(document);
@@ -728,7 +729,7 @@ public class NLPUtils {
 				//	continue;
 				//System.out.println(pattern);
 
-				for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot.getTargetNERTypes(), social)) {
+				for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot, social,defaultVal)) {
 					//System.out.println(str);
 					if(!ans.isEmpty()) {
 						String str = "";
@@ -772,7 +773,8 @@ public class NLPUtils {
 		return candidates;
 	}
 	
-	private Set<String> findValue(CoreMap sentence, List<IndexedWord> words1, SlotPattern pattern, List<NERType> targetNERTypes, boolean social) {
+	private Set<String> findValue(CoreMap sentence, List<IndexedWord> words1, SlotPattern pattern, Slot slot, boolean social, String defaultVal) {
+		List<NERType> targetNERTypes = slot.getTargetNERTypes();
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
 		Set<IndexedWord> ansSet = new HashSet<IndexedWord>();
 		Set<IndexedWord> tempSet = new HashSet<IndexedWord>();
@@ -876,6 +878,8 @@ public class NLPUtils {
 			}
 		}
 		
+		if(ans.isEmpty() && slot.getName().equals(SlotName.Date_Of_Death))
+			ans.add(defaultVal);
 		return ans;
 	}
 	

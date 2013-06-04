@@ -275,9 +275,14 @@ public class SSF implements Runnable{
 			return findContactMeetPlaceTime(entity,slot,relevantSentences,coreNLP,conceptExtractor);
 		
 		Map<String, Double> candidates = new HashMap<String, Double>();
+		String defaultVal;
+		
 		for(String expansion: entity.getExpansions()) {
 			for(String sentence: relevantSentences.get(expansion).keySet()) {
 				//System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
+				String[] split = relevantSentences.get(expansion).get(sentence).split("__");
+				defaultVal = split[split.length-1];
+				
 				try {
 					//for each sentence, find possible slot values and add to candidate list
 					//arxiv documents
@@ -309,7 +314,7 @@ public class SSF implements Runnable{
 					//social documents
 
 					else if(relevantSentences.get(expansion).get(sentence).contains("social")) {
-						Map<String, Double> values = coreNLP.findSlotValue(sentence, expansion, slot, (slot.getTargetNERTypes() != null) ? true : false);
+						Map<String, Double> values = coreNLP.findSlotValue(sentence, expansion, slot, (slot.getTargetNERTypes() != null) ? true : false, defaultVal);
 						for(String str: values.keySet()) {
 							//get normalized concept from candidate
 							String concept = conceptExtractor.getConcept(str);
@@ -321,7 +326,7 @@ public class SSF implements Runnable{
 					}
 					//news documents
 					else {
-						Map<String, Double> values = coreNLP.findSlotValue(sentence, expansion, slot, false);
+						Map<String, Double> values = coreNLP.findSlotValue(sentence, expansion, slot, false, defaultVal);
 						for(String str: values.keySet()) {
 							//get normalized concept from candidate
 							String concept = conceptExtractor.getConcept(str);
@@ -476,7 +481,7 @@ private static class FillSlotForEntity implements Runnable{
 		 for(Slot slot: ssf.getSlots()) {
 		 if(!slot.getName().equals(Constants.SlotName.Contact_Meet_Place_Time))
 		 continue;
-		 System.out.println(ssf.getCoreNLP().findSlotValue("", "", slot, false));
+		 System.out.println(ssf.getCoreNLP().findSlotValue("", "", slot, false, null));
 		 }
 	}
 	
