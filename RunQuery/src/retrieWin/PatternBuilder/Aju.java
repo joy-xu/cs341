@@ -21,6 +21,7 @@ import retrieWin.Querying.QueryBuilder;
 import retrieWin.SSF.Constants;
 import retrieWin.SSF.Constants.NERType;
 import retrieWin.SSF.Entity;
+import retrieWin.SSF.OutputWriter;
 import retrieWin.SSF.Slot;
 import retrieWin.SSF.SlotPattern;
 import retrieWin.SSF.Constants.EntityType;
@@ -64,14 +65,15 @@ public class Aju implements Runnable{
 		LogInfo.logs("Index location     : " + indexLocation);
 		LogInfo.logs("Number of results  : " + numResults);
 		
-		extractSlotValue();
+		//extractSlotValue();
 		
-		/*NLPUtils obj = new NLPUtils();
+		NLPUtils obj = new NLPUtils();
 		//obj.findSlotPattern("Bill Gates company Microsoft is the largest employer.", "Bill Gates", "Microsoft");
 		
 		//List<NERType> nerTags = new ArrayList<NERType>();
 		//nerTags.add(NERType.);
 		//Slot founded_by = null;
+		OutputWriter writer = new OutputWriter("run.txt");
 		for(Slot slot: slots) {
 			if(slot.getName().equals(Constants.SlotName.Founded_By)) {
 				List<String> sentences = new ArrayList<String>();
@@ -82,6 +84,7 @@ public class Aju implements Runnable{
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
 							LogInfo.logs("Founded by  : " + str);
+							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", "Founded_By", str, 10, 15);
 						} 
 					}
 					else {
@@ -99,6 +102,7 @@ public class Aju implements Runnable{
 						for(String str:values.keySet()) {
 							
 							LogInfo.logs("Award won   : " + str);
+							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", "Awards_Won", str, 10, 15);
 						} 
 					}
 					else {
@@ -116,6 +120,7 @@ public class Aju implements Runnable{
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
 							LogInfo.logs("Founder of  : " + str);
+							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", "Founder_Of", str, 10, 15);
 						} 
 					}
 					else {
@@ -131,7 +136,9 @@ public class Aju implements Runnable{
 					LogInfo.logs("Sentence    : " + sentence);
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
+							
 							LogInfo.logs("Affiliate of: " + str);
+							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", "Affiliate_Of", str, 10, 15);
 						} 
 					}
 					else {
@@ -140,7 +147,7 @@ public class Aju implements Runnable{
 				}
 			}
 		}
-		 */
+		writer.Close();
 		//obj.findSlotPattern("Bill Gates' neighbor Steve Jobs complained that his dog was too loud.", "Bill Gates", "Steve Jobs");
 		//obj.findSlotPattern("Oldest Oscar Winner Meryl Streep Adds Sense of History With Best Actress Oscar Scarlett Johansson Lands Hitchcock Movie", "Meryl Streep", "Oscar");
 		//The movie showcases this enigmatic lady's personal demons, her struggle with dementia and her family relationships through Meryl Streep 's Oscar winning performance.
@@ -409,49 +416,54 @@ public class Aju implements Runnable{
 							if(sentence.contains(expansion)) {
 								//LogInfo.logs(expansion + ":" + sentence);
 								for(Slot slot: slots) {
-									if(slot.getName().equals(Constants.SlotName.Founded_By)) {
+									if(slot.getName().equals(Constants.SlotName.Founded_By) && 
+											e.getEntityType() == EntityType.ORG) {
 										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false);
 										LogInfo.logs("Sentence   $$ " + sentence);
 										if(values != null && values.size() > 0) {
 											for(String str:values.keySet()) {
-												LogInfo.logs("Founded by '" + expansion +"': " + str);
+												LogInfo.logs("__Founded by '" + expansion +"': " + str);
 											} 
 										}
 										else {
 											LogInfo.logs("Founded by   '" + expansion +"': NO RESULTS");
 										}
 									}
-									if(slot.getName().equals(Constants.SlotName.Awards_Won)) {
+									if(slot.getName().equals(Constants.SlotName.Awards_Won)  && 
+											e.getEntityType() == EntityType.PER) {
 										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false);
 										LogInfo.logs("Sentence   $$ " + sentence);
 										if(values != null && values.size() > 0) {
 											for(String str:values.keySet()) {
 												
-												LogInfo.logs("Award won    '" + expansion +"': " + str);
+												LogInfo.logs("__Award won    '" + expansion +"': " + str);
 											} 
 										}
 										else {
 											LogInfo.logs("Award won    '" + expansion +"': NO RESULTS");
 										}
 									}
-									if(slot.getName().equals(Constants.SlotName.Founder_Of)) {
+									if(slot.getName().equals(Constants.SlotName.Founder_Of)  && 
+											e.getEntityType() == EntityType.PER) {
 										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false);
 										LogInfo.logs("Sentence   $$ " + sentence);
 										if(values != null && values.size() > 0) {
 											for(String str:values.keySet()) {
-												LogInfo.logs("Founder of   '" + expansion +"': " + str);
+												LogInfo.logs("__Founder of   '" + expansion +"': " + str);
 											} 
 										}
 										else {
 											LogInfo.logs("Founder of   '" + expansion +"': NO RESULTS");
 										}
 									}
-									if(slot.getName().equals(Constants.SlotName.Affiliate_Of) && slot.getEntityType() == EntityType.PER) {
+									if(slot.getName().equals(Constants.SlotName.Affiliate_Of) &&
+											slot.getEntityType() == EntityType.PER  && 
+											e.getEntityType() == EntityType.PER) {
 										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false);
 										LogInfo.logs("Sentence   $$ " + sentence);
 										if(values != null && values.size() > 0) {
 											for(String str:values.keySet()) {
-												LogInfo.logs("Affiliate of '" + expansion +"': " + str);
+												LogInfo.logs("__Affiliate of '" + expansion +"': " + str);
 											} 
 										}
 										else {
