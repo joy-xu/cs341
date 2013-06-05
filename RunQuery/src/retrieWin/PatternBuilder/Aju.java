@@ -73,13 +73,14 @@ public class Aju implements Runnable{
 		//List<NERType> nerTags = new ArrayList<NERType>();
 		//nerTags.add(NERType.);
 		//Slot founded_by = null;
+		/*
 		OutputWriter writer = new OutputWriter("run.txt");
 		for(Slot slot: slots) {
 			if(slot.getName().equals(Constants.SlotName.Founded_By)) {
 				List<String> sentences = new ArrayList<String>();
 				sentences.add("Seagram Company founder Bill Gates visited the Memorial Auditorium on last Monday.");
 				for(String sentence:sentences) {
-					Map<String, Double> values = obj.findSlotValue(sentence, "Seagram Company", slot, false);
+					Map<String, Double> values = obj.findSlotValue(sentence, "Seagram Company", slot, false, "");
 					LogInfo.logs("Sentence    : " + sentence);
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
@@ -96,7 +97,7 @@ public class Aju implements Runnable{
 				List<String> sentences = new ArrayList<String>();
 				sentences.add("Pulitzer prize winner Bill Gates visited the Memorial Auditorium on last Monday.");
 				for(String sentence:sentences) {
-					Map<String, Double> values = obj.findSlotValue(sentence, "Bill Gates", slot, false);
+					Map<String, Double> values = obj.findSlotValue(sentence, "Bill Gates", slot, false, "");
 					LogInfo.logs("Sentence    : " + sentence);
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
@@ -115,7 +116,7 @@ public class Aju implements Runnable{
 				sentences.add("Seagram Company founder Bill Gates visited the Memorial Auditorium on last Monday.");
 				sentences.add("Seagram Company Ltd. co-founder Bill Gates worked with his friend Steve Jobs.");
 				for(String sentence:sentences) {
-					Map<String, Double> values = obj.findSlotValue(sentence, "Bill Gates", slot, false);
+					Map<String, Double> values = obj.findSlotValue(sentence, "Bill Gates", slot, false, "");
 					LogInfo.logs("Sentence    : " + sentence);
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
@@ -132,7 +133,7 @@ public class Aju implements Runnable{
 				List<String> sentences = new ArrayList<String>();
 				sentences.add("Seagram founder Bill Gates worked with his friend Steve Jobs on last Monday.");
 				for(String sentence:sentences) {
-					Map<String, Double> values = obj.findSlotValue(sentence, "Bill Gates", slot, false);
+					Map<String, Double> values = obj.findSlotValue(sentence, "Bill Gates", slot, false, "");
 					LogInfo.logs("Sentence    : " + sentence);
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
@@ -147,7 +148,7 @@ public class Aju implements Runnable{
 				}
 			}
 		}
-		writer.Close();
+		writer.Close(); */
 		//obj.findSlotPattern("Bill Gates' neighbor Steve Jobs complained that his dog was too loud.", "Bill Gates", "Steve Jobs");
 		//obj.findSlotPattern("Oldest Oscar Winner Meryl Streep Adds Sense of History With Best Actress Oscar Scarlett Johansson Lands Hitchcock Movie", "Meryl Streep", "Oscar");
 		//The movie showcases this enigmatic lady's personal demons, her struggle with dementia and her family relationships through Meryl Streep 's Oscar winning performance.
@@ -418,7 +419,7 @@ public class Aju implements Runnable{
 								for(Slot slot: slots) {
 									if(slot.getName().equals(Constants.SlotName.Founded_By) && 
 											e.getEntityType() == EntityType.ORG) {
-										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false);
+										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false, "");
 										LogInfo.logs("Sentence   $$ " + sentence);
 										if(values != null && values.size() > 0) {
 											for(String str:values.keySet()) {
@@ -431,7 +432,7 @@ public class Aju implements Runnable{
 									}
 									if(slot.getName().equals(Constants.SlotName.Awards_Won)  && 
 											e.getEntityType() == EntityType.PER) {
-										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false);
+										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false, "");
 										LogInfo.logs("Sentence   $$ " + sentence);
 										if(values != null && values.size() > 0) {
 											for(String str:values.keySet()) {
@@ -445,7 +446,7 @@ public class Aju implements Runnable{
 									}
 									if(slot.getName().equals(Constants.SlotName.Founder_Of)  && 
 											e.getEntityType() == EntityType.PER) {
-										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false);
+										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false, "");
 										LogInfo.logs("Sentence   $$ " + sentence);
 										if(values != null && values.size() > 0) {
 											for(String str:values.keySet()) {
@@ -459,7 +460,7 @@ public class Aju implements Runnable{
 									if(slot.getName().equals(Constants.SlotName.Affiliate_Of) &&
 											slot.getEntityType() == EntityType.PER  && 
 											e.getEntityType() == EntityType.PER) {
-										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false);
+										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false, "");
 										LogInfo.logs("Sentence   $$ " + sentence);
 										if(values != null && values.size() > 0) {
 											for(String str:values.keySet()) {
