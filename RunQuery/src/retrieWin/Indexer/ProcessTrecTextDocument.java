@@ -124,7 +124,6 @@ public class ProcessTrecTextDocument {
 					{
 						if (tokens.contains(entitySplit.toLowerCase()))
 						{
-							System.out.println("Found: " + currentSentence);
 							returnString.put(currentSentence,t.docNumber);
 							break;
 						}

@@ -848,7 +848,7 @@ public class NLPUtils {
 		for(IndexedWord w: tempSet) 
 			ansSet.addAll(getConjAndNeighbours(graph, w));
 		
-		if(slot.getName().equals(SlotName.Cause_Of_Death)) {
+		if(slot.getName().equals(SlotName.CauseOfDeath)) {
 			String phrase;
 			for(Rule r: matchedRules) {
 				if(r.edgeType.startsWith("prep")) {
@@ -903,7 +903,7 @@ public class NLPUtils {
 			}
 		}
 		
-		if(ans.isEmpty() && slot.getName().equals(SlotName.Date_Of_Death))
+		if(ans.isEmpty() && slot.getName().equals(SlotName.DateOfDeath))
 			ans.add(defaultVal);
 		return ans;
 	}

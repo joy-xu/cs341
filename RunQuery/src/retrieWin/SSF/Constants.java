@@ -48,17 +48,18 @@ public class Constants  implements Serializable {
 	}
 	
 	public enum SlotName{
-		Founded_By,
-		Founder_Of,
-		Affiliate_Of,
-		Cause_Of_Death,
-		Date_Of_Death,
-		Contact_Meet_Place_Time,
-		Employee_Of,
-		Contact_Meet_Entity,
-		Awards_Won,
+		Affiliate,
+		AssociateOf,
+		Contact_Meet_PlaceTime,
+		AwardsWon,
+		DateOfDeath,
+		CauseOfDeath,
 		Titles,
-		Top_Members
+		FounderOf,
+		EmployeeOf,
+		Contact_Meet_Entity,
+		TopMembers,
+		FoundedBy
 	}
 	
 	public enum EdgeDirection {

@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -54,7 +55,7 @@ public class SSF implements Runnable{
 		readEntities();
 		readSlots();
 		setCoreNLP(new NLPUtils());
-		conceptExtractor = new Concept();
+		//conceptExtractor = new Concept();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -272,7 +273,7 @@ public class SSF implements Runnable{
 		if(slot.getName().equals(Constants.SlotName.Titles))
 			return findTitles(entity, slot, relevantSentences, coreNLP, conceptExtractor);
 		
-		if (slot.getName().equals(Constants.SlotName.Contact_Meet_Place_Time))
+		if (slot.getName().equals(Constants.SlotName.Contact_Meet_PlaceTime))
 			return findContactMeetPlaceTime(entity,slot,relevantSentences,coreNLP,conceptExtractor);
 		
 		Map<String, Double> candidates = new HashMap<String, Double>();
@@ -280,7 +281,7 @@ public class SSF implements Runnable{
 		
 		for(String expansion: entity.getExpansions()) {
 			for(String sentence: relevantSentences.get(expansion).keySet()) {
-				//System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
+				System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
 				String[] split = relevantSentences.get(expansion).get(sentence).split("__");
 				defaultVal = split[split.length-1];
 				
@@ -289,7 +290,7 @@ public class SSF implements Runnable{
 					//arxiv documents
 					//System.out.println("Now processing: " + sentence);
 					if(relevantSentences.get(expansion).get(sentence).contains("arxiv")) {
-						if(!slot.getName().equals(Constants.SlotName.Affiliate_Of) || !entity.getEntityType().equals(Constants.EntityType.PER))
+						if(!slot.getName().equals(Constants.SlotName.Affiliate) || !entity.getEntityType().equals(Constants.EntityType.PER))
 							continue;
 						arxivDocument arxivDoc = new arxivDocument(relevantSentences.get(expansion).get(sentence));
 						if(arxivDoc.getAuthors().contains(expansion)) {
@@ -383,7 +384,7 @@ public class SSF implements Runnable{
 		// for each entity, for each slot, for each entity expansion
 		System.out.println("Finding slot values...");
 		
-		ExecutorService e = Executors.newFixedThreadPool(8);
+		ExecutorService e = Executors.newFixedThreadPool(1);
 		
 		
 		for(Entity entity: entities) {
@@ -431,8 +432,8 @@ private static class FillSlotForEntity implements Runnable{
 
 //			System.out.println("Finding slot values for entity " + entity.getName());
 			//get all relevant documents for the entity
-			if (!entity.getName().equals("Aharon_Barak"))
-				return;
+			//if (!entity.getName().equals("Aharon_Barak"))
+				//return;
 			List<TrecTextDocument> docs = entity.getRelevantDocuments(timestamp, workingDirectory, entities, eq);
 			System.out.println("Retrieved " + docs.size() + " relevant documents for entity: " + entity.getName());
 			if(docs.isEmpty())
@@ -460,7 +461,7 @@ private static class FillSlotForEntity implements Runnable{
 				if(!slot.getEntityType().equals(entity.getEntityType()))
 						continue;
 				
-				if(!slot.getName().equals(Constants.SlotName.Contact_Meet_Place_Time))
+				if(!slot.getName().equals(Constants.SlotName.DateOfDeath))
 					continue;
 				//TODO: remove this, computing only one slot right now
 				if(slot.getPatterns().isEmpty())
@@ -488,7 +489,7 @@ private static class FillSlotForEntity implements Runnable{
 	{
 		 SSF ssf = new SSF();
 		 for(Slot slot: ssf.getSlots()) {
-		 if(!slot.getName().equals(Constants.SlotName.Contact_Meet_Place_Time))
+		 if(!slot.getName().equals(Constants.SlotName.Contact_Meet_PlaceTime))
 		 continue;
 		 System.out.println(ssf.getCoreNLP().findSlotValue("", "", slot, false, null));
 		 }
@@ -507,23 +508,228 @@ private static class FillSlotForEntity implements Runnable{
 	}
 	
 	
-	private void updateSlots() throws IOException {
-		readSlots();
-		for(Slot slot: getSlots()) {
-			String filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
-			//System.out.println(filename);
-			File file = new File(filename);
-			if(!file.exists()) {
-				System.out.println("File for " + slot.getName() + " not found.");
-				continue;
-			}
-			
-			//if(slot.getName().equals(Constants.SlotName.Founded_By))
+	private void createSlots() throws IOException {
+		//readSlots();
+		List<Slot> slots = new ArrayList<Slot>();
+		Slot slot;
+		String filename;
+		File file;
+		
+		//PER slots
+		//Affiliate
+		slot = new Slot();
+		slot.setName(SlotName.Affiliate);
+		slot.setEntityType(EntityType.PER);
+		slot.setThreshold(0.0);
+		slot.setSourceNERTypes(null);
+		slot.setTargetNERTypes(Arrays.asList(NERType.NONE));
+		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
+		file = new File(filename);
+		if(!file.exists()) 
+			System.out.println("File for " + slot.getName() + " not found.");
+		else
 			slot.addSlotPatterns(filename);
-			
-		}
+		slots.add(slot);
+		
+		//AssociateOf
+		slot = new Slot();
+		slot.setName(SlotName.AssociateOf);
+		slot.setEntityType(EntityType.PER);
+		slot.setThreshold(0.0);
+		slot.setSourceNERTypes(null);
+		slot.setTargetNERTypes(Arrays.asList(NERType.PERSON));
+		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
+		file = new File(filename);
+		if(!file.exists()) 
+			System.out.println("File for " + slot.getName() + " not found.");
+		else
+			slot.addSlotPatterns(filename);
+		slots.add(slot);
+		
+		//Contact_Meet_PlaceTime
+		slot = new Slot();
+		slot.setName(SlotName.Contact_Meet_PlaceTime);
+		slot.setEntityType(EntityType.PER);
+		slot.setThreshold(0.0);
+		slot.setSourceNERTypes(null);
+		slot.setTargetNERTypes(Arrays.asList(NERType.NONE));
+		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
+		file = new File(filename);
+		if(!file.exists()) 
+			System.out.println("File for " + slot.getName() + " not found.");
+		else
+			slot.addSlotPatterns(filename);
+		slots.add(slot);
+		
+		//AwardsWon
+		slot = new Slot();
+		slot.setName(SlotName.AwardsWon);
+		slot.setEntityType(EntityType.PER);
+		slot.setThreshold(0.0);
+		slot.setSourceNERTypes(null);
+		slot.setTargetNERTypes(Arrays.asList(NERType.NONE));
+		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
+		file = new File(filename);
+		if(!file.exists()) 
+			System.out.println("File for " + slot.getName() + " not found.");
+		else
+			slot.addSlotPatterns(filename);
+		slots.add(slot);
+		
+		//DateOfDeath
+		slot = new Slot();
+		slot.setName(SlotName.DateOfDeath);
+		slot.setEntityType(EntityType.PER);
+		slot.setThreshold(0.0);
+		slot.setSourceNERTypes(null);
+		slot.setTargetNERTypes(Arrays.asList(NERType.DATE, NERType.TIME));
+		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
+		file = new File(filename);
+		if(!file.exists()) 
+			System.out.println("File for " + slot.getName() + " not found.");
+		else
+			slot.addSlotPatterns(filename);
+		slots.add(slot);
+		
+		//CauseOfDeath
+		slot = new Slot();
+		slot.setName(SlotName.CauseOfDeath);
+		slot.setEntityType(EntityType.PER);
+		slot.setThreshold(0.0);
+		slot.setSourceNERTypes(null);
+		slot.setTargetNERTypes(Arrays.asList(NERType.NONE));
+		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
+		file = new File(filename);
+		if(!file.exists()) 
+			System.out.println("File for " + slot.getName() + " not found.");
+		else
+			slot.addSlotPatterns(filename);
+		slots.add(slot);
+		
+		//Titles
+		slot = new Slot();
+		slot.setName(SlotName.Titles);
+		slot.setEntityType(EntityType.PER);
+		slot.setThreshold(0.0);
+		slot.setSourceNERTypes(null);
+		slot.setTargetNERTypes(Arrays.asList(NERType.NONE));
+		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
+		file = new File(filename);
+		if(!file.exists()) 
+			System.out.println("File for " + slot.getName() + " not found.");
+		else
+			slot.addSlotPatterns(filename);
+		slots.add(slot);
+		
+		//FounderOf
+		slot = new Slot();
+		slot.setName(SlotName.FounderOf);
+		slot.setEntityType(EntityType.PER);
+		slot.setThreshold(0.0);
+		slot.setSourceNERTypes(null);
+		slot.setTargetNERTypes(Arrays.asList(NERType.ORGANIZATION));
+		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
+		file = new File(filename);
+		if(!file.exists()) 
+			System.out.println("File for " + slot.getName() + " not found.");
+		else
+			slot.addSlotPatterns(filename);
+		slots.add(slot);
+		
+		//EmployeeOf
+		slot = new Slot();
+		slot.setName(SlotName.EmployeeOf);
+		slot.setEntityType(EntityType.PER);
+		slot.setThreshold(0.0);
+		slot.setSourceNERTypes(null);
+		slot.setTargetNERTypes(Arrays.asList(NERType.ORGANIZATION));
+		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
+		file = new File(filename);
+		if(!file.exists()) 
+			System.out.println("File for " + slot.getName() + " not found.");
+		else
+			slot.addSlotPatterns(filename);
+		slots.add(slot);
+		
+		//FAC Slots
+		//Affiliate
+		slot = new Slot();
+		slot.setName(SlotName.Affiliate);
+		slot.setEntityType(EntityType.FAC);
+		slot.setThreshold(0.0);
+		slot.setSourceNERTypes(null);
+		slot.setTargetNERTypes(Arrays.asList(NERType.NONE));
+		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
+		file = new File(filename);
+		if(!file.exists()) 
+			System.out.println("File for " + slot.getName() + " not found.");
+		else
+			slot.addSlotPatterns(filename);
+		slots.add(slot);
+		
+		//Contact_Meet_Entity
+		slot = new Slot();
+		slot.setName(SlotName.Contact_Meet_Entity);
+		slot.setEntityType(EntityType.FAC);
+		slot.setThreshold(0.0);
+		slot.setSourceNERTypes(null);
+		slot.setTargetNERTypes(Arrays.asList(NERType.NONE));
+		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
+		file = new File(filename);
+		if(!file.exists()) 
+			System.out.println("File for " + slot.getName() + " not found.");
+		else
+			slot.addSlotPatterns(filename);
+		slots.add(slot);	
+		
+		//ORG Slots
+		//Affiliate
+		slot = new Slot();
+		slot.setName(SlotName.Affiliate);
+		slot.setEntityType(EntityType.ORG);
+		slot.setThreshold(0.0);
+		slot.setSourceNERTypes(null);
+		slot.setTargetNERTypes(Arrays.asList(NERType.NONE));
+		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
+		file = new File(filename);
+		if(!file.exists()) 
+			System.out.println("File for " + slot.getName() + " not found.");
+		else
+			slot.addSlotPatterns(filename);
+		slots.add(slot);
+		
+		//TopMembers
+		slot = new Slot();
+		slot.setName(SlotName.TopMembers);
+		slot.setEntityType(EntityType.ORG);
+		slot.setThreshold(0.0);
+		slot.setSourceNERTypes(null);
+		slot.setTargetNERTypes(Arrays.asList(NERType.PERSON));
+		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
+		file = new File(filename);
+		if(!file.exists()) 
+			System.out.println("File for " + slot.getName() + " not found.");
+		else
+			slot.addSlotPatterns(filename);
+		slots.add(slot);
+		
+		//FoundedBy
+		slot = new Slot();
+		slot.setName(SlotName.FoundedBy);
+		slot.setEntityType(EntityType.ORG);
+		slot.setThreshold(0.0);
+		slot.setSourceNERTypes(null);
+		slot.setTargetNERTypes(Arrays.asList(NERType.PERSON));
+		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
+		file = new File(filename);
+		if(!file.exists()) 
+			System.out.println("File for " + slot.getName() + " not found.");
+		else
+			slot.addSlotPatterns(filename);
+		slots.add(slot);
+		
 		//System.out.println(slots);
-		FileUtils.writeFile(getSlots(), Constants.slotsSerializedFile);
+		FileUtils.writeFile(slots, Constants.slotsSerializedFile);
 	}
 	
 	public static void main(String[] args) throws IOException {
@@ -532,7 +738,17 @@ private static class FillSlotForEntity implements Runnable{
 			System.out.println("Environment variable not set");
 			return;
 		}
-		new SSF().updateSlots();
+		/*SSF ssf = new SSF();
+		long startTime = System.nanoTime();
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+	    String s;
+	    System.out.println("Ready to read input...");
+	    while ((s = in.readLine()) != null && s.length() != 0)
+	      System.out.println(ssf.conceptExtractor.getCCConcept(s));
+		//ssf.conceptExtractor.getCCConcept("Billy Gates");
+		long endTime = System.nanoTime();*/
+		//System.out.println("Took "+(endTime - startTime) + " ns"); 
+		new SSF().createSlots();
 		//Execution.run(args, "Main", new SSF());
 		//SSF s= new SSF();
 		//new SSF().updateSlots();
