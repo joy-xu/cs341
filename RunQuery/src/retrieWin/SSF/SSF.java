@@ -196,7 +196,7 @@ public class SSF implements Runnable{
 		return false;
 	}
 	
-	public static Map<String, Double> findTitles(Entity entity, Slot slot, Map<String, Map<String, String>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
+	public static Map<String, Double> findTitles(Entity entity, Slot slot, Map<String, Map<String, Set<String>>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
 		Map<String, Double> candidates = new HashMap<String, Double>();
 		for(String expansion: entity.getExpansions()) {
 			for(String sentence: relevantSentences.get(expansion).keySet()) {
@@ -220,21 +220,36 @@ public class SSF implements Runnable{
 		return candidates;
 	}
 
-	private static Map<String, Double> findContactMeetPlaceTime(Entity entity, Slot slot, Map<String, Map<String, String>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
+	private static Map<String, Double> findContactMeetPlaceTime(Entity entity, Slot slot, Map<String, Map<String, Set<String>>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
 		Map<String, Double> candidates = new HashMap<String, Double>();
 		for(String expansion: entity.getExpansions()) {
 			for(String sentence: relevantSentences.get(expansion).keySet()) {
 				//System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
 				//System.out.println("Now processing: " + sentence);
 				try {
+					String docType = "social";
+					String docId="";
+					int sentIndex = 0;
+					for(String id: relevantSentences.get(expansion).get(sentence)) {
+						String temp = id.substring(0, id.lastIndexOf("__"));
+						if(id.contains("news")) {
+							docType = "news";
+							break;
+						}
+						else if(id.contains("arxiv")) {
+							docType = "arxiv";
+							docId = temp;
+							break;
+						}
+					}
 					//for each sentence, find possible slot values and add to candidate list
 					//arxiv documents
-					if(relevantSentences.get(expansion).get(sentence).contains("arxiv")) {
+					if(docType.equals("arxiv")) {
 						continue;
 					}
 					//social documents
 						
-					else if(relevantSentences.get(expansion).get(sentence).contains("social")) {
+					else if(docType.equals("social")) {
 						Map<String, Double> values = coreNLP.findPlaceTimeValue(sentence, expansion, slot, false);
 						
 						for(String str: values.keySet()) {
@@ -269,7 +284,7 @@ public class SSF implements Runnable{
 	}
 	
 	
-	public static Map<String, Double> findCandidates(Entity entity, Slot slot, Map<String, Map<String, String>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
+	public static Map<String, Double> findCandidates(Entity entity, Slot slot, Map<String, Map<String, Set<String>>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
 		if(slot.getName().equals(Constants.SlotName.Titles))
 			return findTitles(entity, slot, relevantSentences, coreNLP, conceptExtractor);
 		
@@ -277,22 +292,41 @@ public class SSF implements Runnable{
 			return findContactMeetPlaceTime(entity,slot,relevantSentences,coreNLP,conceptExtractor);
 		
 		Map<String, Double> candidates = new HashMap<String, Double>();
-		String defaultVal;
+		String defaultVal = "";
 		
 		for(String expansion: entity.getExpansions()) {
 			for(String sentence: relevantSentences.get(expansion).keySet()) {
-				System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
-				String[] split = relevantSentences.get(expansion).get(sentence).split("__");
-				defaultVal = split[split.length-1];
+
+				//System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
+				//String[] split = relevantSentences.get(expansion).get(sentence).split("__");
+				//defaultVal = split[split.length-1];
+				String docType = "social";
+				String docId="";
+				//int sentIndex = 0;
+				for(String id: relevantSentences.get(expansion).get(sentence)) {
+					String temp = id.substring(0, id.lastIndexOf("__"));
+					defaultVal = temp.substring(0, temp.lastIndexOf("__"));
+					if(id.contains("news")) {
+						docType = "news";
+						break;
+					}
+					else if(id.contains("arxiv")) {
+						docType = "arxiv";
+						docId = temp;
+						break;
+					}
+				}
+
 				
 				try {
 					//for each sentence, find possible slot values and add to candidate list
 					//arxiv documents
 					//System.out.println("Now processing: " + sentence);
-					if(relevantSentences.get(expansion).get(sentence).contains("arxiv")) {
+					if(docType.equals("arxiv")) {
 						if(!slot.getName().equals(Constants.SlotName.Affiliate) || !entity.getEntityType().equals(Constants.EntityType.PER))
+
 							continue;
-						arxivDocument arxivDoc = new arxivDocument(relevantSentences.get(expansion).get(sentence));
+						arxivDocument arxivDoc = new arxivDocument(docId);
 						if(arxivDoc.getAuthors().contains(expansion)) {
 							for(String author: arxivDoc.getAuthors()) 
 								if(!author.equals(expansion))
@@ -315,7 +349,7 @@ public class SSF implements Runnable{
 					}
 					//social documents
 
-					else if(relevantSentences.get(expansion).get(sentence).contains("social")) {
+					else if(docType.equals("social")) {
 						Map<String, Double> values = coreNLP.findSlotValue(sentence, expansion, slot, (slot.getTargetNERTypes() != null) ? true : false, defaultVal);
 						for(String str: values.keySet()) {
 							//get normalized concept from candidate
@@ -440,11 +474,11 @@ private static class FillSlotForEntity implements Runnable{
 				return;
 			
 			//get relevant sentences for each expansion, ensure no sentence retrieved twice
-			Map<String, Map<String, String>> relevantSentences = new HashMap<String, Map<String, String>>();
+			Map<String, Map<String, Set<String>>> relevantSentences = new HashMap<String, Map<String, Set<String>>>();
 			Set<String> retrievedSentences = new HashSet<String>();
 			for(String expansion: entity.getExpansions()) {
-				Map<String, String> sentences = new HashMap<String, String>();
-				Map<String, String> returnedSet = ProcessTrecTextDocument.extractRelevantSentencesWithDocID(docs, expansion);
+				Map<String, Set<String>> sentences = new HashMap<String, Set<String>>();
+				Map<String, Set<String>> returnedSet = ProcessTrecTextDocument.extractRelevantSentencesWithDocID(docs, expansion);
 				for(String sent: returnedSet.keySet()) 
 					if(!retrievedSentences.contains(sent)) {
 							sentences.put(sent, returnedSet.get(sent));
