@@ -65,15 +65,28 @@ public class Aju implements Runnable{
 		LogInfo.logs("Index location     : " + indexLocation);
 		LogInfo.logs("Number of results  : " + numResults);
 		
-		//extractSlotValue();
+		extractSlotValue();
 		
+		//testFindSlotValue();
+		
+		//obj.findSlotPattern("Bill Gates' neighbor Steve Jobs complained that his dog was too loud.", "Bill Gates", "Steve Jobs");
+		//obj.findSlotPattern("Oldest Oscar Winner Meryl Streep Adds Sense of History With Best Actress Oscar Scarlett Johansson Lands Hitchcock Movie", "Meryl Streep", "Oscar");
+		//The movie showcases this enigmatic lady's personal demons, her struggle with dementia and her family relationships through Meryl Streep 's Oscar winning performance.
+		
+		//runBootstrapForPair();
+		//runBootStrapforEntityAndNER();
+	
+		LogInfo.end_track();
+	}
+	
+	private void testFindSlotValue() {
 		NLPUtils obj = new NLPUtils();
 		//obj.findSlotPattern("Bill Gates company Microsoft is the largest employer.", "Bill Gates", "Microsoft");
 		
 		//List<NERType> nerTags = new ArrayList<NERType>();
 		//nerTags.add(NERType.);
 		//Slot founded_by = null;
-		/*
+
 		OutputWriter writer = new OutputWriter("run.txt");
 		for(Slot slot: slots) {
 			if(slot.getName().equals(Constants.SlotName.Founded_By)) {
@@ -85,7 +98,7 @@ public class Aju implements Runnable{
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
 							LogInfo.logs("Founded by  : " + str);
-							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", "Founded_By", str, 10, 15);
+							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", slot.getName().toString(), str, 10, 15);
 						} 
 					}
 					else {
@@ -103,7 +116,7 @@ public class Aju implements Runnable{
 						for(String str:values.keySet()) {
 							
 							LogInfo.logs("Award won   : " + str);
-							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", "Awards_Won", str, 10, 15);
+							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", slot.getName().toString(), str, 10, 15);
 						} 
 					}
 					else {
@@ -121,7 +134,7 @@ public class Aju implements Runnable{
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
 							LogInfo.logs("Founder of  : " + str);
-							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", "Founder_Of", str, 10, 15);
+							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", slot.getName().toString(), str, 10, 15);
 						} 
 					}
 					else {
@@ -139,7 +152,7 @@ public class Aju implements Runnable{
 						for(String str:values.keySet()) {
 							
 							LogInfo.logs("Affiliate of: " + str);
-							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", "Affiliate_Of", str, 10, 15);
+							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", slot.getName().toString(), str, 10, 15);
 						} 
 					}
 					else {
@@ -148,17 +161,10 @@ public class Aju implements Runnable{
 				}
 			}
 		}
-		writer.Close(); */
-		//obj.findSlotPattern("Bill Gates' neighbor Steve Jobs complained that his dog was too loud.", "Bill Gates", "Steve Jobs");
-		//obj.findSlotPattern("Oldest Oscar Winner Meryl Streep Adds Sense of History With Best Actress Oscar Scarlett Johansson Lands Hitchcock Movie", "Meryl Streep", "Oscar");
-		//The movie showcases this enigmatic lady's personal demons, her struggle with dementia and her family relationships through Meryl Streep 's Oscar winning performance.
+		writer.Close(); 
 		
-		//runBootstrapForPair();
-		//runBootStrapforEntityAndNER();
-	
-		LogInfo.end_track();
 	}
-	
+
 	public void runBootStrapforEntityAndNER() {
 		ExecuteQuery eq = new ExecuteQuery(indexLocation);
 		NLPUtils utils = new NLPUtils();
@@ -362,9 +368,9 @@ public class Aju implements Runnable{
 		NLPUtils utils = new NLPUtils();
 		//utils.extractPERRelation("The time has come to reassess to impact of former Presiding Justices Aharon Barak and Dorit Beinisch on Human Rights, the justice system, and the rule of law in the State of Israel.");
 		List<String> folders = new ArrayList<String>();
-		for(int d = 1; d <= 1; d++) {
+		for(int d = 6; d <= 15; d++) {
 			for(int i = 0; i < 24; i++)
-				folders.add(String.format("%04d-%02d-%02d-%02d", 2012,10,d,i));
+				folders.add(String.format("%04d-%02d-%02d-%02d", 2012,4,d,i));
 		}
 		
 		Map<Entity,String> entityToQueries = new HashMap<Entity,String>();
