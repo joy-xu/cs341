@@ -300,7 +300,7 @@ public class SSF implements Runnable{
 				//defaultVal = split[split.length-1];
 				String docType = "social";
 				String docId="";
-				int sentIndex = 0;
+				//int sentIndex = 0;
 				for(String id: relevantSentences.get(expansion).get(sentence)) {
 					String temp = id.substring(0, id.lastIndexOf("__"));
 					defaultVal = temp.substring(0, temp.lastIndexOf("__"));

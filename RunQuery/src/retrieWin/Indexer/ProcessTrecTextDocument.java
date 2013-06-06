@@ -222,4 +222,12 @@ public class ProcessTrecTextDocument {
 	            it.remove();
 		return results;
 	}
+	
+	public static List<String> getCleanedSentences(List<String> sentences) {
+		List<String> results = new ArrayList<String>();
+		for(String sentence:sentences) {
+			results.addAll(getCleanedSentences(sentence));
+		}
+		return results;
+	}
 }
