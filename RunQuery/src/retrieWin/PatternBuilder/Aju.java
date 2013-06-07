@@ -89,7 +89,7 @@ public class Aju implements Runnable{
 
 		OutputWriter writer = new OutputWriter("run.txt");
 		for(Slot slot: slots) {
-			if(slot.getName().equals(Constants.SlotName.Founded_By)) {
+			if(slot.getName().equals(Constants.SlotName.FoundedBy)) {
 				List<String> sentences = new ArrayList<String>();
 				sentences.add("Seagram Company founder Bill Gates visited the Memorial Auditorium on last Monday.");
 				for(String sentence:sentences) {
@@ -106,7 +106,7 @@ public class Aju implements Runnable{
 					}
 				}
 			}
-			if(slot.getName().equals(Constants.SlotName.Awards_Won)) {
+			if(slot.getName().equals(Constants.SlotName.AwardsWon)) {
 				List<String> sentences = new ArrayList<String>();
 				sentences.add("Pulitzer prize winner Bill Gates visited the Memorial Auditorium on last Monday.");
 				for(String sentence:sentences) {
@@ -124,7 +124,7 @@ public class Aju implements Runnable{
 					}
 				}
 			}
-			if(slot.getName().equals(Constants.SlotName.Founder_Of)) {
+			if(slot.getName().equals(Constants.SlotName.FounderOf)) {
 				List<String> sentences = new ArrayList<String>();
 				sentences.add("Seagram Company founder Bill Gates visited the Memorial Auditorium on last Monday.");
 				sentences.add("Seagram Company Ltd. co-founder Bill Gates worked with his friend Steve Jobs.");
@@ -142,7 +142,7 @@ public class Aju implements Runnable{
 					}
 				}
 			}
-			if(slot.getName().equals(Constants.SlotName.Affiliate_Of) && slot.getEntityType() == EntityType.PER) {
+			if(slot.getName().equals(Constants.SlotName.Affiliate) && slot.getEntityType() == EntityType.PER) {
 				List<String> sentences = new ArrayList<String>();
 				sentences.add("Seagram founder Bill Gates worked with his friend Steve Jobs on last Monday.");
 				for(String sentence:sentences) {
@@ -423,7 +423,7 @@ public class Aju implements Runnable{
 							if(sentence.contains(expansion)) {
 								//LogInfo.logs(expansion + ":" + sentence);
 								for(Slot slot: slots) {
-									if(slot.getName().equals(Constants.SlotName.Founded_By) && 
+									if(slot.getName().equals(Constants.SlotName.FoundedBy) && 
 											e.getEntityType() == EntityType.ORG) {
 										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false, "");
 										LogInfo.logs("Sentence   $$ " + sentence);
@@ -436,7 +436,7 @@ public class Aju implements Runnable{
 											LogInfo.logs("Founded by   '" + expansion +"': NO RESULTS");
 										}
 									}
-									if(slot.getName().equals(Constants.SlotName.Awards_Won)  && 
+									if(slot.getName().equals(Constants.SlotName.AwardsWon)  && 
 											e.getEntityType() == EntityType.PER) {
 										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false, "");
 										LogInfo.logs("Sentence   $$ " + sentence);
@@ -450,7 +450,7 @@ public class Aju implements Runnable{
 											LogInfo.logs("Award won    '" + expansion +"': NO RESULTS");
 										}
 									}
-									if(slot.getName().equals(Constants.SlotName.Founder_Of)  && 
+									if(slot.getName().equals(Constants.SlotName.FounderOf)  && 
 											e.getEntityType() == EntityType.PER) {
 										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false, "");
 										LogInfo.logs("Sentence   $$ " + sentence);
@@ -463,7 +463,7 @@ public class Aju implements Runnable{
 											LogInfo.logs("Founder of   '" + expansion +"': NO RESULTS");
 										}
 									}
-									if(slot.getName().equals(Constants.SlotName.Affiliate_Of) &&
+									if(slot.getName().equals(Constants.SlotName.Affiliate) &&
 											slot.getEntityType() == EntityType.PER  && 
 											e.getEntityType() == EntityType.PER) {
 										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false, "");
