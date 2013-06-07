@@ -118,6 +118,8 @@ public class ProcessTrecTextDocument {
 				index++;
 				List<String> cleanedSentences = getCleanedSentences(sentence);
 				for(String currentSentence: cleanedSentences) {
+					if(currentSentence.length() > 400)
+						continue;
 					List<String> tokens = Arrays.asList(currentSentence.toLowerCase().split(" "));
 						for (String entitySplit:entitySplits)
 						{
