@@ -1,6 +1,7 @@
 package retrieWin.SSF;
 
 import edu.stanford.nlp.parser.lexparser.NoSuchParseException;
+import edu.stanford.nlp.util.Triple;
 import fig.basic.*;
 import fig.exec.Execution;
 
@@ -196,21 +197,45 @@ public class SSF implements Runnable{
 		return false;
 	}
 	
-	public static Map<String, Double> findTitles(Entity entity, Slot slot, Map<String, Map<String, Set<String>>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
-		Map<String, Double> candidates = new HashMap<String, Double>();
+	public static Map<String, Pair<Set<String>, Double>> findTitles(Entity entity, Slot slot, Map<String, Map<String, Set<String>>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
+		Map<String, Pair<Set<String>, Double>> candidates = new HashMap<String, Pair<Set<String>, Double>>();
 		for(String expansion: entity.getExpansions()) {
 			for(String sentence: relevantSentences.get(expansion).keySet()) {
 				System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
 				try {
 					//check for any non-pronominal coreference
-					for(String title: coreNLP.getCorefs(sentence, expansion))
-						if(containsUppercaseToken(title) && !candidates.containsKey(title))
-							candidates.put(title, 1.0);
-					
+					for(String title: coreNLP.getCorefs(sentence, expansion)) {
+						if(containsUppercaseToken(title)) {
+							if(!candidates.containsKey(title)) {
+								Set<String> documents = new HashSet<String>(relevantSentences.get(expansion).get(sentence));
+								candidates.put(title, new Pair<Set<String>, Double>(documents, (double)relevantSentences.get(expansion).get(sentence).size()));
+							}
+							else {
+								Pair<Set<String>, Double> setAndScore = candidates.get(title);
+								for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
+									setAndScore.getFirst().add(sentenceID);
+								}
+								setAndScore.setSecond(setAndScore.getSecond() + relevantSentences.get(expansion).get(sentence).size());
+								candidates.put(title, setAndScore);
+							}
+						}
+					}
 					//check for any compund nouns for this entity
 					String nnTitle = coreNLP.getNNs(sentence, expansion);
-					if(containsUppercaseToken(nnTitle) && !candidates.containsKey(nnTitle))
-						candidates.put(nnTitle, 1.0);
+					if(containsUppercaseToken(nnTitle)) {
+						if(!candidates.containsKey(nnTitle)) {
+							Set<String> documents = new HashSet<String>(relevantSentences.get(expansion).get(sentence));
+							candidates.put(nnTitle, new Pair<Set<String>, Double>(documents, 1.0));
+						}
+						else {
+							Pair<Set<String>, Double> setAndScore = candidates.get(nnTitle);
+							for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
+								setAndScore.getFirst().add(sentenceID);
+							}
+							setAndScore.setSecond(setAndScore.getSecond() + 1);
+							candidates.put(nnTitle, setAndScore);
+						}
+					}
 				} catch(NoSuchParseException e) {
 					e.printStackTrace();
 					break;
@@ -220,8 +245,8 @@ public class SSF implements Runnable{
 		return candidates;
 	}
 
-	private static Map<String, Double> findContactMeetPlaceTime(Entity entity, Slot slot, Map<String, Map<String, Set<String>>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
-		Map<String, Double> candidates = new HashMap<String, Double>();
+	private static Map<String, Pair<Set<String>, Double>> findContactMeetPlaceTime(Entity entity, Slot slot, Map<String, Map<String, Set<String>>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
+		Map<String, Pair<Set<String>, Double>> candidates = new HashMap<String, Pair<Set<String>, Double>>();
 		for(String expansion: entity.getExpansions()) {
 			for(String sentence: relevantSentences.get(expansion).keySet()) {
 				//System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
@@ -249,28 +274,32 @@ public class SSF implements Runnable{
 					}
 					//social documents
 						
-					else if(docType.equals("social")) {
-						Map<String, Double> values = coreNLP.findPlaceTimeValue(sentence, expansion, slot, false);
-						
-						for(String str: values.keySet()) {
-							//get normalized concept from candidate
-							String concept = conceptExtractor.getConcept(str);
-							if(!candidates.containsKey(concept))
-								candidates.put(concept, values.get(str));
-							else
-								candidates.put(concept, candidates.get(concept) + values.get(str));
+					else{
+						Map<String, Double> values= null;
+						if(docType.equals("social")) {
+							values = coreNLP.findPlaceTimeValue(sentence, expansion, slot, false);
 						}
-					}
-					//news documents
-					else {
-						Map<String, Double> values = coreNLP.findPlaceTimeValue(sentence, expansion, slot, false);
+						//News documents	
+						else {
+							values = coreNLP.findPlaceTimeValue(sentence, expansion, slot, false);
+						}
 						for(String str: values.keySet()) {
-							//get normalized concept from candidate
-							String concept = conceptExtractor.getConcept(str);
-							if(!candidates.containsKey(concept))
-								candidates.put(concept, values.get(str));
-							else
-								candidates.put(concept, candidates.get(concept) + values.get(str));
+							if(!candidates.containsKey(str)){
+								//candidates.put(str, values.get(str));
+								Set<String> documents = new HashSet<String>(relevantSentences.get(expansion).get(sentence));
+								//for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
+								//	documents.add(sentenceID);
+								//}
+								candidates.put(str, new Pair<Set<String>, Double>(documents, values.get(str) * relevantSentences.get(expansion).get(sentence).size()));
+							}
+							else {
+								Pair<Set<String>, Double> setAndScore = candidates.get(str);
+								for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
+									setAndScore.getFirst().add(sentenceID);
+								}
+								setAndScore.setSecond(setAndScore.getSecond() + values.get(str) * relevantSentences.get(expansion).get(sentence).size());
+								candidates.put(str, setAndScore);
+							}
 						}
 					}
 				} catch(NoSuchParseException e) {
@@ -284,19 +313,19 @@ public class SSF implements Runnable{
 	}
 	
 	
-	public static Map<String, Double> findCandidates(Entity entity, Slot slot, Map<String, Map<String, Set<String>>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
+	public static Map<String, Pair<Set<String>, Double>> findCandidates(Entity entity, Slot slot, Map<String, Map<String, Set<String>>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
 		if(slot.getName().equals(Constants.SlotName.Titles))
 			return findTitles(entity, slot, relevantSentences, coreNLP, conceptExtractor);
 		
 		if (slot.getName().equals(Constants.SlotName.Contact_Meet_PlaceTime))
 			return findContactMeetPlaceTime(entity,slot,relevantSentences,coreNLP,conceptExtractor);
 		
-		Map<String, Double> candidates = new HashMap<String, Double>();
+		Map<String, Pair<Set<String>, Double>> candidates = new HashMap<String, Pair<Set<String>, Double>>();
 		String defaultVal = "";
 		
 		for(String expansion: entity.getExpansions()) {
 			for(String sentence: relevantSentences.get(expansion).keySet()) {
-
+				//String streamID = null, folderName = null;
 				//System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
 				//String[] split = relevantSentences.get(expansion).get(sentence).split("__");
 				//defaultVal = split[split.length-1];
@@ -304,8 +333,21 @@ public class SSF implements Runnable{
 				String docId="";
 				//int sentIndex = 0;
 				for(String id: relevantSentences.get(expansion).get(sentence)) {
+					//System.out.println(id);
 					String temp = id.substring(0, id.lastIndexOf("__"));
-					defaultVal = temp.substring(0, temp.lastIndexOf("__"));
+					defaultVal = temp.substring(temp.lastIndexOf("__") + 2).replace("/","");
+					//System.out.println(temp);
+					//System.out.println(defaultVal);
+					System.out.println(sentence);
+					String streamID = null, folderID = null;
+					streamID = id.substring(0, id.indexOf("__"));
+					String tempFolderID = id.substring(0, id.lastIndexOf("__"));
+					folderID = tempFolderID.substring(tempFolderID.lastIndexOf("__") + 2).replace("/","");
+					
+					System.out.println(id + "\n");
+					//System.out.println(streamID);
+					//System.out.println(folderID + "\n\n");
+					
 					if(id.contains("news")) {
 						docType = "news";
 						break;
@@ -316,7 +358,6 @@ public class SSF implements Runnable{
 						break;
 					}
 				}
-
 				
 				try {
 					//for each sentence, find possible slot values and add to candidate list
@@ -324,52 +365,73 @@ public class SSF implements Runnable{
 					//System.out.println("Now processing: " + sentence);
 					if(docType.equals("arxiv")) {
 						if(!slot.getName().equals(Constants.SlotName.Affiliate) || !entity.getEntityType().equals(Constants.EntityType.PER))
-
 							continue;
 						arxivDocument arxivDoc = new arxivDocument(docId);
+						List<String> arxivCandidates = new ArrayList<String>();
 						if(arxivDoc.getAuthors().contains(expansion)) {
 							for(String author: arxivDoc.getAuthors()) 
 								if(!author.equals(expansion))
-									candidates.put(author, 1.0);
+									arxivCandidates.add(author);
+									//candidates.put(author, 1.0);
 							for(String ack: arxivDoc.getAcknowledgements())
-								candidates.put(ack, 1.0);
+								arxivCandidates.add(ack);
+								//candidates.put(ack, 1.0);
 						}
 						else if(arxivDoc.getAcknowledgements().contains(expansion)) {
-							for(String author: arxivDoc.getAuthors()) 
-								candidates.put(author, 1.0);
+							for(String author: arxivDoc.getAuthors())
+								arxivCandidates.add(author);
+								//candidates.put(author, 1.0);
 						}
 						
 						for(List<String> reference: arxivDoc.getReferences()) {
-								if(reference.contains(expansion)) {
-									for(String author: reference) 
-										if(!author.equals(expansion))
-											candidates.put(author, 1.0);
+							if(reference.contains(expansion)) {
+								for(String author: reference) 
+									if(!author.equals(expansion))
+										arxivCandidates.add(author);
+										//candidates.put(author, 1.0);
+							}
+						}
+						for(String arxivCandidate: arxivCandidates) {
+							if(!candidates.containsKey(arxivCandidate)) {
+								Set<String> documents = new HashSet<String>(relevantSentences.get(expansion).get(sentence));
+								candidates.put(arxivCandidate, new Pair<Set<String>, Double>(documents, (double)documents.size()));
+							}
+							else {
+								Pair<Set<String>, Double> setAndScore = candidates.get(arxivCandidate);
+								for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
+									setAndScore.getFirst().add(sentenceID);
 								}
+								setAndScore.setSecond(setAndScore.getSecond() + relevantSentences.get(expansion).get(sentence).size());
+								candidates.put(arxivCandidate, setAndScore);
+							}
 						}
 					}
-					//social documents
-
-					else if(docType.equals("social")) {
-						Map<String, Double> values = coreNLP.findSlotValue(sentence, expansion, slot, (slot.getTargetNERTypes() != null) ? true : false, defaultVal);
-						for(String str: values.keySet()) {
-							//get normalized concept from candidate
-							String concept = conceptExtractor.getConcept(str);
-							if(!candidates.containsKey(concept))
-								candidates.put(concept, values.get(str));
-							else
-								candidates.put(concept, candidates.get(concept) + values.get(str));
-						}
-					}
-					//news documents
 					else {
-						Map<String, Double> values = coreNLP.findSlotValue(sentence, expansion, slot, false, defaultVal);
+						//social documents
+						Map<String, Double> values = null;
+						if(docType.equals("social")) {
+							values = coreNLP.findSlotValue(sentence, expansion, slot, (slot.getTargetNERTypes() != null) ? true : false, defaultVal);
+						}
+						//news documents
+						else {
+							values = coreNLP.findSlotValue(sentence, expansion, slot, false, defaultVal);
+						}
 						for(String str: values.keySet()) {
-							//get normalized concept from candidate
-							String concept = conceptExtractor.getConcept(str);
-							if(!candidates.containsKey(concept))
-								candidates.put(concept, values.get(str));
-							else
-								candidates.put(concept, candidates.get(concept) + values.get(str));
+							if(!candidates.containsKey(str)){
+								Set<String> documents = new HashSet<String>();
+								for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
+									documents.add(sentenceID);
+								}
+								candidates.put(str, new Pair<Set<String>, Double>(documents, values.get(str) * relevantSentences.get(expansion).get(sentence).size()));
+							}
+							else {
+								Pair<Set<String>, Double> setAndScore = candidates.get(str);
+								for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
+									setAndScore.getFirst().add(sentenceID);
+								}
+								setAndScore.setSecond(setAndScore.getSecond() + values.get(str) * relevantSentences.get(expansion).get(sentence).size());
+								candidates.put(str, setAndScore);
+							}
 						}
 					}
 				} catch(NoSuchParseException e) {
@@ -504,14 +566,33 @@ private static class FillSlotForEntity implements Runnable{
 				//System.out.println(slot);
 				System.out.println("Finding value for " + slot.getName() + " for entity: " + entity.getName());
 				//for each expansion, slot pattern, get all possible candidates
-				Map<String, Double> candidates = findCandidates(entity, slot, relevantSentences, nlp, conceptExtractor);
-				
+				Map<String, Pair<Set<String>, Double>> candidates = findCandidates(entity, slot, relevantSentences, nlp, conceptExtractor);
+				Map<String, Pair<Set<String>, Double>> normalizedMappings = new HashMap<String, Pair<Set<String>, Double>>();
 				//remove candidates below the threshold value
+				for(String slotValue:candidates.keySet()) {
+					String concept = conceptExtractor.getConcept(slotValue);
+					if(!normalizedMappings.containsKey(concept))
+						normalizedMappings.put(concept, new Pair<Set<String>, Double>(new HashSet<String>(), 0.0));
+					Pair<Set<String>, Double> pair = normalizedMappings.get(concept);
+					pair.getFirst().add(slotValue);
+					pair.setSecond(pair.getSecond() + candidates.get(slotValue).getSecond());
+					
+				}
 				List<String> finalCandidateList = new ArrayList<String>();
-				for(String key: candidates.keySet()) 
-					if(candidates.get(key) > slot.getThreshold()) 
+				for(String key: normalizedMappings.keySet()) 
+					if(candidates.get(key).getSecond() > slot.getThreshold()) 
 						finalCandidateList.add(key);
 				
+				for(String finalCandidateNormalized:finalCandidateList) {
+					for(String finalCandidateUnNormalized:normalizedMappings.get(finalCandidateNormalized).getFirst()) {
+						for(String id:candidates.get(finalCandidateUnNormalized).getFirst()) {
+							String streamID = null, folderID = null;
+							streamID = id.substring(0, id.indexOf("__"));
+							String tempFolderID = id.substring(0, id.lastIndexOf("__"));
+							folderID = tempFolderID.substring(tempFolderID.lastIndexOf("__") + 2).replace("/","");
+						}
+					}
+				}
 				//updating slots
 				System.out.println(entity.getName() + "," + slot.getName() + ":" + entity.updateSlot(slot, finalCandidateList));
 			}
@@ -782,7 +863,7 @@ private static class FillSlotForEntity implements Runnable{
 		long endTime = System.nanoTime();
 		//System.out.println("Took "+(endTime - startTime) + " ns"); 
 		//new SSF().createSlots();
-		//Execution.run(args, "Main", new SSF());
+		Execution.run(args, "Main", new SSF());
 		//SSF s= new SSF();
 		//new SSF().updateSlots();
 		//Execution.run(args, "Main", new SSF());
