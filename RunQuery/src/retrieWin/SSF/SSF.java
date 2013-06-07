@@ -55,7 +55,7 @@ public class SSF implements Runnable{
 		readEntities();
 		readSlots();
 		setCoreNLP(new NLPUtils());
-		//conceptExtractor = new Concept();
+		conceptExtractor = new Concept();
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -772,17 +772,16 @@ private static class FillSlotForEntity implements Runnable{
 			System.out.println("Environment variable not set");
 			return;
 		}
-		/*SSF ssf = new SSF();
+		SSF ssf = new SSF();
 		long startTime = System.nanoTime();
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 	    String s;
 	    System.out.println("Ready to read input...");
 	    while ((s = in.readLine()) != null && s.length() != 0)
 	      System.out.println(ssf.conceptExtractor.getCCConcept(s));
-		//ssf.conceptExtractor.getCCConcept("Billy Gates");
-		long endTime = System.nanoTime();*/
+		long endTime = System.nanoTime();
 		//System.out.println("Took "+(endTime - startTime) + " ns"); 
-		new SSF().createSlots();
+		//new SSF().createSlots();
 		//Execution.run(args, "Main", new SSF());
 		//SSF s= new SSF();
 		//new SSF().updateSlots();
