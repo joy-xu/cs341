@@ -3,6 +3,7 @@ package retrieWin.SSF;
 import edu.stanford.nlp.parser.lexparser.NoSuchParseException;
 import edu.stanford.nlp.util.Triple;
 import fig.basic.*;
+import edu.stanford.nlp.util.Pair;
 import fig.exec.Execution;
 
 import java.io.BufferedReader;
@@ -213,9 +214,9 @@ public class SSF implements Runnable{
 							else {
 								Pair<Set<String>, Double> setAndScore = candidates.get(title);
 								for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
-									setAndScore.getFirst().add(sentenceID);
+									setAndScore.first().add(sentenceID);
 								}
-								setAndScore.setSecond(setAndScore.getSecond() + relevantSentences.get(expansion).get(sentence).size());
+								setAndScore.setSecond(setAndScore.second() + relevantSentences.get(expansion).get(sentence).size());
 								candidates.put(title, setAndScore);
 							}
 						}
@@ -230,9 +231,9 @@ public class SSF implements Runnable{
 						else {
 							Pair<Set<String>, Double> setAndScore = candidates.get(nnTitle);
 							for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
-								setAndScore.getFirst().add(sentenceID);
+								setAndScore.first().add(sentenceID);
 							}
-							setAndScore.setSecond(setAndScore.getSecond() + 1);
+							setAndScore.setSecond(setAndScore.second() + 1);
 							candidates.put(nnTitle, setAndScore);
 						}
 					}
@@ -295,9 +296,9 @@ public class SSF implements Runnable{
 							else {
 								Pair<Set<String>, Double> setAndScore = candidates.get(str);
 								for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
-									setAndScore.getFirst().add(sentenceID);
+									setAndScore.first().add(sentenceID);
 								}
-								setAndScore.setSecond(setAndScore.getSecond() + values.get(str) * relevantSentences.get(expansion).get(sentence).size());
+								setAndScore.setSecond(setAndScore.second() + values.get(str) * relevantSentences.get(expansion).get(sentence).size());
 								candidates.put(str, setAndScore);
 							}
 						}
@@ -399,9 +400,9 @@ public class SSF implements Runnable{
 							else {
 								Pair<Set<String>, Double> setAndScore = candidates.get(arxivCandidate);
 								for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
-									setAndScore.getFirst().add(sentenceID);
+									setAndScore.first().add(sentenceID);
 								}
-								setAndScore.setSecond(setAndScore.getSecond() + relevantSentences.get(expansion).get(sentence).size());
+								setAndScore.setSecond(setAndScore.second() + relevantSentences.get(expansion).get(sentence).size());
 								candidates.put(arxivCandidate, setAndScore);
 							}
 						}
@@ -427,9 +428,9 @@ public class SSF implements Runnable{
 							else {
 								Pair<Set<String>, Double> setAndScore = candidates.get(str);
 								for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
-									setAndScore.getFirst().add(sentenceID);
+									setAndScore.first().add(sentenceID);
 								}
-								setAndScore.setSecond(setAndScore.getSecond() + values.get(str) * relevantSentences.get(expansion).get(sentence).size());
+								setAndScore.setSecond(setAndScore.second() + values.get(str) * relevantSentences.get(expansion).get(sentence).size());
 								candidates.put(str, setAndScore);
 							}
 						}
@@ -481,10 +482,10 @@ public class SSF implements Runnable{
 		System.out.println("Finding slot values...");
 		
 		ExecutorService e = Executors.newFixedThreadPool(1);
-		
+		OutputWriter writer = new OutputWriter("run.txt");
 		
 		for(Entity entity: entities) {
-			e.execute(new FillSlotForEntity(entity,timestamp,entities,getCoreNLP(),conceptExtractor,workingDirectory, getSlots(), eq));
+			e.execute(new FillSlotForEntity(entity,timestamp,entities,getCoreNLP(),conceptExtractor,workingDirectory, getSlots(), eq, writer));
 		}
 		e.shutdown();
 		while(true)
@@ -510,8 +511,9 @@ private static class FillSlotForEntity implements Runnable{
 		List<Slot> allSlots;
 		String workingDirectory;
 		ExecuteQuery eq;
+		OutputWriter writer;
 		public FillSlotForEntity(Entity en, String tm, List<Entity> listEntities, NLPUtils nlpIn, Concept cin, String wd, List<Slot> slotInput
-				, ExecuteQuery eqIn)
+				, ExecuteQuery eqIn, OutputWriter writerIn)
 		{
 			entity = en;
 			timestamp = tm;
@@ -521,6 +523,7 @@ private static class FillSlotForEntity implements Runnable{
 			allSlots = slotInput;
 			workingDirectory = wd;
 			eq = eqIn;
+			writer = writerIn;
 		}
 		
 		@Override
@@ -574,22 +577,24 @@ private static class FillSlotForEntity implements Runnable{
 					if(!normalizedMappings.containsKey(concept))
 						normalizedMappings.put(concept, new Pair<Set<String>, Double>(new HashSet<String>(), 0.0));
 					Pair<Set<String>, Double> pair = normalizedMappings.get(concept);
-					pair.getFirst().add(slotValue);
-					pair.setSecond(pair.getSecond() + candidates.get(slotValue).getSecond());
+					pair.first().add(slotValue);
+					pair.setSecond(pair.second() + candidates.get(slotValue).second());
 					
 				}
 				List<String> finalCandidateList = new ArrayList<String>();
 				for(String key: normalizedMappings.keySet()) 
-					if(candidates.get(key).getSecond() > slot.getThreshold()) 
+					if(candidates.get(key).second() > slot.getThreshold()) 
 						finalCandidateList.add(key);
 				
 				for(String finalCandidateNormalized:finalCandidateList) {
-					for(String finalCandidateUnNormalized:normalizedMappings.get(finalCandidateNormalized).getFirst()) {
-						for(String id:candidates.get(finalCandidateUnNormalized).getFirst()) {
+					for(String finalCandidateUnNormalized:normalizedMappings.get(finalCandidateNormalized).first()) {
+						for(String id:candidates.get(finalCandidateUnNormalized).first()) {
 							String streamID = null, folderID = null;
 							streamID = id.substring(0, id.indexOf("__"));
 							String tempFolderID = id.substring(0, id.lastIndexOf("__"));
 							folderID = tempFolderID.substring(tempFolderID.lastIndexOf("__") + 2).replace("/","");
+							Pair<Long, Long> offset = Utils.getByteOffset(id, finalCandidateUnNormalized, tempFolderID);
+							writer.Write(streamID, entity.getName(), (double)500, folderID, slot.getName().toString(), finalCandidateNormalized, offset.first(), offset.second());
 						}
 					}
 				}
@@ -618,7 +623,6 @@ private static class FillSlotForEntity implements Runnable{
 				downloadHours.add(downloadHour);
 			}
 		}
-		
 		Indexer.createUnfilteredIndex(downloadHours, workingDirectory, saveAsDirectory, indexLocation);
 	}
 	
@@ -853,14 +857,6 @@ private static class FillSlotForEntity implements Runnable{
 			System.out.println("Environment variable not set");
 			return;
 		}
-		SSF ssf = new SSF();
-		long startTime = System.nanoTime();
-		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-	    String s;
-	    System.out.println("Ready to read input...");
-	    while ((s = in.readLine()) != null && s.length() != 0)
-	      System.out.println(ssf.conceptExtractor.getCCConcept(s));
-		long endTime = System.nanoTime();
 		//System.out.println("Took "+(endTime - startTime) + " ns"); 
 		//new SSF().createSlots();
 		Execution.run(args, "Main", new SSF());

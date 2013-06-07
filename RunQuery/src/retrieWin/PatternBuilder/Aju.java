@@ -98,7 +98,7 @@ public class Aju implements Runnable{
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
 							LogInfo.logs("Founded by  : " + str);
-							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", slot.getName().toString(), str, 10, 15);
+							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", slot.getName().toString(), str, (long)10, (long)15);
 						} 
 					}
 					else {
@@ -116,7 +116,7 @@ public class Aju implements Runnable{
 						for(String str:values.keySet()) {
 							
 							LogInfo.logs("Award won   : " + str);
-							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", slot.getName().toString(), str, 10, 15);
+							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", slot.getName().toString(), str, (long)10, (long)15);
 						} 
 					}
 					else {
@@ -134,7 +134,7 @@ public class Aju implements Runnable{
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
 							LogInfo.logs("Founder of  : " + str);
-							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", slot.getName().toString(), str, 10, 15);
+							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", slot.getName().toString(), str, (long)10, (long)15);
 						} 
 					}
 					else {
@@ -152,7 +152,7 @@ public class Aju implements Runnable{
 						for(String str:values.keySet()) {
 							
 							LogInfo.logs("Affiliate of: " + str);
-							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", slot.getName().toString(), str, 10, 15);
+							writer.Write("1317997776-5197c3a02c98ab21e3a93eedca52599d", "Aharon_Barak", 666, "2010-02-04-05", slot.getName().toString(), str, (long)10, (long)15);
 						} 
 					}
 					else {
