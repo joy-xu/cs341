@@ -2,12 +2,7 @@ from lxml.html import parse, tostring
 import sys
 import re
 
-def main(entity):
-    table = {}
-    doc = parse('http://en.wikipedia.org/wiki/' + entity).getroot()
-    #print tostring(doc, pretty_print=True)
-    #return
-
+def clean_dom(doc):
     for infobox in doc.xpath('//table[contains(@class, "infobox")]'):
       infobox.getparent().remove(infobox)
 
@@ -47,6 +42,13 @@ def main(entity):
     for references in doc.xpath('//comment()'):
       references.getparent().remove(references)
     
+def main(entity):
+    table = {}
+    doc = parse('http://en.wikipedia.org/wiki/' + entity).getroot()
+    #print tostring(doc, pretty_print=True)
+    #return
+    clean_dom(doc)
+
     sent = ""
     for element in doc.itertext():
       text = element.encode('ascii', 'ignore')
