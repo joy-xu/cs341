@@ -57,7 +57,7 @@ public class OutputWriter {
 							"#    }, \n"+
 							"#    \"system_id\": \"%s\"\n"+
 							"#}", POCEmail, TeamID, TeamName, POCName, SystemID));
-										writer.close();
+			writer.close();
 		} catch (IOException e) {
 			LogInfo.logs("Exception caught: " + e);
 			e.printStackTrace();

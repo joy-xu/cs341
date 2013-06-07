@@ -1,6 +1,8 @@
 package retrieWin.SSF;
 
 import edu.stanford.nlp.parser.lexparser.NoSuchParseException;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.Triple;
 import fig.basic.*;
 import edu.stanford.nlp.util.Pair;
@@ -19,6 +21,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -48,7 +51,7 @@ public class SSF implements Runnable{
 	List<Entity> entities;
 	private NLPUtils coreNLP;
 	Concept conceptExtractor;
-	
+	static StanfordCoreNLP processor;
 	public SSF() {
 		initialize();
 	}
@@ -58,6 +61,9 @@ public class SSF implements Runnable{
 		readSlots();
 		setCoreNLP(new NLPUtils());
 		conceptExtractor = new Concept();
+		Properties props = new Properties();
+		props.put("annotators", "tokenize, ssplit, pos, lemma, parse, ner, dcoref");
+		processor = new StanfordCoreNLP(props, false);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -326,6 +332,8 @@ public class SSF implements Runnable{
 		
 		for(String expansion: entity.getExpansions()) {
 			for(String sentence: relevantSentences.get(expansion).keySet()) {
+				Annotation document = new Annotation(sentence);
+				processor.annotate(document);
 				//String streamID = null, folderName = null;
 				//System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
 				//String[] split = relevantSentences.get(expansion).get(sentence).split("__");
@@ -334,18 +342,18 @@ public class SSF implements Runnable{
 				String docId="";
 				//int sentIndex = 0;
 				for(String id: relevantSentences.get(expansion).get(sentence)) {
-					//System.out.println(id);
+					//System.out.println("ID from findCandidates:" + id);
 					String temp = id.substring(0, id.lastIndexOf("__"));
 					defaultVal = temp.substring(temp.lastIndexOf("__") + 2).replace("/","");
 					//System.out.println(temp);
 					//System.out.println(defaultVal);
-					System.out.println(sentence);
+					//System.out.println(sentence);
 					String streamID = null, folderID = null;
 					streamID = id.substring(0, id.indexOf("__"));
 					String tempFolderID = id.substring(0, id.lastIndexOf("__"));
 					folderID = tempFolderID.substring(tempFolderID.lastIndexOf("__") + 2).replace("/","");
 					
-					System.out.println(id + "\n");
+					//System.out.println(id + "\n");
 					//System.out.println(streamID);
 					//System.out.println(folderID + "\n\n");
 					
@@ -411,11 +419,11 @@ public class SSF implements Runnable{
 						//social documents
 						Map<String, Double> values = null;
 						if(docType.equals("social")) {
-							values = coreNLP.findSlotValue(sentence, expansion, slot, (slot.getTargetNERTypes() != null) ? true : false, defaultVal);
+							values = coreNLP.findSlotValue(document, expansion, slot, (slot.getTargetNERTypes() != null) ? true : false, defaultVal);
 						}
 						//news documents
 						else {
-							values = coreNLP.findSlotValue(sentence, expansion, slot, false, defaultVal);
+							values = coreNLP.findSlotValue(document, expansion, slot, false, defaultVal);
 						}
 						for(String str: values.keySet()) {
 							if(!candidates.containsKey(str)){
@@ -482,7 +490,7 @@ public class SSF implements Runnable{
 		System.out.println("Finding slot values...");
 		
 		ExecutorService e = Executors.newFixedThreadPool(1);
-		OutputWriter writer = new OutputWriter("run.txt");
+		OutputWriter writer = new OutputWriter(timestamp + ".txt");
 		
 		for(Entity entity: entities) {
 			e.execute(new FillSlotForEntity(entity,timestamp,entities,getCoreNLP(),conceptExtractor,workingDirectory, getSlots(), eq, writer));
@@ -499,6 +507,7 @@ public class SSF implements Runnable{
 				System.out.println("Waiting - Thread interrupted");
 			}
 		}
+		writer.Close();
 	}
 	
 private static class FillSlotForEntity implements Runnable{
@@ -593,7 +602,7 @@ private static class FillSlotForEntity implements Runnable{
 							streamID = id.substring(0, id.indexOf("__"));
 							String tempFolderID = id.substring(0, id.lastIndexOf("__"));
 							folderID = tempFolderID.substring(tempFolderID.lastIndexOf("__") + 2).replace("/","");
-							Pair<Long, Long> offset = Utils.getByteOffset(id, finalCandidateUnNormalized, tempFolderID);
+							Pair<Long, Long> offset = Utils.getByteOffset(id, finalCandidateUnNormalized, workingDirectory);
 							writer.Write(streamID, entity.getName(), (double)500, folderID, slot.getName().toString(), finalCandidateNormalized, offset.first(), offset.second());
 						}
 					}
@@ -611,15 +620,15 @@ private static class FillSlotForEntity implements Runnable{
 		 for(Slot slot: ssf.getSlots()) {
 		 if(!slot.getName().equals(Constants.SlotName.Contact_Meet_PlaceTime))
 		 continue;
-		 System.out.println(ssf.getCoreNLP().findSlotValue("", "", slot, false, null));
+		 System.out.println(ssf.getCoreNLP().findSlotValue(null, "", slot, false, null));
 		 }
 	}
 	
 	void buildLargeIndex() {
 		List<String> downloadHours = new ArrayList<String>();
-		for(int i = 11; i <= 11; i++) {
-			for(int j=11; j < 12; j++) {
-				String downloadHour = String.format("2011-11-%02d-%02d", i, j);
+		for(int i = 19; i <= 19; i++) {
+			for(int j=14; j < 16; j++) {
+				String downloadHour = String.format("2011-12-%02d-%02d", i, j);
 				downloadHours.add(downloadHour);
 			}
 		}
@@ -893,8 +902,19 @@ private static class FillSlotForEntity implements Runnable{
 		LogInfo.logs(String.format("Download hour     : %s", downloadHour));
 		LogInfo.logs(String.format("Working directory : %s", workingDirectory));
 		
-		runSSF(downloadHour);
+		
+		List<String> folders = new ArrayList<String>();
+		for(int d = 19; d <= 19; d++) {
+			for(int i = 14 ;i < 16; i++)
+				folders.add(String.format("%04d-%02d-%02d-%02d", 2011,12,d,i));
+		}
+		
+		for(String folderName:folders) {
+			System.out.println("Running SSF for " + folderName);
+			runSSF(folderName);
+		}
 		//buildLargeIndex();
+		System.out.println("All Done!");
 		
 		LogInfo.end_track();
 	}

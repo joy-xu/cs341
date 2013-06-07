@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import retrieWin.Indexer.ProcessTrecTextDocument;
@@ -29,6 +30,8 @@ import retrieWin.Utils.FileUtils;
 import retrieWin.Utils.NLPUtils;
 import retrieWin.Utils.Utils;
 
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.stats.IntCounter;
 import edu.stanford.nlp.util.Pair;
 import fig.basic.LogInfo;
@@ -41,12 +44,17 @@ public class Aju implements Runnable{
 	@Option(gloss="number of Results") public int numResults;
 	List<Entity> entities;
 	private List<Slot> slots;
+	static StanfordCoreNLP processor;
+	
 	public static void main(String[] args) {
 		//System.out.println("Co-founder".toLowerCase().replaceAll("[^a-z]", ""));
 		Execution.run(args, "Main", new Aju());
 	}
 	
 	public Aju(){
+		Properties props = new Properties();
+		props.put("annotators", "tokenize, ssplit, pos, lemma, parse, ner, dcoref");
+		processor = new StanfordCoreNLP(props, false);
 		readEntities();
 		readSlots();
 	}
@@ -92,8 +100,11 @@ public class Aju implements Runnable{
 			if(slot.getName().equals(Constants.SlotName.FoundedBy)) {
 				List<String> sentences = new ArrayList<String>();
 				sentences.add("Seagram Company founder Bill Gates visited the Memorial Auditorium on last Monday.");
+				
 				for(String sentence:sentences) {
-					Map<String, Double> values = obj.findSlotValue(sentence, "Seagram Company", slot, false, "");
+					Annotation document = new Annotation(sentence);
+					processor.annotate(document);
+					Map<String, Double> values = obj.findSlotValue(document, "Seagram Company", slot, false, "");
 					LogInfo.logs("Sentence    : " + sentence);
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
@@ -110,7 +121,9 @@ public class Aju implements Runnable{
 				List<String> sentences = new ArrayList<String>();
 				sentences.add("Pulitzer prize winner Bill Gates visited the Memorial Auditorium on last Monday.");
 				for(String sentence:sentences) {
-					Map<String, Double> values = obj.findSlotValue(sentence, "Bill Gates", slot, false, "");
+					Annotation document = new Annotation(sentence);
+					processor.annotate(document);
+					Map<String, Double> values = obj.findSlotValue(document, "Bill Gates", slot, false, "");
 					LogInfo.logs("Sentence    : " + sentence);
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
@@ -129,7 +142,9 @@ public class Aju implements Runnable{
 				sentences.add("Seagram Company founder Bill Gates visited the Memorial Auditorium on last Monday.");
 				sentences.add("Seagram Company Ltd. co-founder Bill Gates worked with his friend Steve Jobs.");
 				for(String sentence:sentences) {
-					Map<String, Double> values = obj.findSlotValue(sentence, "Bill Gates", slot, false, "");
+					Annotation document = new Annotation(sentence);
+					processor.annotate(document);
+					Map<String, Double> values = obj.findSlotValue(document, "Bill Gates", slot, false, "");
 					LogInfo.logs("Sentence    : " + sentence);
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
@@ -146,7 +161,9 @@ public class Aju implements Runnable{
 				List<String> sentences = new ArrayList<String>();
 				sentences.add("Seagram founder Bill Gates worked with his friend Steve Jobs on last Monday.");
 				for(String sentence:sentences) {
-					Map<String, Double> values = obj.findSlotValue(sentence, "Bill Gates", slot, false, "");
+					Annotation document = new Annotation(sentence);
+					processor.annotate(document);
+					Map<String, Double> values = obj.findSlotValue(document, "Bill Gates", slot, false, "");
 					LogInfo.logs("Sentence    : " + sentence);
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
@@ -425,7 +442,9 @@ public class Aju implements Runnable{
 								for(Slot slot: slots) {
 									if(slot.getName().equals(Constants.SlotName.FoundedBy) && 
 											e.getEntityType() == EntityType.ORG) {
-										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false, "");
+										Annotation document = new Annotation(sentence);
+										processor.annotate(document);
+										Map<String, Double> values = obj.findSlotValue(document, expansion, slot, false, "");
 										LogInfo.logs("Sentence   $$ " + sentence);
 										if(values != null && values.size() > 0) {
 											for(String str:values.keySet()) {
@@ -438,7 +457,9 @@ public class Aju implements Runnable{
 									}
 									if(slot.getName().equals(Constants.SlotName.AwardsWon)  && 
 											e.getEntityType() == EntityType.PER) {
-										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false, "");
+										Annotation document = new Annotation(sentence);
+										processor.annotate(document);
+										Map<String, Double> values = obj.findSlotValue(document, expansion, slot, false, "");
 										LogInfo.logs("Sentence   $$ " + sentence);
 										if(values != null && values.size() > 0) {
 											for(String str:values.keySet()) {
@@ -452,7 +473,9 @@ public class Aju implements Runnable{
 									}
 									if(slot.getName().equals(Constants.SlotName.FounderOf)  && 
 											e.getEntityType() == EntityType.PER) {
-										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false, "");
+										Annotation document = new Annotation(sentence);
+										processor.annotate(document);
+										Map<String, Double> values = obj.findSlotValue(document, expansion, slot, false, "");
 										LogInfo.logs("Sentence   $$ " + sentence);
 										if(values != null && values.size() > 0) {
 											for(String str:values.keySet()) {
@@ -466,7 +489,9 @@ public class Aju implements Runnable{
 									if(slot.getName().equals(Constants.SlotName.Affiliate) &&
 											slot.getEntityType() == EntityType.PER  && 
 											e.getEntityType() == EntityType.PER) {
-										Map<String, Double> values = obj.findSlotValue(sentence, expansion, slot, false, "");
+										Annotation document = new Annotation(sentence);
+										processor.annotate(document);
+										Map<String, Double> values = obj.findSlotValue(document, expansion, slot, false, "");
 										LogInfo.logs("Sentence   $$ " + sentence);
 										if(values != null && values.size() > 0) {
 											for(String str:values.keySet()) {

@@ -578,6 +578,7 @@ public class Utils {
 		String folder = split[2];
 		int sentIndex = Integer.parseInt(split[3]);
 		System.out.println(sentIndex);
+		System.out.println(id);
 		System.out.println(streamId);
 		System.out.println("Downloading file");
 		String downloadedFile = Downloader.downloadfile(folder, file, workingDirectory);
@@ -636,9 +637,9 @@ public class Utils {
             		break;
             }
 			
-			byte[] bytes = item.body.clean_visible.getBytes("UTF-8");
+			/*byte[] bytes = item.body.clean_visible.getBytes("UTF-8");
         	for(long i = start; i <= end; i++)
-        		System.out.print((char)bytes[(int)i]);
+        		System.out.print((char)bytes[(int)i]);*/
 		} 
 		catch (Exception e)
 		{

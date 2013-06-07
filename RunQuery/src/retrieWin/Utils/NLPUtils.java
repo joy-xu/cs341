@@ -721,11 +721,9 @@ public class NLPUtils {
 		return bestPair;
 	}
 	
-	public Map<String, Double> findSlotValue(String sentence, String entity1, Slot slot, boolean social, String defaultVal) throws NoSuchParseException {
+	public Map<String, Double> findSlotValue(Annotation document, String entity1, Slot slot, boolean social, String defaultVal) throws NoSuchParseException {
 		Map<String, Double> candidates = new HashMap<String, Double>();
 		try {
-			Annotation document = new Annotation(sentence);
-			processor.annotate(document);
 			//get coreferences for the entity
 			Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
 	
