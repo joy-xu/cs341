@@ -901,7 +901,10 @@ public class NLPUtils {
 				else {
 					for(IndexedWord w: ansSet) {
 						String temp = "";
-						phrase = findExpandedEntity(sentence, w.originalText());
+						if (slot.getName().equals(SlotName.Contact_Meet_PlaceTime) || slot.getName().equals(SlotName.Contact_Meet_Entity))
+							phrase = findExpandedEntityContactMeetPlaceTime(sentence, w.originalText());
+						else
+							phrase = findExpandedEntity(sentence,w.originalText());
 						if(phrase == null)
 							continue;
 						for(String tok: phrase.split(" ")) 
@@ -989,8 +992,32 @@ public class NLPUtils {
 		
 		return ans;
 	}
-
+	
+	
 	private static String findExpandedEntity(CoreMap sentence, String str) {
+		IndexedWord word = null;
+		for(IndexedWord w: sentence.get(CollapsedCCProcessedDependenciesAnnotation.class).vertexSet()) {
+		if(w.originalText().compareToIgnoreCase(str) == 0) {
+		word = w;
+		break;
+		}
+		}
+		if(word == null)
+		return null;
+		int index = word.index();
+		Tree root = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
+		Tree node = root.getLeaves().get(index-1);
+		Tree traverse = node;
+		   for(int height = 0; height < 2; height++) {
+		   	node = node.parent(root);
+		   	if(node.value().equals("NP")) {
+		   	break;
+		   	}
+		   }
+		   return traverse.value().equals("NP") ? getText(traverse): getText(node);
+		}
+
+	private static String findExpandedEntityContactMeetPlaceTime(CoreMap sentence, String str) {
 		//System.out.println("String is: " + str);
 		IndexedWord word = null;
 		for(IndexedWord w: sentence.get(CollapsedCCProcessedDependenciesAnnotation.class).vertexSet()) {
