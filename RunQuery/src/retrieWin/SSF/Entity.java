@@ -80,7 +80,7 @@ public class Entity  implements Serializable {
 		String query = QueryBuilder.buildOrQuery(getExpansions());
 		List<TrecTextDocument> docs = QueryFactory.DoQuery(Arrays.asList(timestamp), Arrays.asList(query), workingDirectory, entities, null).get(query);
 		//return docs;
-		System.out.println("Originally had " + docs.size() + " docs");
+		//System.out.println("Originally had " + docs.size() + " docs");
 		return disambiguate(docs);
 	}
 	
@@ -88,7 +88,7 @@ public class Entity  implements Serializable {
 		String query = QueryBuilder.buildOrQuery(getExpansions());
 		List<TrecTextDocument> docs = QueryFactory.DoQuery(Arrays.asList(timestamp), Arrays.asList(query), workingDirectory, entities, eq).get(query);
 		//return docs;
-		System.out.println("Originally had " + docs.size() + " docs");
+		//System.out.println("Originally had " + docs.size() + " docs");
 		return disambiguate(docs);
 	}
 

@@ -109,7 +109,7 @@ public class ProcessTrecTextDocument {
 	{
 		Map<String, Set<String>> returnString = new HashMap<String, Set<String>>();
 		List<String> entitySplits = Arrays.asList(entity1.split(" "));
-		System.out.println("Considering entity expansion: " + entity1);
+		//System.out.println("Considering entity expansion: " + entity1);
 		for (TrecTextDocument t:documents)
 		{
 			int index = -1;

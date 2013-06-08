@@ -107,7 +107,7 @@ public class SSF implements Runnable{
 				while((line = reader.readLine()) != null) {
 					String[] splits = line.split("\",\"");
 					EntityType type = splits[1].replace("\"", "").equals("PER") ? EntityType.PER : (splits[1].equals("ORG") ? EntityType.ORG : EntityType.FAC);
-					String name = splits[0].replace("\"", "").replace("http://en.wikipedia.org/wiki/", "").replace("https://twitter.com/", "");
+					String name = splits[0].replace("\"", "");//.replace("http://en.wikipedia.org/wiki/", "").replace("https://twitter.com/", "");
 					//List<String> equivalents = Utils.getEquivalents(splits[3].replace("\"", ""));
 					List<String> equivalents = new ArrayList<String>(namesToExpansions.get(name));
 					Entity entity = new Entity(splits[0].replace("\"", ""), name, type, splits[2].replace("\"", ""),
@@ -431,6 +431,8 @@ public class SSF implements Runnable{
 								for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
 									documents.add(sentenceID);
 								}
+								LogInfo.logs(String.format("Entity    :%s\nSentence :%s\nSlot      :%s\nValue     :%s\n\n",
+														entity.getName(), sentence, slot.getName().toString(), str));
 								candidates.put(str, new Pair<Set<String>, Double>(documents, values.get(str) * relevantSentences.get(expansion).get(sentence).size()));
 							}
 							else {
@@ -480,6 +482,8 @@ public class SSF implements Runnable{
 		// read in existing information for entities 
 		System.out.println("Reading entities...");
 		readEntities();
+		
+		System.out.println(entities);
 		
 		// read in slot information 
 		System.out.println("Reading slots...");
@@ -538,12 +542,12 @@ private static class FillSlotForEntity implements Runnable{
 		@Override
 		public void run(){
 
-//			System.out.println("Finding slot values for entity " + entity.getName());
+			System.out.println("Finding slot values for entity " + entity.getName());
 			//get all relevant documents for the entity
 			//if (!entity.getName().equals("Aharon_Barak"))
 				//return;
 			List<TrecTextDocument> docs = entity.getRelevantDocuments(timestamp, workingDirectory, entities, eq);
-			System.out.println("Retrieved " + docs.size() + " relevant documents for entity: " + entity.getName());
+			//System.out.println("Retrieved " + docs.size() + " relevant documents for entity: " + entity.getName());
 			if(docs.isEmpty())
 				return;
 			
@@ -569,10 +573,10 @@ private static class FillSlotForEntity implements Runnable{
 				if(!slot.getEntityType().equals(entity.getEntityType()))
 						continue;
 				
-				if(!slot.getName().equals(Constants.SlotName.DateOfDeath))
-					continue;
+				//if(!slot.getName().equals(Constants.SlotName.DateOfDeath))
+				//	continue;
 				//TODO: remove this, computing only one slot right now
-				if(slot.getPatterns().isEmpty())
+				if(slot.getPatterns() !=null && slot.getPatterns().isEmpty())
 					continue;
 				//System.out.println("In slot " + slot.getName());
 				//System.out.println(slot);

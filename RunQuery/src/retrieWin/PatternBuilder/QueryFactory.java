@@ -32,7 +32,7 @@ public class QueryFactory {
 			System.exit(0);
 		}
 		int numthreads = folders.size()<4 ? folders.size():4;
-		System.out.println("Num thread is: " + numthreads);
+		//System.out.println("Num thread is: " + numthreads);
 		Map<String,List<TrecTextDocument>> results = new HashMap<String,List<TrecTextDocument>>();
 		ExecutorService e = Executors.newFixedThreadPool(numthreads);
 		List<Future<Map<String,List<TrecTextDocument>>>> futuresList = new ArrayList<Future<Map<String,List<TrecTextDocument>>>>();

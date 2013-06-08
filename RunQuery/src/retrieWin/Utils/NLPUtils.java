@@ -730,6 +730,7 @@ public class NLPUtils {
 			List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
 			for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
 				CoreMap sentenceMap = allSentenceMap.get(sentNum);
+				//System.out.println(slot.getName().toString());
 				for(SlotPattern pattern: slot.getPatterns()) {
 					for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot, social,defaultVal)) {
 						System.out.println(ans + "|" + pattern);
@@ -754,6 +755,7 @@ public class NLPUtils {
 		}
 		catch (Exception e) {
 			LogInfo.logs("Exception thrown. " + e);
+			e.printStackTrace();
 		}
 		return candidates;
 	}
