@@ -1,9 +1,11 @@
 package retrieWin.Utils;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.RandomAccessFile;
@@ -18,13 +20,21 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.thrift.protocol.TBinaryProtocol;
 
+import edu.stanford.nlp.util.Pair;
+
+
+import retrieWin.Indexer.Downloader;
 import retrieWin.Indexer.ThriftReader;
+import retrieWin.Indexer.TrecTextDocument;
 import retrieWin.SSF.Constants;
 import retrieWin.SSF.arxivDocument;
+import streamcorpus.OffsetType;
 import streamcorpus.Sentence;
 import streamcorpus.StreamItem;
 import streamcorpus.Token;
@@ -556,4 +566,88 @@ public class Utils {
 		}
 		return doc;
 	}
+	
+	public static Pair<Long, Long> getByteOffset(String id, String slotValue, String workingDirectory) {
+		long start = -1, end = -1;
+		String tempVal = "";
+		StreamItem item;
+		
+		String[] split = id.split("__");
+		String streamId = split[0];
+		String file = split[1];
+		String folder = split[2];
+		int sentIndex = Integer.parseInt(split[3]);
+		System.out.println(sentIndex);
+		System.out.println(id);
+		System.out.println(streamId);
+		System.out.println("Downloading file");
+		String downloadedFile = Downloader.downloadfile(folder, file, workingDirectory);
+		
+		if (downloadedFile == null) return new Pair<Long, Long>(start,end);
+		int count = 0;
+		try 
+		{
+			TBinaryProtocol protocol = ThriftReader.openBinaryProtocol(downloadedFile);
+			while (true) 
+	        {
+	            item = new StreamItem(); 
+	            try {
+	            	item.read(protocol);  
+	            }
+	            catch (Exception transportException)
+	            {
+	            	break;
+	            }
+	            
+            	if (!item.stream_id.equals(streamId))
+            		continue;
+            	System.out.println(item.stream_id);
+            	
+            	try {
+	            	Sentence s = item.body.sentences.get("lingpipe").get(sentIndex);
+	                
+	            	start = end = -1;
+	            	for (Token tok: s.getTokens())
+	        		{
+	            		if(start == -1 && slotValue.contains(tok.token)) {
+	            			start = tok.offsets.get(OffsetType.BYTES).first;
+	            			end = start + tok.offsets.get(OffsetType.BYTES).length;
+	            			tempVal += tok.token + " ";
+	            		}
+	            		else if (start != -1 && slotValue.contains(tok.token)) {
+	            			end += tok.offsets.get(OffsetType.BYTES).length;
+	            			tempVal += tok.token + " ";
+	            		}
+	            		else if(!slotValue.contains(tok.token)) {
+	            			if(tempVal.trim().equals(slotValue.trim()))
+	            				break;
+	            			else {
+	            				start = -1;
+	            				end = -1;
+	            				tempVal = "";
+	            			}
+	            		}
+	        		}
+            	}
+            	catch (Exception e) {
+            		continue;
+            	}
+            	
+            	if(end != -1)
+            		break;
+            }
+			
+			/*byte[] bytes = item.body.clean_visible.getBytes("UTF-8");
+        	for(long i = start; i <= end; i++)
+        		System.out.print((char)bytes[(int)i]);*/
+		} 
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		return new Pair<Long, Long>(start,end);
+	}
+
 }
+
+	

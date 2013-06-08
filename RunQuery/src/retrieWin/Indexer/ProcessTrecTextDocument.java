@@ -5,9 +5,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -82,20 +84,19 @@ public class ProcessTrecTextDocument {
 		List<String> entitySplits = Arrays.asList(entity1.split(" "));
 		for (TrecTextDocument t:documents)
 		{
-			List<String> currentAllSentences = t.sentences;
-			List<String> cleanedSentences = getCleanedSentences(currentAllSentences);
-			for (int j = 0;j<cleanedSentences.size();j++)
-			{
-				String currentSentence = cleanedSentences.get(j);
-				String[] colonSeparated = currentSentence.split("(\\s+:\\s+)|\\||\\.{3}");
-				for (int sen = 0;sen<colonSeparated.length;sen++)
+			for(String sentence: t.sentences) {
+				for(String currentSentence: getCleanedSentences(sentence))
 				{
-					for (String entitySplit:entitySplits)
+					String[] colonSeparated = currentSentence.split("(\\s+:\\s+)|\\||\\.{3}");
+					for (int sen = 0;sen<colonSeparated.length;sen++)
 					{
-						if (colonSeparated[sen].toLowerCase().contains(entitySplit.toLowerCase()))
+						for (String entitySplit:entitySplits)
 						{
-							returnString.add(colonSeparated[sen]);
-							break;
+							if (colonSeparated[sen].toLowerCase().contains(entitySplit.toLowerCase()))
+							{
+								returnString.add(colonSeparated[sen]);
+								break;
+							}
 						}
 					}
 				}
@@ -104,44 +105,38 @@ public class ProcessTrecTextDocument {
 		return returnString;
 	}
 
-	public static Map<String, String> extractRelevantSentencesWithDocID(Collection<TrecTextDocument> documents, String entity1) 
+	public static Map<String, Set<String>> extractRelevantSentencesWithDocID(Collection<TrecTextDocument> documents, String entity1) 
 	{
-		Map<String, String> returnString = new HashMap<String, String>();
+		Map<String, Set<String>> returnString = new HashMap<String, Set<String>>();
 		List<String> entitySplits = Arrays.asList(entity1.split(" "));
 		//System.out.println("Considering entity expansion: " + entity1);
 		for (TrecTextDocument t:documents)
 		{
-			List<String> currentAllSentences = t.sentences;
-			List<String> cleanedSentences = getCleanedSentences(currentAllSentences);
-			for (int j = 0;j<cleanedSentences.size();j++)
+			int index = -1;
+			for (String sentence: t.sentences)
 			{
-				String currentSentence = cleanedSentences.get(j);
-				//String[] colonSeparated = currentSentence.split("(\\s+:\\s+)|\\||\\.{3}");
-				//for (int sen = 0;sen<colonSeparated.length;sen++)
-				//{
-				List<String> tokens = Arrays.asList(currentSentence.toLowerCase().split(" "));
-					for (String entitySplit:entitySplits)
-					{
-						if (tokens.contains(entitySplit.toLowerCase()))
+				index++;
+				List<String> cleanedSentences = getCleanedSentences(sentence);
+				for(String currentSentence: cleanedSentences) {
+					if(currentSentence.length() > 400)
+						continue;
+					List<String> tokens = Arrays.asList(currentSentence.toLowerCase().split(" "));
+						for (String entitySplit:entitySplits)
 						{
-						//	System.out.println("Found: " + currentSentence);
-							returnString.put(currentSentence,t.docNumber);
-							break;
+
+							if (tokens.contains(entitySplit.toLowerCase()))
+							{
+								if(returnString.containsKey(currentSentence)) 
+									returnString.get(currentSentence).add(t.docNumber + "__" + index);
+								else
+									returnString.put(currentSentence, new HashSet<String>(Arrays.asList(t.docNumber + "__" + index)));
+								break;
+							}
+
 						}
-					}
-				//}
+				}
 			}
 		}
-		/*
-		Map<String,String> cleanedMap = new HashMap<String,String>();
-		for (String s:returnString.keySet())
-		{
-			List<String> listOfSentences = new ArrayList<String>();
-			listOfSentences.add(s);
-			for (String cleaned:getCleanedSentences(listOfSentences))
-				cleanedMap.put(cleaned, returnString.get(s));
-		}
-		*/
 		return returnString;
 	}
 	
@@ -166,11 +161,11 @@ public class ProcessTrecTextDocument {
 		return (double)capitalized/total;
 	}
 
-	public static List<String> getCleanedSentences(Collection<String> sentences) {
+	public static List<String> getCleanedSentences(String sentence) {
 		List<String> results = new ArrayList<String>();
 		double capitalizaitionThreshold = 0.7;
 		
-		for(String sentence : sentences) {
+		//for(String sentence : sentences) {
 			//System.out.println("Input :" + sentence);
 			//Replacing accented a followed by two upper ascii characters with a '.
 			sentence = sentence.replaceAll("â[^\\x00-\\x7f]{2}\\s?", "'");
@@ -224,11 +219,19 @@ public class ProcessTrecTextDocument {
 			//	System.out.println("Output :" + s);
 			//results.addAll();
 			
-		}
+		//}
 		
 		for (Iterator<String> it = results.iterator(); it.hasNext(); )
 	        if (capitalizedContentRatio(it.next()) >= capitalizaitionThreshold)
 	            it.remove();
+		return results;
+	}
+	
+	public static List<String> getCleanedSentences(List<String> sentences) {
+		List<String> results = new ArrayList<String>();
+		for(String sentence:sentences) {
+			results.addAll(getCleanedSentences(sentence));
+		}
 		return results;
 	}
 }

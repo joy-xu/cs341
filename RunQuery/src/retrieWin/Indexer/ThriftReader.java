@@ -48,7 +48,7 @@ public class ThriftReader {
 		return new TrecTextDocument(docNumber,item.body.clean_visible,Double.toString(item.stream_time.epoch_ticks),allSentences);		
 	}
 	
-	private static TBinaryProtocol openBinaryProtocol(String inputFile) throws Exception
+	public static TBinaryProtocol openBinaryProtocol(String inputFile) throws Exception
 	{
 			TTransport transport = new TIOStreamTransport(
 	        		new BufferedInputStream(
@@ -171,7 +171,7 @@ public class ThriftReader {
 		return output;
 	}
 	
-	public static Set<TrecTextDocument> GetAllFiles(String folder, String file, String workingDirectory)
+	public static Set<TrecTextDocument> getAllFiles(String folder, String file, String workingDirectory)
 	{
 		
 		String downloadedFile = Downloader.downloadfile(folder, file, workingDirectory);
@@ -290,7 +290,7 @@ public class ThriftReader {
 		}
 		public void run()
 		{
-			Set<TrecTextDocument> documentList = GetAllFiles(folder,file,downloadDirectory);
+			Set<TrecTextDocument> documentList = getAllFiles(folder,file,downloadDirectory);
 			WriteTrecTextDocumentToFile(documentList,file.substring(0,file.length()-10),folderToIndex);
 		}
 	}

@@ -61,7 +61,7 @@ public class Entity  implements Serializable {
 			this.slotValues = new HashMap<SlotName, List<String>>();
 		List<String> added = new ArrayList<String>();
 		if(!slotValues.containsKey(slot.getName()))
-				slotValues.put(slot.getName(), new ArrayList<String>());
+			slotValues.put(slot.getName(), new ArrayList<String>());
 		for(String candidate: candidates) {
 			//get normalized concept for the slot candidate
 			if(slotValues.get(slot.getName()).contains(candidate))
@@ -80,7 +80,7 @@ public class Entity  implements Serializable {
 		String query = QueryBuilder.buildOrQuery(getExpansions());
 		List<TrecTextDocument> docs = QueryFactory.DoQuery(Arrays.asList(timestamp), Arrays.asList(query), workingDirectory, entities, null).get(query);
 		//return docs;
-		System.out.println("Originally had " + docs.size() + " docs");
+		//System.out.println("Originally had " + docs.size() + " docs");
 		return disambiguate(docs);
 	}
 	
@@ -88,7 +88,7 @@ public class Entity  implements Serializable {
 		String query = QueryBuilder.buildOrQuery(getExpansions());
 		List<TrecTextDocument> docs = QueryFactory.DoQuery(Arrays.asList(timestamp), Arrays.asList(query), workingDirectory, entities, eq).get(query);
 		//return docs;
-		System.out.println("Originally had " + docs.size() + " docs");
+		//System.out.println("Originally had " + docs.size() + " docs");
 		return disambiguate(docs);
 	}
 
