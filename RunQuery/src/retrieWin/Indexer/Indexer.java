@@ -19,8 +19,12 @@ public class Indexer {
 	public static void writeIndexToS3fs(String baseFolder,String indexLocation,String trecTextSerializedFile)
 	{
 		try{
-			
-			String s3directory = Constants.s3directory+baseFolder;
+			String s3directory;
+			String year_month = baseFolder.substring(0,7);
+			if (year_month.equals("2012/07") || year_month.equals("2012/06") || year_month.equals("2012/05"))
+				s3directory = Constants.s3directory_alternate + baseFolder;
+			else
+				s3directory = Constants.s3directory+baseFolder;
 			Process p;
 			if(indexLocation!=null) {
 				String s3PutIndex = String.format("s3cmd put -r %s %s",indexLocation,s3directory+"index/");
@@ -48,7 +52,12 @@ public class Indexer {
 	{
 		try{
 
-		String s3directory = Constants.s3directory+baseFolder;
+		String s3directory;
+		String year_month = baseFolder.substring(0,7);
+		if (year_month.equals("2012/07") || year_month.equals("2012/06") || year_month.equals("2012/05"))
+			s3directory = Constants.s3directory_alternate + baseFolder;
+		else
+			s3directory = Constants.s3directory+baseFolder;
 		String s3Index = s3directory + "index/";
 		String s3getIndex = String.format("s3cmd get -r %s %s",s3Index,indexLocation);
 		System.out.println(s3getIndex);
@@ -100,7 +109,13 @@ public class Indexer {
 	public static Boolean VerifyIndexExistence(String timestamp)
 	{
 		String[] splits = timestamp.split("-");
-		String currentFolder = Constants.s3directory;
+		String year_month = timestamp.substring(0,7);
+		//System.out.println("year_month is: " + year_month);
+		String currentFolder;
+		if (year_month.equals("2012-07") || year_month.equals("2012-06") || year_month.equals("2012-05"))
+			currentFolder = Constants.s3directory_alternate;
+		else
+			currentFolder = Constants.s3directory;
 
 		for (int i = 0;i<4;i++)
 		{
@@ -203,7 +218,7 @@ public class Indexer {
 		
 		ExecuteQuery queryExecutor = new ExecuteQuery(indexFolder);
 		
-		ExecutorService e = Executors.newFixedThreadPool(4);
+		ExecutorService e = Executors.newFixedThreadPool(8);
 		Set<TrecTextDocument> allResults = new HashSet<TrecTextDocument>();
 		
 		for (Entity entity:allEntities)

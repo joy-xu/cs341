@@ -11,7 +11,6 @@
 [pattern = winner, confidenceScore = 0.09090909090909091, patternType = WordInBetween, rules = {[[edgeType = dep, direction = Out], [edgeType = prep_during, direction = Out]]}]
 [pattern = present, confidenceScore = 0.18181818181818182, patternType = SourceInBetween, rules = {[[edgeType = nn, direction = Out], [edgeType = rcmod, direction = Out]]}]
 [pattern = third, confidenceScore = 0.0038461538461538464, patternType = TargetInBetween, rules = {[[edgeType = prep, direction = In], [edgeType = amod, direction = In]]}]
-[pattern = recipient, confidenceScore = 1.0, patternType = WordInBetween, rules = {[[edgeType = nsubj, direction = Out], [edgeType = prep_of, direction = Out]]}]
 [pattern = win, confidenceScore = 0.09743589743589744, patternType = WordInBetween, rules = {[[edgeType = nsubj, direction = Out], [edgeType = dep, direction = Out]]}]
 [pattern = win, confidenceScore = 0.023076923076923078, patternType = SourceInBetween, rules = {[[edgeType = dep, direction = Out], [edgeType = dep, direction = Out]]}]
 [pattern = winner, confidenceScore = 0.25, patternType = WordInBetween, rules = {[[edgeType = prep_of, direction = Out], [edgeType = det, direction = Out]]}]

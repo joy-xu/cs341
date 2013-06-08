@@ -123,6 +123,7 @@ public class ProcessTrecTextDocument {
 					List<String> tokens = Arrays.asList(currentSentence.toLowerCase().split(" "));
 						for (String entitySplit:entitySplits)
 						{
+
 							if (tokens.contains(entitySplit.toLowerCase()))
 							{
 								if(returnString.containsKey(currentSentence)) 
@@ -131,6 +132,7 @@ public class ProcessTrecTextDocument {
 									returnString.put(currentSentence, new HashSet<String>(Arrays.asList(t.docNumber + "__" + index)));
 								break;
 							}
+
 						}
 				}
 			}

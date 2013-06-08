@@ -15,6 +15,7 @@
 [pattern = father,  confidenceScore = 0.0025220680958385876, rules = {[[edgeType = dep, direction = Out], [edgeType = appos, direction = Out]]}]
 [pattern = include,  confidenceScore = 0.0025220680958385876, rules = {[[edgeType = dobj, direction = Out], [edgeType = dobj, direction = Out]]}]
 [pattern = mother,  confidenceScore = 0.0025220680958385876, rules = {[[edgeType = dep, direction = Out], [edgeType = appos, direction = Out]]}]
+[pattern = read,  confidenceScore = 0.0025220680958385876, rules = {[[edgeType = prep_on, direction = Out], [edgeType = nsubj, direction = Out]]}]
 [pattern = feature,  confidenceScore = 0.005044136191677175, rules = {[[edgeType = dep, direction = Out], [edgeType = dep, direction = Out]]}]
 [pattern = father,  confidenceScore = 0.0012610340479192938, rules = {[[edgeType = appos, direction = Out], [edgeType = appos, direction = Out]]}]
 [pattern = segretain,  confidenceScore = 0.0012610340479192938, rules = {[[edgeType = dep, direction = In], [edgeType = dep, direction = Out]]}]

@@ -11,7 +11,7 @@ public class Constants  implements Serializable {
 	public final static String indriBuildIndexParamFile = "data/buildIndexParams.xml";
 	
 	public final static String s3directory = "s3://hourlyindex/";
-	
+	public final static String s3directory_alternate = "s3://hourlyindexalternate/";
 	public final static String s3ConceptsDirectory = "s3://conceptsData/";
 	
 	public enum PatternType {

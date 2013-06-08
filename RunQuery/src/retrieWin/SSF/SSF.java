@@ -448,6 +448,7 @@ public class SSF implements Runnable{
 			baseDir.mkdirs();
 
 		Indexer.createIndex(timestamp,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities);
+		/*
 		ExecuteQuery eq = new ExecuteQuery(indexLocation,trecTextSerializedFile);		
 		// read in existing information for entities 
 		System.out.println("Reading entities...");
@@ -481,7 +482,9 @@ public class SSF implements Runnable{
 				System.out.println("Waiting - Thread interrupted");
 			}
 		}
+
 		writer.Close();
+		*/
 	}
 	
 private static class FillSlotForEntity implements Runnable{
@@ -514,8 +517,7 @@ private static class FillSlotForEntity implements Runnable{
 
 			System.out.println("Finding slot values for entity " + entity.getName());
 			//get all relevant documents for the entity
-			//if (!entity.getName().equals("Aharon_Barak"))
-				//return;
+
 			List<TrecTextDocument> docs = entity.getRelevantDocuments(timestamp, workingDirectory, entities, eq);
 			//System.out.println("Retrieved " + docs.size() + " relevant documents for entity: " + entity.getName());
 			if(docs.isEmpty())
@@ -542,9 +544,7 @@ private static class FillSlotForEntity implements Runnable{
 				
 				if(!slot.getEntityType().equals(entity.getEntityType()))
 						continue;
-				
-				//if(!slot.getName().equals(Constants.SlotName.DateOfDeath))
-				//	continue;
+
 				//TODO: remove this, computing only one slot right now
 				if(slot.getPatterns() !=null && slot.getPatterns().isEmpty())
 					continue;
@@ -592,9 +592,11 @@ private static class FillSlotForEntity implements Runnable{
 	{
 		 SSF ssf = new SSF();
 		 for(Slot slot: ssf.getSlots()) {
+
 		 if(!slot.getName().equals(Constants.SlotName.Contact_Meet_PlaceTime))
 		 continue;
 		 System.out.println(ssf.getCoreNLP().findSlotValue(null, "", slot, false, null));
+
 		 }
 	}
 	
@@ -608,7 +610,6 @@ private static class FillSlotForEntity implements Runnable{
 		}
 		Indexer.createUnfilteredIndex(downloadHours, workingDirectory, saveAsDirectory, indexLocation);
 	}
-	
 	
 	private void createSlots() throws IOException {
 		//readSlots();
@@ -840,11 +841,16 @@ private static class FillSlotForEntity implements Runnable{
 			System.out.println("Environment variable not set");
 			return;
 		}
+
 		//System.out.println("Took "+(endTime - startTime) + " ns"); 
 		new SSF().createSlots();
 		//Execution.run(args, "Main", new SSF());
 		//SSF s= new SSF();
+
 		//new SSF().updateSlots();
+		//Execution.run(args, "Main", new SSF());
+		//SSF s= new SSF();
+		//new SSF().doTesting();
 		//Execution.run(args, "Main", new SSF());
 	}
 
