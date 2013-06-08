@@ -124,7 +124,7 @@ public class SSF implements Runnable{
 	}
 	
 	public List<String> getDisambiguations(String entity) {
-		String baseFolder = "data/entities_expanded_new/";
+		String baseFolder = "data/entities_expanded_updated/";
 		List<String> disambiguations = new ArrayList<String>();
 		
 		try {
@@ -841,8 +841,8 @@ private static class FillSlotForEntity implements Runnable{
 			return;
 		}
 		//System.out.println("Took "+(endTime - startTime) + " ns"); 
-		//new SSF().createSlots();
-		Execution.run(args, "Main", new SSF());
+		new SSF().createSlots();
+		//Execution.run(args, "Main", new SSF());
 		//SSF s= new SSF();
 		//new SSF().updateSlots();
 		//Execution.run(args, "Main", new SSF());
