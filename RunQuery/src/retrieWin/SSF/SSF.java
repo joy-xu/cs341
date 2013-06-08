@@ -71,6 +71,7 @@ public class SSF implements Runnable{
 		File file = new File(Constants.entitiesSerilizedFile);
 		if(file.exists()) {
 			entities = (List<Entity>)FileUtils.readFile(file.getAbsolutePath().toString());
+			System.out.println("Read data for " + entities.size() + "entities from serialized file");
 		}
 		else {
 			// Read from expansions file
@@ -107,31 +108,30 @@ public class SSF implements Runnable{
 				while((line = reader.readLine()) != null) {
 					String[] splits = line.split("\",\"");
 					EntityType type = splits[1].replace("\"", "").equals("PER") ? EntityType.PER : (splits[1].equals("ORG") ? EntityType.ORG : EntityType.FAC);
-					String name = splits[0].replace("\"", "");//.replace("http://en.wikipedia.org/wiki/", "").replace("https://twitter.com/", "");
-					//List<String> equivalents = Utils.getEquivalents(splits[3].replace("\"", ""));
+					String name = splits[0].replace("\"", "").replace("http://en.wikipedia.org/wiki/", "").replace("https://twitter.com/", "");
 					List<String> equivalents = new ArrayList<String>(namesToExpansions.get(name));
 					Entity entity = new Entity(splits[0].replace("\"", ""), name, type, splits[2].replace("\"", ""),
 							equivalents, getDisambiguations(name));
 					entities.add(entity);
 				}
 				reader.close();	
+				FileUtils.writeFile(entities, Constants.entitiesSerilizedFile);
+				System.out.println("New entities file created");
 			}
 			catch (Exception ex) {
+				ex.printStackTrace();
 				System.out.println(ex.getMessage());
 			}
-			FileUtils.writeFile(entities, Constants.entitiesSerilizedFile);
 		}
 	}
 	
 	public List<String> getDisambiguations(String entity) {
-		String baseFolder = "data/entities_expanded_new/";
+		String baseFolder = "data/entities_expanded_updated/";
 		List<String> disambiguations = new ArrayList<String>();
 		
 		try {
 			File file = new File(baseFolder + entity);
-			System.out.println(file.getAbsolutePath());
 			if(file.exists()) {
-				System.out.println("file exists");	
 				BufferedReader reader = new BufferedReader(new FileReader(file));
 				String line = "";
 				while((line = reader.readLine()) != null) {
@@ -139,6 +139,8 @@ public class SSF implements Runnable{
 				}
 				reader.close();
 			}
+			else 
+				System.out.println("disambiguation file for " + entity + "does not exist");	
 		}
 		catch (Exception ex) {
 			System.out.println(ex.getMessage());
@@ -162,7 +164,6 @@ public class SSF implements Runnable{
 			}
 		}
 	}
-	
 	
 	private static boolean containsUppercaseToken(String str) {
 		for(String token: str.split(" ")) {
@@ -288,7 +289,6 @@ public class SSF implements Runnable{
 		return candidates;
 
 	}
-	
 	
 	public static Map<String, Pair<Set<String>, Double>> findCandidates(Entity entity, Slot slot, Map<String, Map<String, Set<String>>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
 		if(slot.getName().equals(Constants.SlotName.Titles))
@@ -448,7 +448,7 @@ public class SSF implements Runnable{
 			baseDir.mkdirs();
 
 		Indexer.createIndex(timestamp,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities);
-		/*
+		
 		ExecuteQuery eq = new ExecuteQuery(indexLocation,trecTextSerializedFile);		
 		// read in existing information for entities 
 		System.out.println("Reading entities...");
@@ -484,7 +484,7 @@ public class SSF implements Runnable{
 		}
 
 		writer.Close();
-		*/
+		
 	}
 	
 private static class FillSlotForEntity implements Runnable{

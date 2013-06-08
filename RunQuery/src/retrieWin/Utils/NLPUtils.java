@@ -778,7 +778,7 @@ public class NLPUtils {
 		Set<String> ans = new HashSet<String>();
 		IndexedWord patternWord = null;
 		Set<Rule> matchedRules = new HashSet<Rule>();
-		
+		graph.prettyPrint();
 		if(social || pattern.getPatternType().equals(Constants.PatternType.WithoutRules)) {
 			patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
 			if(patternWord == null)
@@ -1241,6 +1241,8 @@ public class NLPUtils {
 		
 		try {
 			Map<Integer, CorefChain> coref = document.get(CorefChainAnnotation.class);
+			if(coref == null)
+				return ans;
 			
 			for(Map.Entry<Integer, CorefChain> entry : coref.entrySet()) {
 	            CorefChain c = entry.getValue();
