@@ -108,7 +108,7 @@ public class ProcessTrecTextDocument {
 	{
 		Map<String, String> returnString = new HashMap<String, String>();
 		List<String> entitySplits = Arrays.asList(entity1.split(" "));
-		System.out.println("Considering entity expansion: " + entity1);
+		//System.out.println("Considering entity expansion: " + entity1);
 		for (TrecTextDocument t:documents)
 		{
 			List<String> currentAllSentences = t.sentences;
@@ -124,7 +124,7 @@ public class ProcessTrecTextDocument {
 					{
 						if (tokens.contains(entitySplit.toLowerCase()))
 						{
-							System.out.println("Found: " + currentSentence);
+						//	System.out.println("Found: " + currentSentence);
 							returnString.put(currentSentence,t.docNumber);
 							break;
 						}

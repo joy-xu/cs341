@@ -365,6 +365,7 @@ public class SSF implements Runnable{
 			baseDir.mkdirs();
 
 		Indexer.createIndex(timestamp,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities);
+		/*
 		ExecuteQuery eq = new ExecuteQuery(indexLocation,trecTextSerializedFile);		
 		// read in existing information for entities 
 		System.out.println("Reading entities...");
@@ -396,6 +397,7 @@ public class SSF implements Runnable{
 				System.out.println("Waiting - Thread interrupted");
 			}
 		}
+		*/
 	}
 	
 private static class FillSlotForEntity implements Runnable{
@@ -426,7 +428,7 @@ private static class FillSlotForEntity implements Runnable{
 
 //			System.out.println("Finding slot values for entity " + entity.getName());
 			//get all relevant documents for the entity
-			if (!entity.getName().equals("Aharon_Barak"))
+			if (!entity.getName().equals("Lewis_and_Clark_Landing"))
 				return;
 			List<TrecTextDocument> docs = entity.getRelevantDocuments(timestamp, workingDirectory, entities, eq);
 			System.out.println("Retrieved " + docs.size() + " relevant documents for entity: " + entity.getName());
@@ -455,7 +457,7 @@ private static class FillSlotForEntity implements Runnable{
 				if(!slot.getEntityType().equals(entity.getEntityType()))
 						continue;
 				
-				if(!slot.getName().equals(Constants.SlotName.Contact_Meet_Place_Time))
+				if(!slot.getName().equals(Constants.SlotName.Contact_Meet_Entity))// && !slot.getName().equals(Constants.SlotName.Contact_Meet_Entity))
 					continue;
 				//TODO: remove this, computing only one slot right now
 				if(slot.getPatterns().isEmpty())
@@ -483,9 +485,9 @@ private static class FillSlotForEntity implements Runnable{
 	{
 		 SSF ssf = new SSF();
 		 for(Slot slot: ssf.getSlots()) {
-		 if(!slot.getName().equals(Constants.SlotName.Contact_Meet_Place_Time))
+		 if(!slot.getName().equals(Constants.SlotName.Contact_Meet_Entity))
 		 continue;
-		 System.out.println(ssf.getCoreNLP().findSlotValue("", "", slot, false));
+		 System.out.println(ssf.getCoreNLP().findSlotValue("The program was held at Lewis and Clark School", "Lewis and Clark Landing", slot, false));
 		 }
 	}
 	
@@ -504,7 +506,11 @@ private static class FillSlotForEntity implements Runnable{
 	
 	private void updateSlots() throws IOException {
 		readSlots();
-		for(Slot slot: getSlots()) {
+
+		List<NERType> targetNERTypes = new ArrayList<NERType>();
+		targetNERTypes.add(NERType.NONE);
+		List<Slot> slotList = getSlots();
+		for(Slot slot:getSlots()) {
 			String filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 			//System.out.println(filename);
 			File file = new File(filename);
@@ -512,9 +518,13 @@ private static class FillSlotForEntity implements Runnable{
 				System.out.println("File for " + slot.getName() + " not found.");
 				continue;
 			}
-			
 			//if(slot.getName().equals(Constants.SlotName.Founded_By))
 			slot.addSlotPatterns(filename);
+			if (slot.getName().equals(Constants.SlotName.Contact_Meet_Entity) || slot.getName().equals(Constants.SlotName.Contact_Meet_Place_Time))
+				{
+					System.out.println("Updating");
+					slot.setTargetNERTypes(targetNERTypes);
+				}
 			
 		}
 		//System.out.println(slots);
@@ -527,10 +537,10 @@ private static class FillSlotForEntity implements Runnable{
 			System.out.println("Environment variable not set");
 			return;
 		}
-		new SSF().updateSlots();
-		//Execution.run(args, "Main", new SSF());
-		//SSF s= new SSF();
 		//new SSF().updateSlots();
+		Execution.run(args, "Main", new SSF());
+		//SSF s= new SSF();
+		//new SSF().doTesting();
 		//Execution.run(args, "Main", new SSF());
 	}
 
