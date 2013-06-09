@@ -72,7 +72,7 @@ public class SSF implements Runnable{
 		File file = new File(Constants.entitiesSerilizedFile);
 		if(file.exists()) {
 			entities = (List<Entity>)FileUtils.readFile(file.getAbsolutePath().toString());
-			System.out.println("Read data for " + entities.size() + "entities from serialized file");
+			System.out.println("Read data for " + entities.size() + " entities from serialized file");
 		}
 		else {
 			// Read from expansions file
@@ -124,9 +124,9 @@ public class SSF implements Runnable{
 				System.out.println(ex.getMessage());
 			}
 			FileUtils.writeFile(entities, Constants.entitiesSerilizedFile);
-			for(Entity en:entities) {
+			/*for(Entity en:entities) {
 				System.out.println(en.getTargetID() + ":" + en.getDisambiguations());
-			}
+			}*/
 		}
 	}
 	
