@@ -311,7 +311,7 @@ public class SSF implements Runnable{
 		
 		for(String expansion: entity.getExpansions()) {
 			for(String sentence: relevantSentences.get(expansion).keySet()) {
-				System.out.println("Entity: " + entity + " Slot: " + slot.getName() + " Full sentence: " + sentence);
+				//System.out.println("Entity: " + entity + " Slot: " + slot.getName().toString() + " Full sentence: " + sentence);
 				Annotation document = new Annotation(sentence);
 				processor.annotate(document);
 				//String streamID = null, folderName = null;
@@ -381,17 +381,19 @@ public class SSF implements Runnable{
 							}
 						}
 						for(String arxivCandidate: arxivCandidates) {
-							if(!candidates.containsKey(arxivCandidate)) {
-								Set<String> documents = new HashSet<String>(relevantSentences.get(expansion).get(sentence));
-								candidates.put(arxivCandidate, new Pair<Set<String>, Double>(documents, (double)documents.size()));
-							}
-							else {
-								Pair<Set<String>, Double> setAndScore = candidates.get(arxivCandidate);
-								for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
-									setAndScore.first().add(sentenceID);
+							if(!NLPUtils.isEntitiesSame(entity.getName().replace("_", " "), arxivCandidate) && !arxivCandidate.equals(entity.getName().replace("_", " "))) {
+								if(!candidates.containsKey(arxivCandidate)) {
+									Set<String> documents = new HashSet<String>(relevantSentences.get(expansion).get(sentence));
+									candidates.put(arxivCandidate, new Pair<Set<String>, Double>(documents, (double)documents.size()));
 								}
-								setAndScore.setSecond(setAndScore.second() + relevantSentences.get(expansion).get(sentence).size());
-								candidates.put(arxivCandidate, setAndScore);
+								else {
+									Pair<Set<String>, Double> setAndScore = candidates.get(arxivCandidate);
+									for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
+										setAndScore.first().add(sentenceID);
+									}
+									setAndScore.setSecond(setAndScore.second() + relevantSentences.get(expansion).get(sentence).size());
+									candidates.put(arxivCandidate, setAndScore);
+								}
 							}
 						}
 					}
@@ -406,22 +408,24 @@ public class SSF implements Runnable{
 							values = coreNLP.findSlotValue(document, expansion, slot, false, defaultVal);
 						}
 						for(String str: values.keySet()) {
-							if(!candidates.containsKey(str)){
-								Set<String> documents = new HashSet<String>();
-								for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
-									documents.add(sentenceID);
+							if(!NLPUtils.isEntitiesSame(entity.getName().replace("_", " "), str) && !str.equals(entity.getName().replace("_", " "))) {
+								if(!candidates.containsKey(str)){
+									Set<String> documents = new HashSet<String>();
+									for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
+										documents.add(sentenceID);
+									}
+									LogInfo.logs(String.format("Entity    :%s\nExpansion :%s\nSentence :%s\nSlot      :%s\nValue     :%s\n\n",
+															entity.getName(), expansion, sentence, slot.getName().toString(), str));
+									candidates.put(str, new Pair<Set<String>, Double>(documents, values.get(str) * relevantSentences.get(expansion).get(sentence).size()));
 								}
-								LogInfo.logs(String.format("Entity    :%s\nSentence :%s\nSlot      :%s\nValue     :%s\n\n",
-														entity.getName(), sentence, slot.getName().toString(), str));
-								candidates.put(str, new Pair<Set<String>, Double>(documents, values.get(str) * relevantSentences.get(expansion).get(sentence).size()));
-							}
-							else {
-								Pair<Set<String>, Double> setAndScore = candidates.get(str);
-								for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
-									setAndScore.first().add(sentenceID);
+								else {
+									Pair<Set<String>, Double> setAndScore = candidates.get(str);
+									for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
+										setAndScore.first().add(sentenceID);
+									}
+									setAndScore.setSecond(setAndScore.second() + values.get(str) * relevantSentences.get(expansion).get(sentence).size());
+									candidates.put(str, setAndScore);
 								}
-								setAndScore.setSecond(setAndScore.second() + values.get(str) * relevantSentences.get(expansion).get(sentence).size());
-								candidates.put(str, setAndScore);
 							}
 						}
 					}
@@ -474,7 +478,7 @@ public class SSF implements Runnable{
 		// for each entity, for each slot, for each entity expansion
 		System.out.println("Finding slot values...");
 		
-		ExecutorService e = Executors.newFixedThreadPool(8);
+		ExecutorService e = Executors.newFixedThreadPool(1);
 		OutputWriter writer = new OutputWriter(timestamp + ".txt");
 		
 		for(Entity entity: getEntities()) {
@@ -902,7 +906,7 @@ private static class FillSlotForEntity implements Runnable{
 		
 		List<String> folders = new ArrayList<String>();
 		for(int d = 19; d <= 19; d++) {
-			for(int i = 14 ;i <= 15; i++)
+			for(int i = 14 ;i < 16; i++)
 				folders.add(String.format("%04d-%02d-%02d-%02d", 2011,12,d,i));
 		}
 		
@@ -910,6 +914,7 @@ private static class FillSlotForEntity implements Runnable{
 			System.out.println("Running SSF for " + folderName);
 			runSSF(folderName);
 		}
+
 		//buildLargeIndex();
 		System.out.println("All Done!");
 		

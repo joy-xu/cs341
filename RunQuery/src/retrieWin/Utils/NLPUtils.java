@@ -755,7 +755,7 @@ public class NLPUtils {
 			List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
 			for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
 				CoreMap sentenceMap = allSentenceMap.get(sentNum);
-				System.out.println("Entity: " + entity1 + " Slot: " + slot.getName() + " Processing sentence: " + sentenceMap.toString());
+				System.out.println("Entity: " + entity1 + " Slot: " + slot.getName().toString() + " Processing sentence: " + sentenceMap.toString());
 				for(SlotPattern pattern: slot.getPatterns()) {
 					for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot, social,defaultVal)) {
 
@@ -770,9 +770,8 @@ public class NLPUtils {
 							}
 							str = str.trim();
 							//Flag to check if we found a matching pattern already
-							System.out.println(pattern + "|" + str);
 							if(!str.isEmpty()) {
-
+								LogInfo.logs(String.format("Expansion: |%s|, Pattern: |%s|, Value: |%s|", entity1, pattern, str));
 								if(!candidates.containsKey(str))
 									candidates.put(str, pattern.getConfidenceScore());
 								else
@@ -1527,5 +1526,16 @@ public class NLPUtils {
 		}
 		
 		return result;
+	}
+	
+	public static boolean isEntitiesSame(String entity1, String value) {
+		if(entity1.compareToIgnoreCase(value) == 0)
+			return true;
+		String[] splits = entity1.split(" ");
+		for(String split : splits) {
+			if(split.compareToIgnoreCase(value) == 0)
+				return true;
+		}
+		return false;
 	}
 }
