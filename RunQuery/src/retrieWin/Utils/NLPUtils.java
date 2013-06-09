@@ -384,11 +384,27 @@ public class NLPUtils {
 	//TODO - Improve if needed!
 	public IndexedWord findWordsInSemanticGraphForSlotPattern(SemanticGraph graph, String pattern) {
 		
+		String[] split = pattern.split(" ");
+		if(split.length == 0)
+			return null;
+		
 		for(IndexedWord word: graph.vertexSet()) {
-			if (pattern.equals("hold"))
-				System.out.println("word: " + word.originalText() + " lemma: " + word.lemma());
-			if(pattern.compareToIgnoreCase(word.lemma().replaceAll("[^a-z]", "")) == 0) {
-				return word;
+			if(split[0].compareToIgnoreCase(word.lemma().replaceAll("[^a-z]", "")) == 0) {
+				boolean found = true;
+				for(int i = 1; i < split.length; i++) {
+					try {
+						if(split[i].compareToIgnoreCase(graph.getNodeByIndex(word.index() + i).lemma().replaceAll("[^a-z]", "")) != 0) {
+							found = false;
+							break;
+						}
+					}
+					catch (Exception e) {
+						found = false;
+						break;
+					}
+				}
+				if(found)
+					return word;
 			}
 		}
 		return null;
@@ -741,7 +757,8 @@ public class NLPUtils {
 				for(SlotPattern pattern: slot.getPatterns()) {
 					for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot, social,defaultVal)) {
 						System.out.println(ans + "|" + pattern);
-
+						if(ans == null)
+							continue;
 						if(!ans.isEmpty()) {
 							String str = "";
 							for(String tok: ans.split(" ")) {
@@ -778,24 +795,25 @@ public class NLPUtils {
 		Set<String> ans = new HashSet<String>();
 		IndexedWord patternWord = null;
 		Set<Rule> matchedRules = new HashSet<Rule>();
-		graph.prettyPrint();
+		
 		if(social || pattern.getPatternType().equals(Constants.PatternType.WithoutRules)) {
 			patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
 			if(patternWord == null)
 				return ans;
-			
 			for(IndexedWord w: words1) {
 				if(Math.abs(w.index() - patternWord.index()) < 5) {
 					int i = Math.max(1, patternWord.index()-5);
 					int count = 0;
-					while(count < 10) {
+					while(count < 20) {
 						try {
 							tempSet.add(graph.getNodeByIndex(i));
 							i++;
 							count++;
 						}
 						catch (Exception e){
-							break;
+							i++;
+							count++;
+							continue;
 						}
 					}
 				}
@@ -918,15 +936,15 @@ public class NLPUtils {
 		
 		Map<String, String> nerMap = createNERMap(sentence);
 		for(IndexedWord w: ansSet) {
-			System.out.println("word: " + w.originalText());
+			//System.out.println("word: " + w.originalText());
 			String phrase = findExpandedEntity(sentence, w.originalText());
-			System.out.println("Phrase: " + phrase);
+			//System.out.println("Phrase: " + phrase);
 			String temp = "";
 			for(String tok: phrase.split(" ")) {
 				//System.out.println("Token: " + tok);
-				System.out.println("NER Types");
-				for (NERType n: targetNERTypes)
-					System.out.println(n.toString());
+				//System.out.println("NER Types");
+				//for (NERType n: targetNERTypes)
+					//System.out.println(n.toString());
 				//System.out.println();
 				if(targetNERTypes == null || targetNERTypes.contains(NERType.NONE) || targetNERTypes.contains(NERType.valueOf(nerMap.get(tok)))) {
 					if(patternWord != null) {
@@ -939,7 +957,7 @@ public class NLPUtils {
 			}
 			if(!temp.trim().isEmpty()) {
 				ans.add(temp.trim());
-				System.out.println("ans: " + pattern);
+				//System.out.println("ans: " + pattern);
 			}
 		}
 		
@@ -1003,7 +1021,7 @@ public class NLPUtils {
 			return null;
 		int index = word.index();
 		Tree root = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
-		root.pennPrint();
+		//root.pennPrint();
 		Tree node = root.getLeaves().get(index-1);
 		Tree traverse = node;
 		Tree prev = node;
@@ -1015,7 +1033,7 @@ public class NLPUtils {
 	    	//System.out.println("After parenting");
 			prev = node;
 			node = node.parent(root);
-	    	System.out.println(node.value());
+	    	//System.out.println(node.value());
 	    	if(node.value().equals("NP")) {
 	    		found = true;
 	    	}
