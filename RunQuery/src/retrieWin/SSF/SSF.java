@@ -59,11 +59,11 @@ public class SSF implements Runnable{
 	public void initialize() {
 		readEntities();
 		readSlots();
-		setCoreNLP(new NLPUtils());
-		conceptExtractor = new Concept();
-		Properties props = new Properties();
-		props.put("annotators", "tokenize, ssplit, pos, lemma, parse, ner, dcoref");
-		processor = new StanfordCoreNLP(props, false);
+		//setCoreNLP(new NLPUtils());
+		//conceptExtractor = new Concept();
+		//Properties props = new Properties();
+		//props.put("annotators", "tokenize, ssplit, pos, lemma, parse, ner, dcoref");
+		//processor = new StanfordCoreNLP(props, false);
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -547,6 +547,7 @@ private static class FillSlotForEntity implements Runnable{
 			//System.out.println("Number of relevant sentences: " + retrievedSentences.size() + " for entity: " + entity.getName());
 			
 			//iterate to fill slots
+			Map<Slot, List<String>> slotToValues = new HashMap<Slot,List<String>>();
 			for(Slot slot: allSlots) {
 				//compute only for relevant slots for this entity
 
@@ -554,8 +555,8 @@ private static class FillSlotForEntity implements Runnable{
 						continue;
 
 				
-				boolean aff_per = (slot.getName().equals(Constants.SlotName.Affiliate) && slot.getEntityType().equals(Constants.EntityType.PER));
-				if (!aff_per)
+				boolean filter = (slot.getName().equals(Constants.SlotName.Contact_Meet_Entity) || slot.getName().equals(Constants.SlotName.Contact_Meet_PlaceTime));
+				if (!filter)
 					{
 						continue;
 					}
@@ -599,7 +600,13 @@ private static class FillSlotForEntity implements Runnable{
 					}
 				}
 				//updating slots
+				slotToValues.put(slot, finalCandidateList);
 				System.out.println(entity.getName() + "," + slot.getName() + ":" + entity.updateSlot(slot, finalCandidateList));
+			}
+			
+			for (Slot slot:allSlots)
+			{
+				
 			}
 		}
 	}
@@ -637,6 +644,7 @@ private static class FillSlotForEntity implements Runnable{
 		
 		//PER slots
 		//Affiliate
+		// Also populate - None
 		slot = new Slot();
 		slot.setName(SlotName.Affiliate);
 		slot.setEntityType(EntityType.PER);
@@ -652,6 +660,7 @@ private static class FillSlotForEntity implements Runnable{
 		slots.add(slot);
 		
 		//AssociateOf
+		// Also Populate - None
 		slot = new Slot();
 		slot.setName(SlotName.AssociateOf);
 		slot.setEntityType(EntityType.PER);
@@ -667,6 +676,7 @@ private static class FillSlotForEntity implements Runnable{
 		slots.add(slot);
 		
 		//Contact_Meet_PlaceTime
+		// Also populate - None
 		slot = new Slot();
 		slot.setName(SlotName.Contact_Meet_PlaceTime);
 		slot.setEntityType(EntityType.PER);
@@ -682,6 +692,7 @@ private static class FillSlotForEntity implements Runnable{
 		slots.add(slot);
 		
 		//AwardsWon
+		// Also populate - None
 		slot = new Slot();
 		slot.setName(SlotName.AwardsWon);
 		slot.setEntityType(EntityType.PER);
@@ -697,6 +708,7 @@ private static class FillSlotForEntity implements Runnable{
 		slots.add(slot);
 		
 		//DateOfDeath
+		// Also populate - None
 		slot = new Slot();
 		slot.setName(SlotName.DateOfDeath);
 		slot.setEntityType(EntityType.PER);
@@ -712,6 +724,7 @@ private static class FillSlotForEntity implements Runnable{
 		slots.add(slot);
 		
 		//CauseOfDeath
+		// Also populate - None
 		slot = new Slot();
 		slot.setName(SlotName.CauseOfDeath);
 		slot.setEntityType(EntityType.PER);
@@ -728,6 +741,7 @@ private static class FillSlotForEntity implements Runnable{
 		
 		//Titles
 		slot = new Slot();
+		// Also populate - None
 		slot.setName(SlotName.Titles);
 		slot.setEntityType(EntityType.PER);
 		slot.setThreshold(0.0);
@@ -742,6 +756,7 @@ private static class FillSlotForEntity implements Runnable{
 		slots.add(slot);
 		
 		//FounderOf
+		// Also populate - Affiliate_PER, Top Members
 		slot = new Slot();
 		slot.setName(SlotName.FounderOf);
 		slot.setEntityType(EntityType.PER);
@@ -757,6 +772,7 @@ private static class FillSlotForEntity implements Runnable{
 		slots.add(slot);
 		
 		//EmployeeOf
+		// Also populate - Affiliate_Per
 		slot = new Slot();
 		slot.setName(SlotName.EmployeeOf);
 		slot.setEntityType(EntityType.PER);
@@ -773,6 +789,7 @@ private static class FillSlotForEntity implements Runnable{
 		
 		//FAC Slots
 		//Affiliate
+		// Also populate - None, Need to add employee of patterns to this file (inverted)
 		slot = new Slot();
 		slot.setName(SlotName.Affiliate);
 		slot.setEntityType(EntityType.FAC);
@@ -788,6 +805,7 @@ private static class FillSlotForEntity implements Runnable{
 		slots.add(slot);
 		
 		//Contact_Meet_Entity
+		// Also populate - None
 		slot = new Slot();
 		slot.setName(SlotName.Contact_Meet_Entity);
 		slot.setEntityType(EntityType.FAC);
@@ -804,6 +822,7 @@ private static class FillSlotForEntity implements Runnable{
 		
 		//ORG Slots
 		//Affiliate
+		// Also populate - None, Need to add employee of (inverted)
 		slot = new Slot();
 		slot.setName(SlotName.Affiliate);
 		slot.setEntityType(EntityType.ORG);
@@ -819,6 +838,7 @@ private static class FillSlotForEntity implements Runnable{
 		slots.add(slot);
 		
 		//TopMembers
+		//Also populate - Affiliate_PER
 		slot = new Slot();
 		slot.setName(SlotName.TopMembers);
 		slot.setEntityType(EntityType.ORG);
@@ -834,6 +854,7 @@ private static class FillSlotForEntity implements Runnable{
 		slots.add(slot);
 		
 		//FoundedBy
+		//Also populate - Affiliate_ORG
 		slot = new Slot();
 		slot.setName(SlotName.FoundedBy);
 		slot.setEntityType(EntityType.ORG);
@@ -861,8 +882,8 @@ private static class FillSlotForEntity implements Runnable{
 
 		//System.out.println("Took "+(endTime - startTime) + " ns"); 
 		//new SSF().createSlots();
-		Execution.run(args, "Main", new SSF());
-		//SSF s= new SSF();
+		//Execution.run(args, "Main", new SSF());
+		SSF s= new SSF();
 		
 		//new SSF().updateSlots();
 		//Execution.run(args, "Main", new SSF());
