@@ -68,6 +68,7 @@ public class SSF implements Runnable{
 	
 	@SuppressWarnings("unchecked")
 	public void readEntities() {
+		System.out.println("Reading entities.");
 		File file = new File(Constants.entitiesSerilizedFile);
 		if(file.exists()) {
 			entities = (List<Entity>)FileUtils.readFile(file.getAbsolutePath().toString());
@@ -107,8 +108,9 @@ public class SSF implements Runnable{
 				while((line = reader.readLine()) != null) {
 					String[] splits = line.split("\",\"");
 					EntityType type = splits[1].replace("\"", "").equals("PER") ? EntityType.PER : (splits[1].equals("ORG") ? EntityType.ORG : EntityType.FAC);
-					String name = splits[0].replace("\"", "");//.replace("http://en.wikipedia.org/wiki/", "").replace("https://twitter.com/", "");
+					String name = splits[0].replace("\"", "").replace("http://en.wikipedia.org/wiki/", "").replace("https://twitter.com/", "");
 					//List<String> equivalents = Utils.getEquivalents(splits[3].replace("\"", ""));
+
 					List<String> equivalents = new ArrayList<String>(namesToExpansions.get(name));
 					Entity entity = new Entity(splits[0].replace("\"", ""), name, type, splits[2].replace("\"", ""),
 							equivalents, getDisambiguations(name));
@@ -117,21 +119,24 @@ public class SSF implements Runnable{
 				reader.close();	
 			}
 			catch (Exception ex) {
-				System.out.println(ex.getMessage());
+				ex.printStackTrace();
 			}
 			FileUtils.writeFile(entities, Constants.entitiesSerilizedFile);
+			for(Entity en:entities) {
+				System.out.println(en.getTargetID() + ":" + en.getDisambiguations());
+			}
 		}
 	}
 	
 	public List<String> getDisambiguations(String entity) {
-		String baseFolder = "data/entities_expanded_new/";
+		String baseFolder = "data/entities_expanded_updated/";
 		List<String> disambiguations = new ArrayList<String>();
 		
 		try {
 			File file = new File(baseFolder + entity);
-			System.out.println(file.getAbsolutePath());
+			//System.out.println(file.getAbsolutePath());
 			if(file.exists()) {
-				System.out.println("file exists");	
+				//System.out.println("file exists");	
 				BufferedReader reader = new BufferedReader(new FileReader(file));
 				String line = "";
 				while((line = reader.readLine()) != null) {
@@ -141,7 +146,7 @@ public class SSF implements Runnable{
 			}
 		}
 		catch (Exception ex) {
-			System.out.println(ex.getMessage());
+			ex.printStackTrace();
 		}
 		return disambiguations;
 	}
@@ -448,7 +453,7 @@ public class SSF implements Runnable{
 			baseDir.mkdirs();
 
 		Indexer.createIndex(timestamp,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities);
-		/*
+		
 		ExecuteQuery eq = new ExecuteQuery(indexLocation,trecTextSerializedFile);		
 		// read in existing information for entities 
 		System.out.println("Reading entities...");
@@ -484,7 +489,6 @@ public class SSF implements Runnable{
 		}
 
 		writer.Close();
-		*/
 	}
 	
 private static class FillSlotForEntity implements Runnable{
@@ -545,6 +549,10 @@ private static class FillSlotForEntity implements Runnable{
 				if(!slot.getEntityType().equals(entity.getEntityType()))
 						continue;
 
+				if(!(slot.getName() == SlotName.AssociateOf || slot.getName() == SlotName.AwardsWon ||
+					slot.getName() == SlotName.FounderOf || slot.getName() == SlotName.FoundedBy))
+					continue;
+				
 				//TODO: remove this, computing only one slot right now
 				if(slot.getPatterns() !=null && slot.getPatterns().isEmpty())
 					continue;
@@ -577,7 +585,7 @@ private static class FillSlotForEntity implements Runnable{
 							String tempFolderID = id.substring(0, id.lastIndexOf("__"));
 							folderID = tempFolderID.substring(tempFolderID.lastIndexOf("__") + 2).replace("/","");
 							Pair<Long, Long> offset = Utils.getByteOffset(id, finalCandidateUnNormalized, workingDirectory);
-							writer.Write(streamID, entity.getName(), (double)500, folderID, slot.getName().toString(), finalCandidateNormalized, offset.first(), offset.second());
+							writer.Write(streamID, entity.getTargetID(), (double)500, folderID, slot.getName().toString(), finalCandidateNormalized, offset.first(), offset.second());
 						}
 					}
 				}

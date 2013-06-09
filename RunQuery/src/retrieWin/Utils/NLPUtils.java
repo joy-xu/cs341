@@ -385,8 +385,8 @@ public class NLPUtils {
 	public IndexedWord findWordsInSemanticGraphForSlotPattern(SemanticGraph graph, String pattern) {
 		
 		for(IndexedWord word: graph.vertexSet()) {
-			if (pattern.equals("hold"))
-				System.out.println("word: " + word.originalText() + " lemma: " + word.lemma());
+			//if (pattern.equals("hold"))
+			//	System.out.println("word: " + word.originalText() + " lemma: " + word.lemma());
 			if(pattern.compareToIgnoreCase(word.lemma().replaceAll("[^a-z]", "")) == 0) {
 				return word;
 			}
@@ -835,21 +835,21 @@ public class NLPUtils {
 			if(patternWord == null)
 				return ans;
 			Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
-			System.out.println("pattern word is not null: " + patternWord.originalText());
-			for (IndexedWord w:conjAndPatterns)
-			{
-				System.out.println(w.originalText());
-			}
+			//System.out.println("pattern word is not null: " + patternWord.originalText());
+			//for (IndexedWord w:conjAndPatterns)
+			//{
+			//	System.out.println(w.originalText());
+			//}
 			//Checking rule1
-			System.out.println("Rules:");
-			System.out.println(pattern.getRules(0).toString());
-			System.out.println(pattern.getRules(1).toString());
+			//System.out.println("Rules:");
+			//System.out.println(pattern.getRules(0).toString());
+			//System.out.println(pattern.getRules(1).toString());
 			Set<IndexedWord> rule1Set = getWordsSatisfyingRuleNew(conjAndPatterns, pattern.getRules(0), graph);
-			System.out.println("Rule1Set: ");
-			for (IndexedWord w:rule1Set)
-			{
-				System.out.println(w.originalText());
-			}
+			//System.out.println("Rule1Set: ");
+			//for (IndexedWord w:rule1Set)
+			//{
+			//	System.out.println(w.originalText());
+			//}
 			for(IndexedWord w1:words1) {
 				if(rule1Set.contains(w1)) {
 					if(tempSet.addAll(getWordsSatisfyingRuleNew(conjAndPatterns, pattern.getRules(1), graph)))
@@ -861,11 +861,11 @@ public class NLPUtils {
 			
 			Set<IndexedWord> rule2Set = getWordsSatisfyingRuleNew(conjAndPatterns, pattern.getRules(1), graph);
 			
-			System.out.println("Rule2Set: ");
-			for (IndexedWord w:rule2Set)
-			{
-				System.out.println(w.originalText());
-			}
+			//System.out.println("Rule2Set: ");
+			//for (IndexedWord w:rule2Set)
+			//{
+			//	System.out.println(w.originalText());
+			//}
 			
 			for(IndexedWord w1:words1) {
 				if(rule2Set.contains(w1)) {
@@ -874,7 +874,7 @@ public class NLPUtils {
 				}
 			}
 		}
-		System.out.println("tempset size: " + tempSet.size());
+		//System.out.println("tempset size: " + tempSet.size());
 		
 		for(IndexedWord w: tempSet)
 		{
@@ -918,15 +918,15 @@ public class NLPUtils {
 		
 		Map<String, String> nerMap = createNERMap(sentence);
 		for(IndexedWord w: ansSet) {
-			System.out.println("word: " + w.originalText());
+			//System.out.println("word: " + w.originalText());
 			String phrase = findExpandedEntity(sentence, w.originalText());
-			System.out.println("Phrase: " + phrase);
+			//System.out.println("Phrase: " + phrase);
 			String temp = "";
 			for(String tok: phrase.split(" ")) {
 				//System.out.println("Token: " + tok);
-				System.out.println("NER Types");
-				for (NERType n: targetNERTypes)
-					System.out.println(n.toString());
+				//System.out.println("NER Types");
+				//for (NERType n: targetNERTypes)
+				//	System.out.println(n.toString());
 				//System.out.println();
 				if(targetNERTypes == null || targetNERTypes.contains(NERType.NONE) || targetNERTypes.contains(NERType.valueOf(nerMap.get(tok)))) {
 					if(patternWord != null) {
@@ -939,7 +939,7 @@ public class NLPUtils {
 			}
 			if(!temp.trim().isEmpty()) {
 				ans.add(temp.trim());
-				System.out.println("ans: " + pattern);
+				//System.out.println("ans: " + pattern);
 			}
 		}
 		
@@ -1003,7 +1003,7 @@ public class NLPUtils {
 			return null;
 		int index = word.index();
 		Tree root = sentence.get(TreeCoreAnnotations.TreeAnnotation.class);
-		root.pennPrint();
+		//root.pennPrint();
 		Tree node = root.getLeaves().get(index-1);
 		Tree traverse = node;
 		Tree prev = node;
@@ -1015,7 +1015,7 @@ public class NLPUtils {
 	    	//System.out.println("After parenting");
 			prev = node;
 			node = node.parent(root);
-	    	System.out.println(node.value());
+	    	//System.out.println(node.value());
 	    	if(node.value().equals("NP")) {
 	    		found = true;
 	    	}
