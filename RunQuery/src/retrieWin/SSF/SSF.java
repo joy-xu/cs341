@@ -348,7 +348,7 @@ public class SSF implements Runnable{
 					//arxiv documents
 					//System.out.println("Now processing: " + sentence);
 					if(docType.equals("arxiv")) {
-						if(!slot.getName().equals(Constants.SlotName.Affiliate) || !entity.getEntityType().equals(Constants.EntityType.PER))
+						if(!slot.getName().equals(Constants.SlotName.AssociateOf) || !entity.getEntityType().equals(Constants.EntityType.PER))
 							continue;
 						arxivDocument arxivDoc = new arxivDocument(docId);
 						List<String> arxivCandidates = new ArrayList<String>();
@@ -394,7 +394,7 @@ public class SSF implements Runnable{
 						//social documents
 						Map<String, Double> values = null;
 						if(docType.equals("social")) {
-							values = coreNLP.findSlotValue(document, expansion, slot, (slot.getTargetNERTypes() != null) ? true : false, defaultVal);
+							values = coreNLP.findSlotValue(document, expansion, slot, (slot.getTargetNERTypes() != null) ? false : false, defaultVal);
 						}
 						//news documents
 						else {
