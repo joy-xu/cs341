@@ -804,7 +804,7 @@ private static class FillSlotForEntity implements Runnable{
 		slot.setEntityType(EntityType.FAC);
 		slot.setThreshold(0.0);
 		slot.setSourceNERTypes(null);
-		slot.setTargetNERTypes(Arrays.asList(NERType.NONE));
+		slot.setTargetNERTypes(Arrays.asList(NERType.PERSON,NERType.ORGANIZATION));
 		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 		file = new File(filename);
 		if(!file.exists()) 
@@ -837,7 +837,7 @@ private static class FillSlotForEntity implements Runnable{
 		slot.setEntityType(EntityType.ORG);
 		slot.setThreshold(0.0);
 		slot.setSourceNERTypes(null);
-		slot.setTargetNERTypes(Arrays.asList(NERType.NONE));
+		slot.setTargetNERTypes(Arrays.asList(NERType.PERSON,NERType.ORGANIZATION));
 		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 		file = new File(filename);
 		if(!file.exists()) 

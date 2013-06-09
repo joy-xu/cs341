@@ -927,6 +927,8 @@ public class NLPUtils {
 			String phrase = findExpandedEntity(sentence, w.originalText());
 			//System.out.println("Phrase: " + phrase);
 			String temp = "";
+			boolean fitTobeAdded  = true;
+			
 			for(String tok: phrase.split(" ")) {
 				//System.out.println("Token: " + tok);
 				//System.out.println("NER Types");
@@ -935,11 +937,16 @@ public class NLPUtils {
 				//System.out.println();
 				if(targetNERTypes == null || targetNERTypes.contains(NERType.NONE) || targetNERTypes.contains(NERType.valueOf(nerMap.get(tok)))) {
 					
-					
+					// Remove time, date etc from contact meet entity/place time slots
 					if (slot.getName().equals(Constants.SlotName.Contact_Meet_Entity) || slot.getName().equals(Constants.SlotName.Contact_Meet_PlaceTime))
 						if (NERType.valueOf(nerMap.get(tok)).equals(NERType.TIME) || NERType.valueOf(nerMap.get(tok)).equals(NERType.DATE)
 								|| NERType.valueOf(nerMap.get(tok)).equals(NERType.DURATION) || NERType.valueOf(nerMap.get(tok)).equals(NERType.MONEY))
-							continue;
+						{
+							fitTobeAdded = false;
+							break;
+						}
+					
+						
 					
 					if(patternWord != null) {
 						if(!tok.equals(patternWord.lemma()))
@@ -949,7 +956,7 @@ public class NLPUtils {
 						temp += " " + tok;	
 				}
 			}
-			if(!temp.trim().isEmpty()) {
+			if(fitTobeAdded && !temp.trim().isEmpty()) {
 				ans.add(temp.trim());
 				//System.out.println("ans: " + pattern);
 			}
