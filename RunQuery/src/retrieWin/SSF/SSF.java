@@ -547,11 +547,7 @@ private static class FillSlotForEntity implements Runnable{
 				
 				if(!slot.getEntityType().equals(entity.getEntityType()))
 						continue;
-
-				if(!(slot.getName() == SlotName.AssociateOf || slot.getName() == SlotName.AwardsWon ||
-					slot.getName() == SlotName.FounderOf || slot.getName() == SlotName.FoundedBy))
-					continue;
-				
+			
 				//TODO: remove this, computing only one slot right now
 				if(slot.getPatterns() !=null && slot.getPatterns().isEmpty())
 					continue;
