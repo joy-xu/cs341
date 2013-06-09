@@ -311,7 +311,7 @@ public class SSF implements Runnable{
 		
 		for(String expansion: entity.getExpansions()) {
 			for(String sentence: relevantSentences.get(expansion).keySet()) {
-				//System.out.println("Entity: " + entity + " Slot: " + slot.getName().toString() + " Full sentence: " + sentence);
+				System.out.println("Entity: " + entity.getName() + " Slot: " + slot.getName() + " Full sentence: " + sentence);
 				Annotation document = new Annotation(sentence);
 				processor.annotate(document);
 				//String streamID = null, folderName = null;
@@ -353,7 +353,7 @@ public class SSF implements Runnable{
 					//arxiv documents
 					//System.out.println("Now processing: " + sentence);
 					if(docType.equals("arxiv")) {
-						if(!slot.getName().equals(Constants.SlotName.Affiliate) || !entity.getEntityType().equals(Constants.EntityType.PER))
+						if(!slot.getName().equals(Constants.SlotName.AssociateOf) || !entity.getEntityType().equals(Constants.EntityType.PER))
 							continue;
 						arxivDocument arxivDoc = new arxivDocument(docId);
 						List<String> arxivCandidates = new ArrayList<String>();
@@ -401,11 +401,11 @@ public class SSF implements Runnable{
 						//social documents
 						Map<String, Double> values = null;
 						if(docType.equals("social")) {
-							values = coreNLP.findSlotValue(document, expansion, slot, (!slot.getTargetNERTypes().contains(NERType.NONE)) ? true : false, defaultVal);
+							values = coreNLP.findSlotValue(document, expansion, slot, (!slot.getTargetNERTypes().contains(NERType.NONE)) ? true : false, defaultVal, entity);
 						}
 						//news documents
 						else {
-							values = coreNLP.findSlotValue(document, expansion, slot, false, defaultVal);
+							values = coreNLP.findSlotValue(document, expansion, slot, false, defaultVal, entity);
 						}
 						for(String str: values.keySet()) {
 							if(!NLPUtils.isEntitiesSame(entity.getName().replace("_", " "), str) && !str.equals(entity.getName().replace("_", " "))) {
@@ -628,7 +628,7 @@ private static class FillSlotForEntity implements Runnable{
 
 		 if(!slot.getName().equals(Constants.SlotName.Contact_Meet_PlaceTime))
 		 continue;
-		 System.out.println(ssf.getCoreNLP().findSlotValue(null, "", slot, false, null));
+		 System.out.println(ssf.getCoreNLP().findSlotValue(null, "", slot, false, null, null));
 
 		 }
 	}

@@ -745,19 +745,38 @@ public class NLPUtils {
 	}
 
 	
-	public Map<String, Double> findSlotValue(Annotation document, String entity1, Slot slot, boolean social, String defaultVal) throws NoSuchParseException {
+	public Map<String, Double> findSlotValue(Annotation document, String expansion, Slot slot, boolean social, String defaultVal, Entity entity) throws NoSuchParseException {
 
 		Map<String, Double> candidates = new HashMap<String, Double>();
 		try {
 			//get coreferences for the entity
-			Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
+			Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, expansion);
 	
 			List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
 			for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
 				CoreMap sentenceMap = allSentenceMap.get(sentNum);
-				System.out.println("Entity: " + entity1 + " Slot: " + slot.getName().toString() + " Processing sentence: " + sentenceMap.toString());
+				List<IndexedWord> entityWords = findWordsInSemanticGraph(sentenceMap, expansion, corefsEntity1.get(sentNum));
+				boolean flag = true;
+				for(IndexedWord w: entityWords) {
+					if(w.originalText().length() <=3 || !Character.isUpperCase(w.originalText().charAt(0)))
+						continue;
+					flag = false;
+					for(String exp: entity.getExpansions()) {
+						if(Arrays.asList(exp.toLowerCase().split(" ")).contains(w.originalText().toLowerCase())) {
+							flag = true;
+							break;
+						}
+					}
+					if(!flag)
+						break;
+				}
+				
+				if(!flag)
+					continue;
+				
+				System.out.println("Entity: " + expansion + " Slot: " + slot.getName() + " Processing sentence: " + sentenceMap.toString());
 				for(SlotPattern pattern: slot.getPatterns()) {
-					for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot, social,defaultVal)) {
+					for(String ans: findValue(sentenceMap, entityWords, pattern, slot, social,defaultVal)) {
 
 						if(ans == null)
 							continue;
@@ -765,7 +784,7 @@ public class NLPUtils {
 						if(!ans.isEmpty()) {
 							String str = "";
 							for(String tok: ans.split(" ")) {
-								if(!entity1.contains(tok))
+								if(!expansion.contains(tok))
 									str += " " + tok;
 							}
 							str = str.trim();
