@@ -671,7 +671,7 @@ public class NLPUtils {
 	
 	public Map<String, Double> findPlaceTimeValue(String sentence, String entity1, Slot slot, boolean social) throws NoSuchParseException {
 		Map<String, Double> candidates = new HashMap<String, Double>();
-		System.out.println("Entity: " + entity1 + " Slot: " + slot.getName() + " Full sentence: " + sentence);
+		System.out.println("Entity: " + entity1 + " Slot: " + slot.getName().toString() + " Full sentence: " + sentence);
 		if(sentence.length() > 400)
 			return candidates;
 		Annotation document = new Annotation(sentence);
@@ -682,7 +682,7 @@ public class NLPUtils {
 		List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
 		for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
 			CoreMap sentenceMap = allSentenceMap.get(sentNum);
-			System.out.println("Entity: " + entity1 + " Slot: " + slot.getName() + " Processing sentence: " + sentenceMap.toString());
+			System.out.println("Entity: " + entity1 + " Slot: " + slot.getName().toString() + " Processing sentence: " + sentenceMap.toString());
 			Set<String> times = getTimeAsTokens(sentenceMap);
 			Set<String> dates = getDateAsTokens(sentenceMap);
 			//System.out.println(sentenceMap.toString());
@@ -755,7 +755,7 @@ public class NLPUtils {
 			List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
 			for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
 				CoreMap sentenceMap = allSentenceMap.get(sentNum);
-				System.out.println("Entity: " + entity1 + " Slot: " + slot.getName() + " Processing sentence: " + sentenceMap.toString());
+				System.out.println("Entity: " + entity1 + " Slot: " + slot.getName().toString() + " Processing sentence: " + sentenceMap.toString());
 				for(SlotPattern pattern: slot.getPatterns()) {
 					for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot, social,defaultVal)) {
 
