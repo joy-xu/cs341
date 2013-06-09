@@ -853,21 +853,21 @@ public class NLPUtils {
 			if(patternWord == null)
 				return ans;
 			Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
-			System.out.println("pattern word is not null: " + patternWord.originalText());
-			for (IndexedWord w:conjAndPatterns)
-			{
-				System.out.println(w.originalText());
-			}
+			//System.out.println("pattern word is not null: " + patternWord.originalText());
+			//for (IndexedWord w:conjAndPatterns)
+			//{
+			//	System.out.println(w.originalText());
+			//}
 			//Checking rule1
-			System.out.println("Rules:");
-			System.out.println(pattern.getRules(0).toString());
-			System.out.println(pattern.getRules(1).toString());
+			//System.out.println("Rules:");
+			//System.out.println(pattern.getRules(0).toString());
+			//System.out.println(pattern.getRules(1).toString());
 			Set<IndexedWord> rule1Set = getWordsSatisfyingRuleNew(conjAndPatterns, pattern.getRules(0), graph);
-			System.out.println("Rule1Set: ");
-			for (IndexedWord w:rule1Set)
-			{
-				System.out.println(w.originalText());
-			}
+			//System.out.println("Rule1Set: ");
+			//for (IndexedWord w:rule1Set)
+			//{
+			//	System.out.println(w.originalText());
+			//}
 			for(IndexedWord w1:words1) {
 				if(rule1Set.contains(w1)) {
 					if(tempSet.addAll(getWordsSatisfyingRuleNew(conjAndPatterns, pattern.getRules(1), graph)))
@@ -879,11 +879,11 @@ public class NLPUtils {
 			
 			Set<IndexedWord> rule2Set = getWordsSatisfyingRuleNew(conjAndPatterns, pattern.getRules(1), graph);
 			
-			System.out.println("Rule2Set: ");
-			for (IndexedWord w:rule2Set)
-			{
-				System.out.println(w.originalText());
-			}
+			//System.out.println("Rule2Set: ");
+			//for (IndexedWord w:rule2Set)
+			//{
+			//	System.out.println(w.originalText());
+			//}
 			
 			for(IndexedWord w1:words1) {
 				if(rule2Set.contains(w1)) {
@@ -892,7 +892,7 @@ public class NLPUtils {
 				}
 			}
 		}
-		System.out.println("tempset size: " + tempSet.size());
+		//System.out.println("tempset size: " + tempSet.size());
 		
 		for(IndexedWord w: tempSet)
 		{
@@ -944,7 +944,7 @@ public class NLPUtils {
 				//System.out.println("Token: " + tok);
 				//System.out.println("NER Types");
 				//for (NERType n: targetNERTypes)
-					//System.out.println(n.toString());
+				//	System.out.println(n.toString());
 				//System.out.println();
 				if(targetNERTypes == null || targetNERTypes.contains(NERType.NONE) || targetNERTypes.contains(NERType.valueOf(nerMap.get(tok)))) {
 					if(patternWord != null) {

@@ -68,6 +68,7 @@ public class SSF implements Runnable{
 	
 	@SuppressWarnings("unchecked")
 	public void readEntities() {
+		System.out.println("Reading entities.");
 		File file = new File(Constants.entitiesSerilizedFile);
 		if(file.exists()) {
 			setEntities((List<Entity>)FileUtils.readFile(file.getAbsolutePath().toString()));
@@ -122,6 +123,10 @@ public class SSF implements Runnable{
 				ex.printStackTrace();
 				System.out.println(ex.getMessage());
 			}
+			FileUtils.writeFile(entities, Constants.entitiesSerilizedFile);
+			/*for(Entity en:entities) {
+				System.out.println(en.getTargetID() + ":" + en.getDisambiguations());
+			}*/
 		}
 	}
 	
@@ -143,7 +148,7 @@ public class SSF implements Runnable{
 				System.out.println("disambiguation file for " + entity + "does not exist");	
 		}
 		catch (Exception ex) {
-			System.out.println(ex.getMessage());
+			ex.printStackTrace();
 		}
 		return disambiguations;
 	}
@@ -482,9 +487,7 @@ public class SSF implements Runnable{
 				System.out.println("Waiting - Thread interrupted");
 			}
 		}
-
 		writer.Close();
-		
 	}
 	
 private static class FillSlotForEntity implements Runnable{
@@ -544,7 +547,7 @@ private static class FillSlotForEntity implements Runnable{
 				
 				if(!slot.getEntityType().equals(entity.getEntityType()))
 						continue;
-
+			
 				//TODO: remove this, computing only one slot right now
 				if(slot.getPatterns() !=null && slot.getPatterns().isEmpty())
 					continue;
@@ -577,7 +580,7 @@ private static class FillSlotForEntity implements Runnable{
 							String tempFolderID = id.substring(0, id.lastIndexOf("__"));
 							folderID = tempFolderID.substring(tempFolderID.lastIndexOf("__") + 2).replace("/","");
 							Pair<Long, Long> offset = Utils.getByteOffset(id, finalCandidateUnNormalized, workingDirectory);
-							writer.Write(streamID, entity.getName(), (double)500, folderID, slot.getName().toString(), finalCandidateNormalized, offset.first(), offset.second());
+							writer.Write(streamID, entity.getTargetID(), (double)500, folderID, slot.getName().toString(), finalCandidateNormalized, offset.first(), offset.second());
 						}
 					}
 				}
