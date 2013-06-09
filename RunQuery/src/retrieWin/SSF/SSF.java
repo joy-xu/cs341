@@ -68,13 +68,16 @@ public class SSF implements Runnable{
 	
 	@SuppressWarnings("unchecked")
 	public void readEntities() {
+		System.out.println("In Read Entities");
 		File file = new File(Constants.entitiesSerilizedFile);
 		if(file.exists()) {
 			entities = (List<Entity>)FileUtils.readFile(file.getAbsolutePath().toString());
 			System.out.println("Read data for " + entities.size() + "entities from serialized file");
 		}
 		else {
+			
 			// Read from expansions file
+			System.out.println("entities file does not exist");
 			Map<String,Set<String>> namesToExpansions = new HashMap<String,Set<String>>();
 			String expFileName = "data/entities_expansions";
 			try{
@@ -255,10 +258,12 @@ public class SSF implements Runnable{
 					else{
 						Map<String, Double> values= null;
 						if(docType.equals("social")) {
+							
 							values = coreNLP.findPlaceTimeValue(sentence, expansion, slot, false);
 						}
 						//News documents	
 						else {
+							
 							values = coreNLP.findPlaceTimeValue(sentence, expansion, slot, false);
 						}
 						for(String str: values.keySet()) {
@@ -302,6 +307,7 @@ public class SSF implements Runnable{
 		
 		for(String expansion: entity.getExpansions()) {
 			for(String sentence: relevantSentences.get(expansion).keySet()) {
+				System.out.println("Entity: " + entity + " Slot: " + slot.getName() + " Full sentence: " + sentence);
 				Annotation document = new Annotation(sentence);
 				processor.annotate(document);
 				//String streamID = null, folderName = null;
@@ -454,7 +460,7 @@ public class SSF implements Runnable{
 		System.out.println("Reading entities...");
 		readEntities();
 		
-		System.out.println(entities);
+		//System.out.println(entities);
 		
 		// read in slot information 
 		System.out.println("Reading slots...");
@@ -464,7 +470,7 @@ public class SSF implements Runnable{
 		// for each entity, for each slot, for each entity expansion
 		System.out.println("Finding slot values...");
 		
-		ExecutorService e = Executors.newFixedThreadPool(1);
+		ExecutorService e = Executors.newFixedThreadPool(8);
 		OutputWriter writer = new OutputWriter(timestamp + ".txt");
 		
 		for(Entity entity: entities) {
@@ -515,7 +521,7 @@ private static class FillSlotForEntity implements Runnable{
 		@Override
 		public void run(){
 
-			System.out.println("Finding slot values for entity " + entity.getName());
+			//System.out.println("Finding slot values for entity " + entity.getName());
 			//get all relevant documents for the entity
 
 			List<TrecTextDocument> docs = entity.getRelevantDocuments(timestamp, workingDirectory, entities, eq);
@@ -536,27 +542,36 @@ private static class FillSlotForEntity implements Runnable{
 					}
 				relevantSentences.put(expansion, sentences);
 			}
-			System.out.println("Number of relevant sentences: " + retrievedSentences.size() + " for entity: " + entity.getName());
+			//System.out.println("Number of relevant sentences: " + retrievedSentences.size() + " for entity: " + entity.getName());
 			
 			//iterate to fill slots
 			for(Slot slot: allSlots) {
 				//compute only for relevant slots for this entity
-				
+
 				if(!slot.getEntityType().equals(entity.getEntityType()))
 						continue;
-
+				
+				boolean aff_per = (slot.getName().equals(Constants.SlotName.Affiliate) && slot.getEntityType().equals(Constants.EntityType.PER));
+				if (!aff_per)
+					{
+						continue;
+					}
+				
+				
 				//TODO: remove this, computing only one slot right now
 				if(slot.getPatterns() !=null && slot.getPatterns().isEmpty())
 					continue;
 				//System.out.println("In slot " + slot.getName());
 				//System.out.println(slot);
-				System.out.println("Finding value for " + slot.getName() + " for entity: " + entity.getName());
+				//System.out.println("Finding value for " + slot.getName() + " for entity: " + entity.getName());
 				//for each expansion, slot pattern, get all possible candidates
 				Map<String, Pair<Set<String>, Double>> candidates = findCandidates(entity, slot, relevantSentences, nlp, conceptExtractor);
 				Map<String, Pair<Set<String>, Double>> normalizedMappings = new HashMap<String, Pair<Set<String>, Double>>();
 				//remove candidates below the threshold value
 				for(String slotValue:candidates.keySet()) {
+					System.out.println("slotvalue found was: " + slotValue);
 					String concept = conceptExtractor.getConcept(slotValue);
+					System.out.println("Concept: " + concept);
 					if(!normalizedMappings.containsKey(concept))
 						normalizedMappings.put(concept, new Pair<Set<String>, Double>(new HashSet<String>(), 0.0));
 					Pair<Set<String>, Double> pair = normalizedMappings.get(concept);
@@ -846,7 +861,7 @@ private static class FillSlotForEntity implements Runnable{
 		//new SSF().createSlots();
 		Execution.run(args, "Main", new SSF());
 		//SSF s= new SSF();
-
+		
 		//new SSF().updateSlots();
 		//Execution.run(args, "Main", new SSF());
 		//SSF s= new SSF();
@@ -884,9 +899,9 @@ private static class FillSlotForEntity implements Runnable{
 		
 		
 		List<String> folders = new ArrayList<String>();
-		for(int d = 19; d <= 19; d++) {
-			for(int i = 14 ;i < 16; i++)
-				folders.add(String.format("%04d-%02d-%02d-%02d", 2011,12,d,i));
+		for(int d = 2; d <= 2; d++) {
+			for(int i = 0 ;i < 24; i++)
+				folders.add(String.format("%04d-%02d-%02d-%02d", 2012,01,d,i));
 		}
 		
 		for(String folderName:folders) {
