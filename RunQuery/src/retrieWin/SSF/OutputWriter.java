@@ -13,7 +13,7 @@ public class OutputWriter {
 		try {
 			writer = new BufferedWriter(new FileWriter(fileName));
 			
-			writer.write(String.format("#{\"run_type\": \"automatic\", \"poc_email\": \"%s\", \"team_id\": \"%s\", \"topic_set_id\": \"sample-trec-kba-topics-2013\", \"corpus_id\": \"tiny-corpus\", \"$schema\": \"http://trec-kba.org/schemas/v1.1/filter-run.json\", \"team_name\": \"%s\", \"system_description_short\": \"rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens\", \"system_description\": \"Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.\", \"task_id\": \"kba-ssl-2013\", \"poc_name\": \"%s\", \"run_info\": {\"num_entities\": 4, \"num_stream_hours\": 3}, \"system_id\": \"%s\"}\n",
+			writer.write(String.format("#{\"run_type\": \"automatic\", \"poc_email\": \"%s\", \"team_id\": \"%s\", \"topic_set_id\": \"sample-trec-kba-topics-2013\", \"corpus_id\": \"tiny-corpus\", \"$schema\": \"http://trec-kba.org/schemas/v1.1/filter-run.json\", \"team_name\": \"%s\", \"system_description_short\": \"rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens\", \"system_description\": \"Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.\", \"task_id\": \"kba-ssf-2013\", \"poc_name\": \"%s\", \"run_info\": {\"num_entities\": 4, \"num_stream_hours\": 3}, \"system_id\": \"%s\"}\n",
 									POCEmail, TeamID, TeamName, POCName, SystemID));
 		} catch (IOException e) {
 			LogInfo.logs(e);
@@ -27,7 +27,7 @@ public class OutputWriter {
 	public void Write(String streamID, String entityID, double confidenceScore, String directoryName, String slotName, String equivalenceClass, Long long1, Long long2) {
 		try {
 			writer.write(String.format("%s\t%s\t%s\t%s\t%f\t%s\t%s\t%s\t%s\t%s\t%s\n",
-					TeamID, SystemID, streamID, entityID, confidenceScore,"2", "1", directoryName, slotName, equivalenceClass, (long1 + "-"  + long2)));
+					TeamID, SystemID, streamID, entityID, confidenceScore,"2", "1", directoryName, slotName, equivalenceClass.replace("[^a-zA-Z0-9-/:]", "_"), (long1 + "-"  + long2)));
 		} catch (IOException e) {
 			LogInfo.logs("Exception caught: " + e);
 			e.printStackTrace();
