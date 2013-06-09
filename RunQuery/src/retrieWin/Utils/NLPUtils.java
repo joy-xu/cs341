@@ -961,8 +961,8 @@ public class NLPUtils {
 			}
 		}
 		
-		if(ans.isEmpty() && slot.getName().equals(SlotName.DateOfDeath))
-			ans.add(defaultVal);
+		//if(ans.isEmpty() && slot.getName().equals(SlotName.DateOfDeath))
+			//ans.add(defaultVal);
 		return ans;
 	}
 	

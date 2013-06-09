@@ -48,10 +48,10 @@ public class SSF implements Runnable{
 	@Option(gloss="index Location") public String indexLocation;
 	@Option(gloss="index Location") public String saveAsDirectory;
 	private List<Slot> slots;
-	List<Entity> entities;
+	private List<Entity> entities;
 	private NLPUtils coreNLP;
 	Concept conceptExtractor;
-	static StanfordCoreNLP processor;
+	public static StanfordCoreNLP processor;
 	public SSF() {
 		initialize();
 	}
@@ -70,8 +70,8 @@ public class SSF implements Runnable{
 	public void readEntities() {
 		File file = new File(Constants.entitiesSerilizedFile);
 		if(file.exists()) {
-			entities = (List<Entity>)FileUtils.readFile(file.getAbsolutePath().toString());
-			System.out.println("Read data for " + entities.size() + "entities from serialized file");
+			setEntities((List<Entity>)FileUtils.readFile(file.getAbsolutePath().toString()));
+			System.out.println("Read data for " + getEntities().size() + " entities from serialized file");
 		}
 		else {
 			// Read from expansions file
@@ -101,7 +101,7 @@ public class SSF implements Runnable{
 				e.printStackTrace();
 			}
 			String fileName = "data/entities.csv";
-			entities = new ArrayList<Entity>();
+			setEntities(new ArrayList<Entity>());
 			try {
 				BufferedReader reader = new BufferedReader(new FileReader(fileName));
 				String line = "";
@@ -112,10 +112,10 @@ public class SSF implements Runnable{
 					List<String> equivalents = new ArrayList<String>(namesToExpansions.get(name));
 					Entity entity = new Entity(splits[0].replace("\"", ""), name, type, splits[2].replace("\"", ""),
 							equivalents, getDisambiguations(name));
-					entities.add(entity);
+					getEntities().add(entity);
 				}
 				reader.close();	
-				FileUtils.writeFile(entities, Constants.entitiesSerilizedFile);
+				FileUtils.writeFile(getEntities(), Constants.entitiesSerilizedFile);
 				System.out.println("New entities file created");
 			}
 			catch (Exception ex) {
@@ -447,14 +447,14 @@ public class SSF implements Runnable{
 		if (!baseDir.exists())
 			baseDir.mkdirs();
 
-		Indexer.createIndex(timestamp,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities);
+		Indexer.createIndex(timestamp,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, getEntities());
 		
 		ExecuteQuery eq = new ExecuteQuery(indexLocation,trecTextSerializedFile);		
 		// read in existing information for entities 
 		System.out.println("Reading entities...");
 		readEntities();
 		
-		System.out.println(entities);
+		System.out.println(getEntities());
 		
 		// read in slot information 
 		System.out.println("Reading slots...");
@@ -467,8 +467,8 @@ public class SSF implements Runnable{
 		ExecutorService e = Executors.newFixedThreadPool(1);
 		OutputWriter writer = new OutputWriter(timestamp + ".txt");
 		
-		for(Entity entity: entities) {
-			e.execute(new FillSlotForEntity(entity,timestamp,entities,getCoreNLP(),conceptExtractor,workingDirectory, getSlots(), eq, writer));
+		for(Entity entity: getEntities()) {
+			e.execute(new FillSlotForEntity(entity,timestamp,getEntities(),getCoreNLP(),conceptExtractor,workingDirectory, getSlots(), eq, writer));
 		}
 		e.shutdown();
 		while(true)
@@ -923,5 +923,13 @@ private static class FillSlotForEntity implements Runnable{
 
 	public void setCoreNLP(NLPUtils coreNLP) {
 		this.coreNLP = coreNLP;
+	}
+
+	public List<Entity> getEntities() {
+		return entities;
+	}
+
+	public void setEntities(List<Entity> entities) {
+		this.entities = entities;
 	}
 }
