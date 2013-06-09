@@ -119,7 +119,7 @@ public class QueryFactory {
 				eq = new ExecuteQuery(indexLocation,trecTextSerializedFile);
 			}
 			int numthreads = queries.size() < 16 ? queries.size():16;
-			System.out.println("Starting threads for folder: " + folder);
+			//System.out.println("Starting threads for folder: " + folder);
 			ExecutorService e = Executors.newFixedThreadPool(numthreads);
 			
 			Map<String,List<TrecTextDocument>> results = new HashMap<String,List<TrecTextDocument>>();
@@ -154,7 +154,7 @@ public class QueryFactory {
 					}
 				}
 			}
-			System.out.println("Shutting down threads for folder: " + folder);
+			//System.out.println("Shutting down threads for folder: " + folder);
 			//eq.emptyData();
 			//System.gc();
 			e.shutdown();
