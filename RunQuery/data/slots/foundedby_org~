@@ -7,6 +7,7 @@
 [pattern = found, confidenceScore = 7.434944237918215E-4, patternType = WordInBetween, rules = {[[edgeType = prep_by, direction = Out], [edgeType = nsubj, direction = Out]]}]
 [pattern = cofounder, confidenceScore = 0.059642294504679824, patternType = TargetInBetween, rules = {[[edgeType = dep, direction = In], [edgeType = nn, direction = Out]]}]
 [pattern = boss, confidenceScore = 0.03781522188123253, patternType = TargetInBetween, rules = {[[edgeType = nn, direction = In], [edgeType = nn, direction = Out]]}]
+[pattern = null, confidenceScore = 0.009947284583315823, patternType = WithoutPatternWord, rules = {[[edgeType = poss, direction = In]]}]
 [pattern = founder, confidenceScore = 5.113299846627751, patternType = TargetInBetween, rules = {[[edgeType = nn, direction = In], [edgeType = nn, direction = Out]]}]
 [pattern = founder, confidenceScore = 0.00909090909090909, patternType = WordInBetween, rules = {[[edgeType = dep, direction = In], [edgeType = prep_of, direction = Out]]}]
 [pattern = begin, confidenceScore = 0.001486988847583643, patternType = WordInBetween, rules = {[[edgeType = nsubj, direction = Out], [edgeType = tmod, direction = Out]]}]
