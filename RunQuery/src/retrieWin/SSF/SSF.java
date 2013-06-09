@@ -399,7 +399,7 @@ public class SSF implements Runnable{
 						//social documents
 						Map<String, Double> values = null;
 						if(docType.equals("social")) {
-							values = coreNLP.findSlotValue(document, expansion, slot, (slot.getTargetNERTypes() != null) ? true : false, defaultVal);
+							values = coreNLP.findSlotValue(document, expansion, slot, (!slot.getTargetNERTypes().contains(NERType.NONE)) ? true : false, defaultVal);
 						}
 						//news documents
 						else {
@@ -554,12 +554,12 @@ private static class FillSlotForEntity implements Runnable{
 						continue;
 
 				
-				boolean aff_per = (slot.getName().equals(Constants.SlotName.Affiliate) && slot.getEntityType().equals(Constants.EntityType.PER));
+				/*boolean aff_per = (slot.getName().equals(Constants.SlotName.Affiliate) && slot.getEntityType().equals(Constants.EntityType.PER));
 				if (!aff_per)
 					{
 						continue;
 					}
-
+				 */
 				//TODO: remove this, computing only one slot right now
 				if(slot.getPatterns() !=null && slot.getPatterns().isEmpty())
 					continue;
@@ -901,9 +901,9 @@ private static class FillSlotForEntity implements Runnable{
 		
 		
 		List<String> folders = new ArrayList<String>();
-		for(int d = 2; d <= 2; d++) {
-			for(int i = 0 ;i < 24; i++)
-				folders.add(String.format("%04d-%02d-%02d-%02d", 2012,01,d,i));
+		for(int d = 19; d <= 19; d++) {
+			for(int i = 14 ;i <= 15; i++)
+				folders.add(String.format("%04d-%02d-%02d-%02d", 2011,12,d,i));
 		}
 		
 		for(String folderName:folders) {
