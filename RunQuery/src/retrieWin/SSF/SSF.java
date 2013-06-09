@@ -311,7 +311,7 @@ public class SSF implements Runnable{
 		
 		for(String expansion: entity.getExpansions()) {
 			for(String sentence: relevantSentences.get(expansion).keySet()) {
-				System.out.println("Entity: " + entity + " Slot: " + slot.getName() + " Full sentence: " + sentence);
+				System.out.println("Entity: " + entity.getName() + " Slot: " + slot.getName() + " Full sentence: " + sentence);
 				Annotation document = new Annotation(sentence);
 				processor.annotate(document);
 				//String streamID = null, folderName = null;
@@ -399,11 +399,11 @@ public class SSF implements Runnable{
 						//social documents
 						Map<String, Double> values = null;
 						if(docType.equals("social")) {
-							values = coreNLP.findSlotValue(document, expansion, slot, (!slot.getTargetNERTypes().contains(NERType.NONE)) ? true : false, defaultVal);
+							values = coreNLP.findSlotValue(document, expansion, slot, (!slot.getTargetNERTypes().contains(NERType.NONE)) ? true : false, defaultVal, entity);
 						}
 						//news documents
 						else {
-							values = coreNLP.findSlotValue(document, expansion, slot, false, defaultVal);
+							values = coreNLP.findSlotValue(document, expansion, slot, false, defaultVal, entity);
 						}
 						for(String str: values.keySet()) {
 							if(!candidates.containsKey(str)){
@@ -612,7 +612,7 @@ private static class FillSlotForEntity implements Runnable{
 
 		 if(!slot.getName().equals(Constants.SlotName.Contact_Meet_PlaceTime))
 		 continue;
-		 System.out.println(ssf.getCoreNLP().findSlotValue(null, "", slot, false, null));
+		 System.out.println(ssf.getCoreNLP().findSlotValue(null, "", slot, false, null, null));
 
 		 }
 	}
@@ -901,9 +901,9 @@ private static class FillSlotForEntity implements Runnable{
 		
 		
 		List<String> folders = new ArrayList<String>();
-		for(int d = 19; d <= 19; d++) {
-			for(int i = 14 ;i <= 15; i++)
-				folders.add(String.format("%04d-%02d-%02d-%02d", 2011,12,d,i));
+		for(int d = 1; d <= 29; d++) {
+			for(int i = 0 ;i <= 23; i++)
+				folders.add(String.format("%04d-%02d-%02d-%02d", 2012,2,d,i));
 		}
 		
 		for(String folderName:folders) {
