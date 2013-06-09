@@ -25,7 +25,7 @@ public class Entity  implements Serializable {
 	private List<String> disambiguations;
 	Map<SlotName, List<String>> slotValues;
 	
-	static double disambiguationThreshold = 0.0;
+	static double disambiguationThreshold = 0.1;
 	
 	public Entity(String targetID, String name, EntityType type, String group, List<String> expansions, List<String> disambiguations) {
 		this.targetID = targetID;
