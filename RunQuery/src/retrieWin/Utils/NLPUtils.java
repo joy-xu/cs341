@@ -789,9 +789,8 @@ public class NLPUtils {
 							}
 							str = str.trim();
 							//Flag to check if we found a matching pattern already
-							System.out.println(pattern + "|" + str);
 							if(!str.isEmpty()) {
-
+								LogInfo.logs(String.format("Expansion: |%s|, Pattern: |%s|, Value: |%s|", entity1, pattern, str));
 								if(!candidates.containsKey(str))
 									candidates.put(str, pattern.getConfidenceScore());
 								else
@@ -1546,5 +1545,16 @@ public class NLPUtils {
 		}
 		
 		return result;
+	}
+	
+	public static boolean isEntitiesSame(String entity1, String value) {
+		if(entity1.compareToIgnoreCase(value) == 0)
+			return true;
+		String[] splits = entity1.split(" ");
+		for(String split : splits) {
+			if(split.compareToIgnoreCase(value) == 0)
+				return true;
+		}
+		return false;
 	}
 }
