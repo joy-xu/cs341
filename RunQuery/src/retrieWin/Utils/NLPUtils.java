@@ -384,11 +384,27 @@ public class NLPUtils {
 	//TODO - Improve if needed!
 	public IndexedWord findWordsInSemanticGraphForSlotPattern(SemanticGraph graph, String pattern) {
 		
+		String[] split = pattern.split(" ");
+		if(split.length == 0)
+			return null;
+		
 		for(IndexedWord word: graph.vertexSet()) {
-			//if (pattern.equals("hold"))
-			//	System.out.println("word: " + word.originalText() + " lemma: " + word.lemma());
-			if(pattern.compareToIgnoreCase(word.lemma().replaceAll("[^a-z]", "")) == 0) {
-				return word;
+			if(split[0].compareToIgnoreCase(word.lemma().replaceAll("[^a-z]", "")) == 0) {
+				boolean found = true;
+				for(int i = 1; i < split.length; i++) {
+					try {
+						if(split[i].compareToIgnoreCase(graph.getNodeByIndex(word.index() + i).lemma().replaceAll("[^a-z]", "")) != 0) {
+							found = false;
+							break;
+						}
+					}
+					catch (Exception e) {
+						found = false;
+						break;
+					}
+				}
+				if(found)
+					return word;
 			}
 		}
 		return null;
@@ -741,7 +757,8 @@ public class NLPUtils {
 				for(SlotPattern pattern: slot.getPatterns()) {
 					for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot, social,defaultVal)) {
 						System.out.println(ans + "|" + pattern);
-
+						if(ans == null)
+							continue;
 						if(!ans.isEmpty()) {
 							String str = "";
 							for(String tok: ans.split(" ")) {
@@ -783,19 +800,20 @@ public class NLPUtils {
 			patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
 			if(patternWord == null)
 				return ans;
-			
 			for(IndexedWord w: words1) {
 				if(Math.abs(w.index() - patternWord.index()) < 5) {
 					int i = Math.max(1, patternWord.index()-5);
 					int count = 0;
-					while(count < 10) {
+					while(count < 20) {
 						try {
 							tempSet.add(graph.getNodeByIndex(i));
 							i++;
 							count++;
 						}
 						catch (Exception e){
-							break;
+							i++;
+							count++;
+							continue;
 						}
 					}
 				}
@@ -1214,6 +1232,8 @@ public class NLPUtils {
 		
 		try {
 			Map<Integer, CorefChain> coref = document.get(CorefChainAnnotation.class);
+			if(coref == null)
+				return ans;
 			
 			for(Map.Entry<Integer, CorefChain> entry : coref.entrySet()) {
 	            CorefChain c = entry.getValue();
