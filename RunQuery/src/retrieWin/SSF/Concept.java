@@ -1,7 +1,9 @@
 package retrieWin.SSF;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -11,29 +13,32 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import edu.stanford.nlp.util.Pair;
+
 import retrieWin.Utils.FileUtils;
 import retrieWin.Utils.Utils;
 import retrieWin.Utils.Utils.TokenComparable;
 
 public class Concept {
-	Map<Integer, String> concepts = new HashMap<Integer, String>();
+	String[] concepts = new String[numConcepts];
 	Map<String, Integer> idf = new HashMap<String, Integer>();
-	Map<String, Long> kgramLine = new HashMap<String, Long>();
+	Map<String, Pair<Long, Integer>> kgramLine = new HashMap<String, Pair<Long, Integer>>();
 	List<conceptStringInfo> conceptString = new ArrayList<conceptStringInfo>();
 	List<String> kgrams = new ArrayList<String>();
-	List<String> kgramsPostings = new ArrayList<String>();
+	String[] kgramsPostings = new String[numKGrams];
 	
 	final String s3Directory = "s3://conceptsData/";
 	final String localDirectory = "data/";
 	final String idfFile = "idf.ser";
 	final String kgramsFile = "kgrams";
-	final String kgramsPostingsBoundariesFile = "kgramsPostingsLineBoundaries.ser";
+	final String kgramsPostingsBoundariesFile = "kgramsInv.ser";
 	final String kgramsPostingsFile = "kgramsPostings";
 	final String conceptsFile = "concepts.ser";
 	final String conceptsStringInfoFile = "conceptStringInfo";
 	
 	final static int numConcepts = 2211776;
 	final static int numConceptStrings = 34754240;
+	final static int numKGrams = 72199;
 	
 	public class conceptStringInfo implements Serializable {
 		private static final long serialVersionUID = 1L;
@@ -49,23 +54,23 @@ public class Concept {
 			/*System.out.println("reading idf file");
 			idf = (Map<String, Integer>) FileUtils.readFile(Utils.getFromS3IfNotExists(s3Directory, localDirectory, idfFile));
 	        System.out.println("postings boundaries file");
-	        kgramLine = (Map<String, Long>) FileUtils.readFile(Utils.getFromS3IfNotExists(s3Directory, localDirectory, kgramsPostingsBoundariesFile));
+	        kgramLine = (Map<String, Pair<Long, Integer>>) FileUtils.readFile(Utils.getFromS3IfNotExists(s3Directory, localDirectory, kgramsPostingsBoundariesFile));
 	        System.out.println("reading concepts file");
-	        concepts = (Map<Integer, String>) FileUtils.readFile(Utils.getFromS3IfNotExists(s3Directory, localDirectory, conceptsFile));
+	        concepts = (String[]) FileUtils.readFile(Utils.getFromS3IfNotExists(s3Directory, localDirectory, conceptsFile));
 	        System.out.println("reading concept string info file");
 	        BufferedReader reader = new BufferedReader(new FileReader(Utils.getFromS3IfNotExists(s3Directory, localDirectory, conceptsStringInfoFile)));
 	        String line;
 	        int lineNum = 0;
 	        while((line = reader.readLine()) != null) {
-	        	lineNum++;
-	        	if(lineNum % 1000000 == 0)
-	        		System.out.println(lineNum);
+	        	//lineNum++;
+	        	//if(lineNum % 1000000 == 0)
+	        		//System.out.println(lineNum);
 	        	conceptStringInfo obj = new conceptStringInfo();
 	        	String[] split = line.split(",");
 	        	obj.numKgrams = Short.parseShort(split[0]);
 	        	//obj.start = Long.parseLong(split[1]);
-	        	obj.prob = Float.parseFloat(split[2]);
-	        	obj.conceptId = Integer.parseInt(split[3]);
+	        	obj.prob = Float.parseFloat(split[1]);
+	        	obj.conceptId = Integer.parseInt(split[2]);
 	        	conceptString.add(obj);
 	        }
 	        reader.close();*/
@@ -74,11 +79,15 @@ public class Concept {
 	        while((line = reader.readLine()) != null) {
 	        	kgrams.add(line);
 	        }
-	        reader.close();*/
-	        /*System.out.println("reading kgrams postings file");
+	        reader.close();
+	        System.out.println("reading kgrams postings file");
 	        reader = new BufferedReader(new FileReader(Utils.getFromS3IfNotExists(s3Directory, localDirectory, kgramsPostingsFile)));
+	        lineNum = 0;
 	        while((line = reader.readLine()) != null) {
-	        	kgramsPostings.add(line);
+	        	if(lineNum % 1000 == 0)
+	        		System.out.println(lineNum);
+	        	kgramsPostings[lineNum] = line;
+	        	lineNum++;
 	        }
 	        reader.close();*/
 		} catch (Exception e) {
@@ -126,8 +135,8 @@ public class Concept {
 		return str;
 	}
 	
-	/*	
-	public String getConcept(String str) {
+	
+	public String getCCConcept(String str) {
 		Map<String, Double> conceptMax = new HashMap<String, Double>();
 		Map<String, Double> conceptTotal = new HashMap<String, Double>();
 		Map<String, Integer> conceptCount = new HashMap<String, Integer>();
@@ -141,28 +150,36 @@ public class Concept {
 		int totalTokenGrams, intersectCount;//what kgrams to consider
 		
 		try {
-			System.out.println("create k-grams for tokens");
+			//System.out.println("create k-grams for tokens");
 	        List<String> tokens = Arrays.asList(str.toLowerCase().split(" "));
 	        totalTokenGrams = getTokenizedKGramMap(str, tokenKGrams, idf, 3);
 	        
-	        System.out.println("order tokens in decreasing order of relevance");
+	        //System.out.println("Total number of KGrams = " + totalTokenGrams);
+	        //System.out.println("order tokens in decreasing order of relevance");
 	        Collections.sort(tokens, new TokenComparable(idf));
 			
+	        //System.out.println("Reading kgrams postings");
 	        RandomAccessFile postingsFile = new RandomAccessFile(Utils.getFromS3IfNotExists(s3Directory, localDirectory, kgramsPostingsFile), "r");
 	        Map<String, Integer> numPreviousOccurences = new HashMap<String, Integer>();
 			for(String token: tokens) {
+				System.out.println(token + " " + idf.get(token));
 	        	Map<Integer, Integer> temp = new HashMap<Integer, Integer>();
 	        	for(String kgramString: tokenKGrams.get(token).keySet()) {
+	        		//System.out.println(kgramString);
 	        		if(!numPreviousOccurences.containsKey(kgramString))
 	        			numPreviousOccurences.put(kgramString, 0);
 	        		
 	        		if(!postingsList.containsKey(kgramString)) {
-	        			if(kgramLine.get(kgramString) < 0)
+	        			if(kgramLine.get(kgramString).first < 0)
 	        				System.out.println(kgramLine.get(kgramString));
-	        			postingsFile.seek(kgramLine.get(kgramString));
-	        			postingsList.put(kgramString, getMapFromString(postingsFile.readLine()));
+	        			//System.out.println(kgramLine.get(kgramString));
+	        			byte[] b = new byte[kgramLine.get(kgramString).second-1];
+	        			postingsFile.seek(kgramLine.get(kgramString).first);
+	        			postingsFile.readFully(b);
+	        			postingsList.put(kgramString, getMapFromString(new String(b)));
 	        		}
 	        		
+	        		//System.out.println("Finding intersection");
 	        		Map<Integer, Integer> currList = postingsList.get(kgramString);
 	        		for(int key: currList.keySet()) {
 	        			intersectCount = Math.min(currList.get(key) - numPreviousOccurences.get(kgramString), tokenKGrams.get(token).get(kgramString));
@@ -175,6 +192,7 @@ public class Concept {
 	        		numPreviousOccurences.put(kgramString, numPreviousOccurences.get(kgramString) + 1);
 	        	}
 	        	
+	        	//System.out.println("Updating concept scores");
 	        	for(int key: temp.keySet()) {
 	        		if(!intersectCountMap.containsKey(key))
 	        			intersectCountMap.put(key, temp.get(key));
@@ -188,14 +206,18 @@ public class Concept {
 	        	}
 			}  	
 			for(int key: intersectCountMap.keySet()) {
-				if((double)intersectCountMap.get(key)/totalTokenGrams < 0.2)
+				if((double)intersectCountMap.get(key)/totalTokenGrams < 0.4)
 					conceptStringScores.remove(key);
 			}
 			postingsFile.close();
 	        
-			System.out.println(conceptStringScores.keySet().size());
+			BufferedWriter writer = new BufferedWriter(new FileWriter("blah"));
+			//System.out.println("Finding most relevant concept");
+			//System.out.println(conceptStringScores.keySet().size());
 	        for(int key: conceptStringScores.keySet()) {
-	        	concept = concepts.get(conceptString.get(key-1).conceptId);
+	        	concept = concepts[conceptString.get(key-1).conceptId];
+	        	if(concept.equals("sildenafil"))
+	        		writer.write(key);
 	        	//System.out.println(concept);
 	        	val = conceptString.get(key-1).prob*conceptStringScores.get(key)/(totalTokenGrams + conceptString.get(key-1).numKgrams);
 				if(!conceptMax.containsKey(concept))
@@ -213,12 +235,14 @@ public class Concept {
 				else
 					conceptCount.put(concept, conceptCount.get(concept) + 1);
 			}
-	        
-	        System.out.println("Calculating max");
-	        System.out.println(conceptMax.keySet().size());
+	        writer.close();
+	        //System.out.println("Calculating max");
+	        //System.out.println(conceptMax.keySet().size());
 	        maxVal = 0.0;
 			for(String key: conceptMax.keySet()) {
-				val = conceptMax.get(key);
+				val = Math.log(conceptCount.get(key))*conceptMax.get(key);
+				if(key.equals("seagram"))
+					System.out.println(key + "," + val + "," + (conceptTotal.get(key)/conceptCount.get(key)) + "," + conceptCount.get(key));
 				if(maxVal == 0.0) {
 					maxKey = key;
 					maxVal = val;
@@ -228,14 +252,14 @@ public class Concept {
 					maxVal = val;
 				}
 			}
-	        System.out.println(maxKey + ", " + maxVal);
+	        System.out.println(maxKey + ", " + maxVal + "," + (conceptTotal.get(maxKey)/conceptCount.get(maxKey)) + "," + conceptCount.get(maxKey));
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		return maxKey;
 	}
-
+/*
 	public String getCConcept(String str) {
 		Map<String, Double> conceptMax = new HashMap<String, Double>();
 		Map<String, Double> conceptTotal = new HashMap<String, Double>();

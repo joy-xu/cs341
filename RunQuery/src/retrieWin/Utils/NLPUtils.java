@@ -384,9 +384,29 @@ public class NLPUtils {
 	//TODO - Improve if needed!
 	public IndexedWord findWordsInSemanticGraphForSlotPattern(SemanticGraph graph, String pattern) {
 		
+		String[] split = pattern.split(" ");
+		if(split.length == 0)
+			return null;
+		
 		for(IndexedWord word: graph.vertexSet()) {
-			if(pattern.compareToIgnoreCase(word.lemma().replaceAll("[^a-z]", "")) == 0) {
-				return word;
+
+			if(split[0].compareToIgnoreCase(word.lemma().replaceAll("[^a-z]", "")) == 0) {
+				boolean found = true;
+				for(int i = 1; i < split.length; i++) {
+					try {
+						if(split[i].compareToIgnoreCase(graph.getNodeByIndex(word.index() + i).lemma().replaceAll("[^a-z]", "")) != 0) {
+							found = false;
+							break;
+						}
+					}
+					catch (Exception e) {
+						found = false;
+						break;
+					}
+				}
+				if(found)
+					return word;
+
 			}
 		}
 		return null;
@@ -738,7 +758,9 @@ public class NLPUtils {
 				System.out.println("Entity: " + entity1 + " Slot: " + slot.getName() + " Processing sentence: " + sentenceMap.toString());
 				for(SlotPattern pattern: slot.getPatterns()) {
 					for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot, social,defaultVal)) {
-						
+
+						if(ans == null)
+							continue;
 
 						if(!ans.isEmpty()) {
 							String str = "";
@@ -776,24 +798,25 @@ public class NLPUtils {
 		Set<String> ans = new HashSet<String>();
 		IndexedWord patternWord = null;
 		Set<Rule> matchedRules = new HashSet<Rule>();
-		//graph.prettyPrint();
+
 		if(social || pattern.getPatternType().equals(Constants.PatternType.WithoutRules)) {
 			patternWord = findWordsInSemanticGraphForSlotPattern(graph, pattern.getPattern());
 			if(patternWord == null)
 				return ans;
-			
 			for(IndexedWord w: words1) {
 				if(Math.abs(w.index() - patternWord.index()) < 5) {
 					int i = Math.max(1, patternWord.index()-5);
 					int count = 0;
-					while(count < 10) {
+					while(count < 20) {
 						try {
 							tempSet.add(graph.getNodeByIndex(i));
 							i++;
 							count++;
 						}
 						catch (Exception e){
-							break;
+							i++;
+							count++;
+							continue;
 						}
 					}
 				}
@@ -833,25 +856,8 @@ public class NLPUtils {
 			if(patternWord == null)
 				return ans;
 			Set<IndexedWord> conjAndPatterns = getConjAndNeighbours(graph, patternWord);
-			//System.out.println("pattern word is not null: " + patternWord.originalText());
-			/*
-			for (IndexedWord w:conjAndPatterns)
-			{
-				System.out.println(w.originalText());
-			}
-			//Checking rule1
-			System.out.println("Rules:");
-			System.out.println(pattern.getRules(0).toString());
-			System.out.println(pattern.getRules(1).toString());
-			*/
+
 			Set<IndexedWord> rule1Set = getWordsSatisfyingRuleNew(conjAndPatterns, pattern.getRules(0), graph);
-			/*
-			System.out.println("Rule1Set: ");
-			for (IndexedWord w:rule1Set)
-			{
-				System.out.println(w.originalText());
-			}
-			*/
 			for(IndexedWord w1:words1) {
 				if(rule1Set.contains(w1)) {
 					if(tempSet.addAll(getWordsSatisfyingRuleNew(conjAndPatterns, pattern.getRules(1), graph)))
@@ -862,13 +868,7 @@ public class NLPUtils {
 			//Checking rule2
 			
 			Set<IndexedWord> rule2Set = getWordsSatisfyingRuleNew(conjAndPatterns, pattern.getRules(1), graph);
-			/*
-			System.out.println("Rule2Set: ");
-			for (IndexedWord w:rule2Set)
-			{
-				System.out.println(w.originalText());
-			}
-			*/
+
 			for(IndexedWord w1:words1) {
 				if(rule2Set.contains(w1)) {
 					if(tempSet.addAll(getWordsSatisfyingRuleNew(conjAndPatterns, pattern.getRules(0), graph))) 
@@ -876,12 +876,8 @@ public class NLPUtils {
 				}
 			}
 		}
-		//System.out.println("tempset size: " + tempSet.size());
-		
-		// Remove Date and Time for ContactMeetPlaceTime and Entity:
-		
+		System.out.println("tempset size: " + tempSet.size());
 
-		
 		
 		for(IndexedWord w: tempSet)
 		{
@@ -928,15 +924,15 @@ public class NLPUtils {
 		
 		Map<String, String> nerMap = createNERMap(sentence);
 		for(IndexedWord w: ansSet) {
-			System.out.println("word: " + w.originalText());
+			//System.out.println("word: " + w.originalText());
 			String phrase = findExpandedEntity(sentence, w.originalText());
-			System.out.println("Phrase: " + phrase);
+			//System.out.println("Phrase: " + phrase);
 			String temp = "";
 			for(String tok: phrase.split(" ")) {
 				//System.out.println("Token: " + tok);
-				System.out.println("NER Types");
-				for (NERType n: targetNERTypes)
-					System.out.println(n.toString());
+				//System.out.println("NER Types");
+				//for (NERType n: targetNERTypes)
+				//	System.out.println(n.toString());
 				//System.out.println();
 				if(targetNERTypes == null || targetNERTypes.contains(NERType.NONE) || targetNERTypes.contains(NERType.valueOf(nerMap.get(tok)))) {
 					
@@ -956,12 +952,12 @@ public class NLPUtils {
 			}
 			if(!temp.trim().isEmpty()) {
 				ans.add(temp.trim());
-				System.out.println("ans: " + pattern);
+				//System.out.println("ans: " + pattern);
 			}
 		}
 		
-		if(ans.isEmpty() && slot.getName().equals(SlotName.DateOfDeath))
-			ans.add(defaultVal);
+		//if(ans.isEmpty() && slot.getName().equals(SlotName.DateOfDeath))
+			//ans.add(defaultVal);
 		return ans;
 	}
 	

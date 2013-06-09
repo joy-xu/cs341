@@ -48,10 +48,10 @@ public class SSF implements Runnable{
 	@Option(gloss="index Location") public String indexLocation;
 	@Option(gloss="index Location") public String saveAsDirectory;
 	private List<Slot> slots;
-	List<Entity> entities;
+	private List<Entity> entities;
 	private NLPUtils coreNLP;
 	Concept conceptExtractor;
-	static StanfordCoreNLP processor;
+	public static StanfordCoreNLP processor;
 	public SSF() {
 		initialize();
 	}
@@ -68,11 +68,11 @@ public class SSF implements Runnable{
 	
 	@SuppressWarnings("unchecked")
 	public void readEntities() {
-		System.out.println("In Read Entities");
+
 		File file = new File(Constants.entitiesSerilizedFile);
 		if(file.exists()) {
-			entities = (List<Entity>)FileUtils.readFile(file.getAbsolutePath().toString());
-			System.out.println("Read data for " + entities.size() + "entities from serialized file");
+			setEntities((List<Entity>)FileUtils.readFile(file.getAbsolutePath().toString()));
+			System.out.println("Read data for " + getEntities().size() + " entities from serialized file");
 		}
 		else {
 			
@@ -104,7 +104,7 @@ public class SSF implements Runnable{
 				e.printStackTrace();
 			}
 			String fileName = "data/entities.csv";
-			entities = new ArrayList<Entity>();
+			setEntities(new ArrayList<Entity>());
 			try {
 				BufferedReader reader = new BufferedReader(new FileReader(fileName));
 				String line = "";
@@ -115,16 +115,20 @@ public class SSF implements Runnable{
 					List<String> equivalents = new ArrayList<String>(namesToExpansions.get(name));
 					Entity entity = new Entity(splits[0].replace("\"", ""), name, type, splits[2].replace("\"", ""),
 							equivalents, getDisambiguations(name));
-					entities.add(entity);
+					getEntities().add(entity);
 				}
 				reader.close();	
-				FileUtils.writeFile(entities, Constants.entitiesSerilizedFile);
+				FileUtils.writeFile(getEntities(), Constants.entitiesSerilizedFile);
 				System.out.println("New entities file created");
 			}
 			catch (Exception ex) {
 				ex.printStackTrace();
 				System.out.println(ex.getMessage());
 			}
+			FileUtils.writeFile(entities, Constants.entitiesSerilizedFile);
+			/*for(Entity en:entities) {
+				System.out.println(en.getTargetID() + ":" + en.getDisambiguations());
+			}*/
 		}
 	}
 	
@@ -146,7 +150,7 @@ public class SSF implements Runnable{
 				System.out.println("disambiguation file for " + entity + "does not exist");	
 		}
 		catch (Exception ex) {
-			System.out.println(ex.getMessage());
+			ex.printStackTrace();
 		}
 		return disambiguations;
 	}
@@ -453,14 +457,14 @@ public class SSF implements Runnable{
 		if (!baseDir.exists())
 			baseDir.mkdirs();
 
-		Indexer.createIndex(timestamp,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, entities);
+		Indexer.createIndex(timestamp,baseFolder, tempDirectory, indexLocation, trecTextSerializedFile, getEntities());
 		
 		ExecuteQuery eq = new ExecuteQuery(indexLocation,trecTextSerializedFile);		
 		// read in existing information for entities 
 		System.out.println("Reading entities...");
 		readEntities();
 		
-		//System.out.println(entities);
+
 		
 		// read in slot information 
 		System.out.println("Reading slots...");
@@ -473,8 +477,8 @@ public class SSF implements Runnable{
 		ExecutorService e = Executors.newFixedThreadPool(8);
 		OutputWriter writer = new OutputWriter(timestamp + ".txt");
 		
-		for(Entity entity: entities) {
-			e.execute(new FillSlotForEntity(entity,timestamp,entities,getCoreNLP(),conceptExtractor,workingDirectory, getSlots(), eq, writer));
+		for(Entity entity: getEntities()) {
+			e.execute(new FillSlotForEntity(entity,timestamp,getEntities(),getCoreNLP(),conceptExtractor,workingDirectory, getSlots(), eq, writer));
 		}
 		e.shutdown();
 		while(true)
@@ -488,9 +492,7 @@ public class SSF implements Runnable{
 				System.out.println("Waiting - Thread interrupted");
 			}
 		}
-
 		writer.Close();
-		
 	}
 	
 private static class FillSlotForEntity implements Runnable{
@@ -550,14 +552,14 @@ private static class FillSlotForEntity implements Runnable{
 
 				if(!slot.getEntityType().equals(entity.getEntityType()))
 						continue;
+
 				
 				boolean aff_per = (slot.getName().equals(Constants.SlotName.Affiliate) && slot.getEntityType().equals(Constants.EntityType.PER));
 				if (!aff_per)
 					{
 						continue;
 					}
-				
-				
+
 				//TODO: remove this, computing only one slot right now
 				if(slot.getPatterns() !=null && slot.getPatterns().isEmpty())
 					continue;
@@ -592,7 +594,7 @@ private static class FillSlotForEntity implements Runnable{
 							String tempFolderID = id.substring(0, id.lastIndexOf("__"));
 							folderID = tempFolderID.substring(tempFolderID.lastIndexOf("__") + 2).replace("/","");
 							Pair<Long, Long> offset = Utils.getByteOffset(id, finalCandidateUnNormalized, workingDirectory);
-							writer.Write(streamID, entity.getName(), (double)500, folderID, slot.getName().toString(), finalCandidateNormalized, offset.first(), offset.second());
+							writer.Write(streamID, entity.getTargetID(), (double)500, folderID, slot.getName().toString(), finalCandidateNormalized, offset.first(), offset.second());
 						}
 					}
 				}
@@ -938,5 +940,13 @@ private static class FillSlotForEntity implements Runnable{
 
 	public void setCoreNLP(NLPUtils coreNLP) {
 		this.coreNLP = coreNLP;
+	}
+
+	public List<Entity> getEntities() {
+		return entities;
+	}
+
+	public void setEntities(List<Entity> entities) {
+		this.entities = entities;
 	}
 }

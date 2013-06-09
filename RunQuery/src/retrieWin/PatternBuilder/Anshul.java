@@ -8,6 +8,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.io.RandomAccessFile;
+import java.io.Serializable;
 import java.nio.ByteBuffer;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -23,12 +25,20 @@ import java.util.regex.Pattern;
 
 import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.StringUtils;
 
 import retrieWin.Indexer.Downloader;
 import retrieWin.Indexer.ThriftReader;
 import retrieWin.Indexer.TrecTextDocument;
+import retrieWin.SSF.Concept;
+import retrieWin.SSF.Constants;
+import retrieWin.SSF.Entity;
+import retrieWin.SSF.SSF;
+import retrieWin.SSF.Slot;
 import retrieWin.SSF.arxivDocument;
+import retrieWin.Utils.FileUtils;
 import retrieWin.Utils.NLPUtils;
 import retrieWin.Utils.Utils;
 import streamcorpus.Sentence;
@@ -49,6 +59,30 @@ public class Anshul {
 	    }
 	}
 	
+	public static Map<Integer, Integer> getMapFromString(String str) {
+		Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+		str = str.replaceAll("\\{", "");
+		str = str.replaceAll("\\}", "");
+		for(String token: str.split(",")) {
+			String[] temp = token.trim().split("=");
+			int key = Integer.parseInt(temp[0]);
+			int value = Integer.parseInt(temp[1]);
+			map.put(key, value);
+		}
+		return map;
+	}
+	
+	public static class conceptStringInfo implements Serializable {
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+		//long start;
+		short numKgrams;
+		float prob;
+		int conceptId;
+	}
+	
 	public static String getConcept(String str) {
 		Map<String, Double> conceptRelevance = new HashMap<String, Double>();
 		Map<String, Double> conceptMax = new HashMap<String, Double>();
@@ -60,17 +94,233 @@ public class Anshul {
 		List<String> wordKGrams = new ArrayList<String>();
 		String line = "", kgram = "", concept, word;
 		String[] words;
-		double prob, maxVal = 0.0,val = 0.0;
+		double maxVal = 0.0,val = 0.0;
+		float prob;
 		String maxKey = "";
 		int k = 3;
 		
 		int intersectCount, numKGrams, totalTokenGrams, count;
-		//int lineNum;
+		int lineNum;
 		List<String> tokens = Arrays.asList(str.toLowerCase().split(" "));
 		
+		Map<String, Map<Integer, Integer>> postingsMap = new HashMap<String, Map<Integer,Integer>>();
+		for(int x = 1; x <= 1; x++) {
+		postingsMap.clear();
+		int numFiles = 17;
+		Map<String, Long> kgramLine = new HashMap<String, Long>();
+		Map<String, Pair<Long, Integer>> kgramInv = new HashMap<String, Pair<Long,Integer>>();
+		List<String> kgrams = new ArrayList<String>();
 		try {
+			System.out.println("postings boundaries file");
+	        kgramLine = (Map<String, Long>) FileUtils.readFile(Utils.getFromS3IfNotExists("s3://conceptsData/", "data/", "kgramsPostingsLineBoundaries.ser"));
+	        long start, size;
+	        
+	        System.out.println("reading kgrams file");
+	        BufferedReader reader = new BufferedReader(new FileReader(Utils.getFromS3IfNotExists("s3://conceptsData/", "data/", "kgrams")));
+	        BufferedReader reader1 = new BufferedReader(new FileReader(Utils.getFromS3IfNotExists("s3://conceptsData/", "data/", "kgramsPostingsLineBoundaries")));
+	        BufferedWriter writer1 = new BufferedWriter(new FileWriter("data/blah1"));
+	        start = 0;
+	        lineNum = 1;
+	        String line1;
+	        while((line = reader.readLine()) != null) {
+	        	line1 = reader1.readLine();
+	        	size = kgramLine.get(line);
+	        	//writer1.write(start + " " + (size-start) + "\n");
+	        	start = size;
+	            lineNum++;
+		    	kgramInv.put(line, new Pair<Long, Integer>(Long.parseLong(line1.split(" ")[0]),Integer.parseInt(line1.split(" ")[1])));
+		    }
+	        reader.close();
+	        //writer1.close();
+			
+	        for(String kg: kgramInv.keySet()) {
+	        	writer1.write(kg + " " + kgramInv.get(kg).first + " " + kgramInv.get(kg).second + "\n");
+	        }
+	        writer1.close();
+	        FileOutputStream fout = new FileOutputStream("data/kgramsInv.ser");
+			ObjectOutputStream oos = new ObjectOutputStream(fout);   
+			oos.writeObject(kgramInv);
+			oos.close();
+	        
+			/*System.out.println("reading kgrams postings file");
+	        BufferedReader reader = new BufferedReader(new FileReader(Utils.getFromS3IfNotExists("s3://conceptsData/", "data/", "kgramsPostings")));
+	        BufferedWriter writer1 = new BufferedWriter(new FileWriter("data/blah2"));
+	        lineNum = 0;
+	        long size = 0;
+	        while((line = reader.readLine()) != null) {
+	        	if(lineNum % 1000 == 0)
+	        		System.out.println(lineNum);
+	        	size += line.length() + 1;
+	        	writer1.write(size + "\n");
+	        	lineNum++;
+	        }
+	        reader.close();
+	        writer1.close();*/
+			/*Map<String, Integer> bound = new HashMap<String, Integer>();
+			FileInputStream fis = new FileInputStream("data/kgrams_bound");
+	        ObjectInputStream ois = new ObjectInputStream(fis);
+	        bound = (Map<String, Integer>) ois.readObject();
+	        ois.close();
+	        
+	        RandomAccessFile postingsFile = new RandomAccessFile("data/kgramsPostings", "r");
+	        postingsFile.seek(bound.get("'',"));
+	        System.out.println(postingsFile.readLine());*/
+			/*Map<String, Long> bound = new HashMap<String, Long>();
+			List<conceptStringInfo> z = new ArrayList<conceptStringInfo>(); 
+			Map<String, Integer> concepts = new HashMap<String, Integer>();
+			//Map<Integer, String> conceptsinv = new HashMap<Integer, String>();
+			String[] conceptsinv = new String[2211776];
+			BufferedWriter writer1 = new BufferedWriter(new FileWriter("data/conceptStringInfo"));
+			
+			BufferedReader reader = new BufferedReader(new FileReader("data/conceptDict"));
+			//BufferedReader reader1 = new BufferedReader(new FileReader("data/kgrams"));
+			long start = 0;
+			lineNum = 0;
+			count = 0;
+			int id = 0;
+			while((line = reader.readLine()) != null) {
+				//kgram = reader1.readLine();
+				words = line.split("\t");
+				concept = words[1].split(" ")[1].toLowerCase();
+				if(concept.length() > count) {
+					count = concept.length();
+					System.out.println(count);
+				}
+				prob = Float.parseFloat(words[1].split(" ")[0]);
+				word = words[0].toLowerCase();
+				numKGrams = 0;
+				for(String wordKey: word.split(" ")) 
+					numKGrams += Math.max(0, wordKey.length() + 1 - k);
+				
+				lineNum++;
+				if(lineNum % 1000000 == 0)
+					System.out.println(lineNum);
+				//conceptStringInfo blah = new conceptStringInfo();
+				//blah.numKgrams = numKGrams;
+				//blah.start = start;
+				//blah.prob = prob;
+				if(!concepts.containsKey(concept)) {
+					concepts.put(concept, id);
+					conceptsinv[id] = concept;
+					id++;
+				}
+				//blah.conceptId = concepts.get(concept);
+				writer1.write(numKGrams + "," + prob + "," + concepts.get(concept) + "\n");
+				//z.add(blah);
+				//bound.put(kgram, start);
+				start += (line.length() + 1);
+			}
+			reader.close();
+			writer1.close();
+			System.out.println(id);
+			FileOutputStream fout = new FileOutputStream("data/concepts.ser");
+			ObjectOutputStream oos = new ObjectOutputStream(fout);   
+			oos.writeObject(conceptsinv);
+			oos.close();*/
+			/*FileOutputStream fout = new FileOutputStream("data/conceptStringInfo.ser");
+			ObjectOutputStream oos = new ObjectOutputStream(fout);   
+			oos.writeObject(z);
+			oos.close();*/
+			/*BufferedReader[] postings = new BufferedReader[numFiles];
+			String[] postingsLine = new String[numFiles];
+			BufferedReader[] kgrams = new BufferedReader[numFiles];
+			String[] kgramsLine = new String[numFiles];
+			for(int y = 1; y <= numFiles; y++) {
+				postings[y-1] = new BufferedReader(new FileReader("data/concepts/kgramPostings" + y));
+				postingsLine[y-1] = postings[y-1].readLine();
+				kgrams[y-1] = new BufferedReader(new FileReader("data/concepts/kgrams" + y));
+				kgramsLine[y-1] = kgrams[y-1].readLine();
+			}
+
+			BufferedWriter writer1 = new BufferedWriter(new FileWriter("data/kgramsPostings"));
+			BufferedWriter writer2 = new BufferedWriter(new FileWriter("data/kgrams"));
+			List<Integer> minIndices = new ArrayList<Integer>();
+			String minKgram;
+			lineNum = 0;
+			do{
+				lineNum++;
+				if(lineNum % 1000 == 0) {
+					System.out.println(lineNum);
+					System.out.println(minIndices);
+				}
+				minIndices.clear();
+				minKgram = null;
+				for(int i = 0; i < numFiles; i++) {
+					if(kgramsLine[i] != null) {
+						if(minKgram == null) {
+							minKgram = kgramsLine[i];
+							minIndices.add(i);
+						}
+						else if (minKgram.compareTo(kgramsLine[i]) == 0) {
+							minIndices.add(i);
+						}
+						else if (minKgram.compareTo(kgramsLine[i]) > 0) {
+							minIndices.clear();
+							minKgram = kgramsLine[i];
+							minIndices.add(i);
+						}
+					}
+				}
+				Map<Integer, Integer> map = new HashMap<Integer, Integer>();
+				for(int index: minIndices) {
+					Map<Integer, Integer> temp = getMapFromString(postingsLine[index]);
+					for(int key: temp.keySet()) {
+						if(!map.containsKey(key))
+							map.put(key, temp.get(key));
+						else
+							map.put(key, map.get(key) + temp.get(key));
+					}
+					kgramsLine[index] = kgrams[index].readLine();
+					postingsLine[index] = postings[index].readLine();
+				}
+				writer1.write(map + "\n");
+				writer2.write(minKgram + "\n");
+			}while(!minIndices.isEmpty());
+			writer1.close();
+			writer2.close();*/
+			/*BufferedReader reader = new BufferedReader(new FileReader("data/conceptDict"));
+			lineNum = 0;
+			while((line = reader.readLine()) != null) {
+				lineNum++;
+				if(lineNum <= 32000000)
+					continue;
+				words = line.split("\t");
+				if(words.length < 2)
+					continue;
+				//create kgrams for words
+				word = words[0].toLowerCase();
+				for(String wordKey: word.split(" ")) {
+					for(int i = 0; i < wordKey.length() + 1 - k; i++) {
+						kgram = wordKey.substring(i, i+k);
+						if(!postingsMap.containsKey(kgram))
+							postingsMap.put(kgram, new HashMap<Integer, Integer>());
+						Map<Integer, Integer> temp = postingsMap.get(kgram);
+						count = 0;
+						if(temp.containsKey(lineNum))
+							count = temp.get(lineNum);
+						temp.put(lineNum, count+1);
+						postingsMap.put(kgram, temp);
+					}
+				}
+				
+			}
+			if(true) {
+				System.out.println(lineNum);
+				BufferedWriter writer1 = new BufferedWriter(new FileWriter("data/concepts/kgramPostings17"));
+				BufferedWriter writer2 = new BufferedWriter(new FileWriter("data/concepts/kgrams17"));
+				List<String> tempList = new ArrayList<String>(postingsMap.keySet());
+				Collections.sort(tempList);
+		        for(String key: tempList) {
+		        	writer1.write(postingsMap.get(key) + "\n");// + " " + conceptCount.get(key) + "\n");
+		        	writer2.write(key + "\n");
+		        }
+		        writer1.close();
+		        writer2.close();
+		        break;
+			}
+			reader.close();*/
 			//System.out.println("read in idf values");
-			FileInputStream fis = new FileInputStream("data/idf.ser");
+			/*FileInputStream fis = new FileInputStream("data/idf.ser");
 	        ObjectInputStream ois = new ObjectInputStream(fis);
 	        idf = (Map<String, Integer>) ois.readObject();
 	        ois.close();
@@ -158,7 +408,7 @@ public class Anshul {
 					maxKey = key;
 					maxVal = val;
 				}
-			}
+			}*/
 			//System.out.println(maxKey + " " + maxVal);
 			
 			//printing map to file
@@ -168,6 +418,7 @@ public class Anshul {
 	        writer.close();*/
 		} catch (Exception e) {
 			e.printStackTrace();
+		}
 		}
 		return maxKey;
 	}
@@ -217,7 +468,6 @@ public class Anshul {
     		
     		for (int t = 0;t<tList.size();t++)
     		{
-    			
     			sbuf.append(tList.get(t).token);
     			sbuf.append(" ");
     		}
@@ -251,91 +501,26 @@ public class Anshul {
 	}
 	
 	public static void main(String[] args) throws IOException, ClassNotFoundException {
+		//Concept concept = new Concept();
 		long startTime = System.nanoTime();
-		BufferedWriter writer = new BufferedWriter(new FileWriter("tmp/arxiv-out"));
-        boolean inAckSec, inRefSec;
-        Matcher matcher;
-        //System.out.println(Pattern.matches(".* [a-zA-Z] *\\.{0,1}$", "We thank L.Fritz , K."));
-        //getSentences(null);
-        
-        NLPUtils coreNLP = new NLPUtils();
-        for(StreamItem item: ThriftReader.GetAllStreamItems("/Users/anshul/cs341/output.sc")) {
-			try {
-				arxivDocument doc = new arxivDocument();
-				writer.write(item.body.clean_visible + "\n");
-				//System.out.println("\nAuthors:");
-				for(String auth: bb_to_str(item.other_content.get("abstract").raw).split("Authors:|Categories:")[1].trim().split(",| and ")) {
-					if(!auth.isEmpty())
-						doc.addAuthor(auth.replaceAll("\n", " ").trim());
-				}
-				//if(!bb_to_str(item.other_content.get("abstract").raw).split("Authors:|Categories:")[1].trim().contains("Huai"))
-					//continue;
-				inAckSec = false;
-				inRefSec = false;
-				for(String sent: getSentences(item)) {
-					//System.out.println("^" + sent + "$");
-					if(sent.toLowerCase().contains("acknowledg") || sent.toLowerCase().contains("thank") || sent.toLowerCase().contains("grateful")) {
-						//System.out.println("$" + sent + "$");
-						inAckSec = true;
-						if(sent.length() <= 20)
-							continue;
-					}
-					else if(sent.toLowerCase().replaceAll(" ", "").contains("reference")) {
-						//System.out.println("$" + sent + "$");
-						inRefSec = true;
-						if(sent.length() <= 20)
-							continue;
-					}
-					if(inAckSec) {
-						//System.out.println(sent);
-						//System.out.println("Acknowledgments:");
-						for(String per: coreNLP.getPersons(sent)) {
-							doc.addAcknowledgement(per);
-						}
-						inAckSec = false;
-						//System.out.println("References:");
-					}
-					
-					//if(Pattern.matches("^\\[{0,1} *[0-9]+ *\\]{0,1}.*", sent) && ackDone) {
-					if(inRefSec || sent.startsWith("[")) {
-						matcher = Pattern.compile("\\]").matcher(sent);
-						if(!matcher.find()) {
-							matcher = Pattern.compile("[a-zA-Z]").matcher(sent);
-							if(!matcher.find())
-								continue;
-							else
-								sent = sent.substring(Integer.valueOf(matcher.start()), sent.length()-1);
-						}
-						else if(matcher.start() == sent.length()-1) {
-							continue;
-						}
-						else
-							sent = sent.substring(Integer.valueOf(matcher.start()) + 1, sent.length()-1);
-						
-						List<String> reference = new ArrayList<String>();
-						for(String auth: sent.split(",| and ")) {
-							if(auth.isEmpty())
-								continue;
-							if(auth.length() < 20 && Pattern.matches("[a-zA-Z \\.]*[A-Z]\\.[a-zA-Z \\.]*", auth))
-								reference.add(auth);
-							else
-								break;
-						}
-						if(!reference.isEmpty())
-							doc.addReferences(reference);
-					}
-				}
-				System.out.println("\nAuthors: " + doc.getAuthors());
-				System.out.println("Acks: " +  doc.getAcknowledgements());
-				System.out.println("Refs: " + doc.getReferences());
-			}
-			catch (Exception e){
-				e.printStackTrace();
+		//getConcept("blah");
+		//System.out.println(getConcept("Billy gates"));
+		SSF ssf = new SSF();
+		for(Entity entity: ssf.getEntities()) {
+			if(!entity.getName().equals("Annie_Laurie_Gaylor"))
 				continue;
+			for(Slot slot: ssf.getSlots()) {
+				if(!slot.getName().equals(Constants.SlotName.AwardsWon))
+					continue;
+				Annotation document = new Annotation("When asked why a Wisconsin group is concerned about a Nativity Scene in Athens , Texas , Annie Laurie Gaylor said she received a complaint from one of the groups members who lives in Athens .");
+				ssf.processor.annotate(document);
+				for(String exp: entity.getExpansions()) {
+					System.out.println(exp);
+					System.out.println(ssf.getCoreNLP().findSlotValue(document, exp, slot, false, null));
+				}
 			}
 		}
-		writer.close();
-		
+		//System.out.println(Utils.getByteOffset("1324308300-9d5f56237cc8395411069bdf18888f6b__news-269-91294453ea1cfade403ac432d1418052-ce9557b63d5603ce5e494052fb0ef513.sc.xz.gpg__2011-12-19-15/__840", "Benjamin Netanyahu", "tmp/"));
 		long endTime = System.nanoTime();
 		System.out.println("Took "+(endTime - startTime) + " ns"); 
 	}
