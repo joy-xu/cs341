@@ -68,7 +68,6 @@ public class SSF implements Runnable{
 	
 	@SuppressWarnings("unchecked")
 	public void readEntities() {
-
 		File file = new File(Constants.entitiesSerilizedFile);
 		if(file.exists()) {
 			setEntities((List<Entity>)FileUtils.readFile(file.getAbsolutePath().toString()));
