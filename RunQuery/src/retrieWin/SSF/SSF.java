@@ -73,7 +73,6 @@ public class SSF implements Runnable{
 	
 	@SuppressWarnings("unchecked")
 	public void readEntities() {
-
 		File file = new File(Constants.entitiesSerilizedFile);
 		if(file.exists()) {
 			setEntities((List<Entity>)FileUtils.readFile(file.getAbsolutePath().toString()));
@@ -192,8 +191,9 @@ public class SSF implements Runnable{
 		for(String expansion: entity.getExpansions()) {
 			List<String> expansionTokens = Arrays.asList(expansion.split(" "));
 			for(String sent: relevantSentences.get(expansion).keySet()) {
-				System.out.println(relevantSentences.get(expansion).get(sent) + ":" + sent);
+				System.out.println("Processing for titles: " + sent);
 				Annotation document = new Annotation(sent);
+				processor.annotate(document);
 				Map<Integer, Set<Integer>> corefsEntity1 = coreNLP.getCorefs(document, expansion);
 				List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
 				for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
@@ -258,6 +258,24 @@ public class SSF implements Runnable{
 								}
 							}
 						}
+
+					/*
+					//check for any compund nouns for this entity
+					String nnTitle = coreNLP.getNNs(sentence, expansion);
+					if(containsUppercaseToken(nnTitle)) {
+						String[] titleTokens = nnTitle.split(" ");
+						boolean dontAdd = false;
+						for (String t:titleTokens)
+						{
+							System.out.println("Entity expansion is: " + expansion);
+							System.out.println("Title token is: " + t);
+						
+							if (expansionTokens.contains(t))
+								dontAdd = true;
+						}
+						if (!dontAdd)
+						{
+					*/
 						
 						//check for any compound nouns for this entity
 						String nnTit = coreNLP.getNNs(sentence, expansion);
@@ -270,6 +288,7 @@ public class SSF implements Runnable{
 						}
 						nnTitle.trim();
 						if(containsUppercaseToken(nnTitle)) {
+
 							if(!candidates.containsKey(nnTitle)) {
 								Set<String> documents = new HashSet<String>(relevantSentences.get(expansion).get(sentence));
 								candidates.put(nnTitle, new Pair<Set<String>, Double>(documents, 1.0));
@@ -280,7 +299,9 @@ public class SSF implements Runnable{
 									setAndScore.first().add(sentenceID);
 								}
 								setAndScore.setSecond(setAndScore.second() + 1);
+
 								candidates.put(nnTitle, setAndScore);
+
 							}
 						}
 					} catch(NoSuchParseException e) {
@@ -545,8 +566,6 @@ public class SSF implements Runnable{
 		OutputWriter writer = new OutputWriter(timestamp + ".txt");
 		
 		for(Entity entity: getEntities()) {
-			if(!entity.getName().equals("Jeremy_McKinnon"))
-				continue;
 			e.execute(new FillSlotForEntity(entity,timestamp,getEntities(),getCoreNLP(),conceptExtractor,workingDirectory, getSlots(), eq, writer));
 		}
 		e.shutdown();
@@ -610,6 +629,9 @@ private class FillSlotForEntity implements Runnable{
 					phraseQuery = false;
 				else
 					phraseQuery = true;
+				if (entity.getName().equals("Fargo_Moorhead_Derby_Girls"))
+					phraseQuery = true;
+				
 				Map<String, Set<String>> returnedSet = ProcessTrecTextDocument.extractRelevantSentencesWithDocID(docs, expansion, phraseQuery);
 				for(String sent: returnedSet.keySet()) 
 					if(!retrievedSentences.contains(sent)) {
@@ -1004,7 +1026,7 @@ private class FillSlotForEntity implements Runnable{
 		//new SSF().createSlots();
 		Execution.run(args, "Main", new SSF());
 		//SSF s= new SSF();
-		
+	
 		//new SSF().updateSlots();
 		//Execution.run(args, "Main", new SSF());
 		//SSF s= new SSF();

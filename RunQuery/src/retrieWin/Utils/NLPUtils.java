@@ -1589,8 +1589,8 @@ public class NLPUtils {
 	public static boolean isEntitiesSame(String entity1, String value) {
 		if(entity1.compareToIgnoreCase(value) == 0)
 			return true;
-		String[] splits = entity1.split(" ");
-		for(String split : splits) {
+		String[] splits1 = entity1.split(" ");
+		for(String split : splits1) {
 			if(split.compareToIgnoreCase(value) == 0)
 				return true;
 		}
