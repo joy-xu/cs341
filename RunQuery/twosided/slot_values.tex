@@ -16,7 +16,7 @@ We use the bootstrapping method to find patterns for the different slots given t
 \item We extract documents that contain the entity and the slot-value and find the pattern connecting the entity and it’s slot value in the dependency parse of the sentence. 
 \end{enumerate}
 
-\begin{table*}[ht]
+\begin{table*}[!ht]
 \centering
 \begin{tabular}{|c|c|}
 \hline
@@ -42,6 +42,11 @@ Leymah Gbowee & Nobel Prize \\
 \label{tab:seedset_awardsWon}
 \end{table*}
 
+\begin{figure*}[t]
+	\includegraphics[width=0.97\textwidth]{Examples}
+	\caption{Examples of different slot patterns found}
+	\label{fig:slotpatternexamples}
+\end{figure*}
 
 The seed-set used for AwardsWon is shown in Table~\ref{tab:seedset_awardsWon}. The seed-set is constructed manually and can be (and most likely is) biased, despite our attempts to make it as representative as possible. We refer to the entity whose slot value has to be found as the source. The target is the desired slot-value we wish to extract from the sentence for any slot. And the pattern word is the word in the sentence that indicates the slot. For instance, the word ‘married’ is a pattern word for ‘AssociateOf’ relation between two people. Now, a pattern is defined by the pattern word and a set of at most two dependency rules that connect the source, target and the pattern word. The patterns we obtained using bootstrapping falls under four primary categories (based on the location of the pattern word in the path): 
 \begin{enumerate}
