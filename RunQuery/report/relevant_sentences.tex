@@ -21,7 +21,7 @@ For every entity, while retrieving relevant documents, we estimate how many of t
 
 Once the relevance of a document has been estimated, we need to extract all sentences within the document which are relevant to our entity. In order to this, we consider all possible unigrams of the expansions for that entity and retrieve all sentences which contain that. We do this because a sentence may refer to the entity only with the first or last name within the document. However, this necessitates disambiguation even at the sentence level. We do this using the following two methods:
 
-\begin{table}[ht]
+\begin{table*}[ht]
 \centering
 \begin{tabular}{|c|c|}
 \hline
@@ -41,10 +41,10 @@ The Guardian & Swedish Chamber Orchestra \\
 \end{tabular}
 \caption{Disambiguation set obtained using anchors}
 \label{tab:disamb_anchors}
-\end{table}
+\end{table*}
 
 
-\begin{table}[ht]
+\begin{table*}[ht]
 \centering
 \begin{tabular}{|p{7cm}|p{7cm}|}
 \hline
@@ -55,7 +55,7 @@ nikolai, christian, mathematician, activist, abramovich, england, oil, financier
 \end{tabular}
 \caption{Final disambiguation set for two entities}
 \label{tab:disamb_final}
-\end{table}
+\end{table*}
 
 \begin{itemize}
 \item \textbf{Coreference resolution} \\

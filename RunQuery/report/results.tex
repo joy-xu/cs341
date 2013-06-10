@@ -9,9 +9,9 @@ Precision: 57/69 = 82.6
 There is no direct way to measure recall, but on manually inspecting the sentences that contained mentions of the entities of interest, we found that there were many slot values that were not found. It looks like the recall of the system is lower than the precision. This is expected as we mostly rely on bootstrapping based approach with a fixed seed set.
 Here are some sentences from which our algorithm extracted slot values correctly:
 
-\begin{table}[ht]
+\begin{table*}[ht]
 \centering
-\begin{tabular}{|c|c|}
+\begin{tabular}{|p{3cm}|p{10cm}|}
 \hline
 Entity & Annie Laurie Gaylor \\
 \hline
@@ -30,11 +30,10 @@ Slot & AwardsWon \\
 \hline
 Value & the John von Neumann Medal \\
 \hline
-\hline
 \end{tabular}
 \caption{Sentences found correctly}
 \label{tab:model_correct}
-\end{table}
+\end{table*}
 
 On the other side, our model extracted the slot value ‘Senate’ for the entity ‘Bernard Kenny’ for the slot ‘FounderOf’ from the sentence ‘Jon Corzine had left the state or been incapacitated during Kenny's Senate Presidency, Kenny would have served as acting governor.’ Here, the pattern Kenny’s Senate which is similar to Sergey Brin’s Gogle results in an incorrect prediction. To prevent this, possessive references between an organization and an entity could be downweighted.  In another instance, our model finds the value ‘throat cancer’ as ‘CauseOfDeath’ for Nassim Nicholas Taleb from the sentence ‘Though a non-smoker, Taleb suffered from throat cancer in the mid-1990s, which he overcame.’ Here, the pattern suffered was not really indicative of death in itself unless accompanied by stronger clues. This could be fixed either by adjusting the threshold values or by ensuring that strong patterns like ‘death’ or ‘die’ appear in close proximity.
 
