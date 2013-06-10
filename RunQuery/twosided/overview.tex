@@ -1,0 +1,25 @@
+The streaming slot filling task serves as a middle ground for techniques and ideas from both the information retrieval and natural language processing community. There were a lot of key factors that affected the design decisions and algorithms we devised during the course of the project. In this section, we first introduce some the unique challenges that the SSF task poses and how it influences our design choices and then we cover the high level system design.
+\subsection{Challenges}
+The task of streaming slot filling based on the content from the web is challenging because of several reasons:
+\begin{itemize}
+\item Different ways to represent the same entity: The same entity can be referred by different names. Hence, if we just rely on the actual name based on the task definition, the system would have poor recall.
+\item Size of data: The size of the corpus was so large that the data couldn’t be uncompressed and stored at a single place for learning models based on it. Also, the sheer volume of data makes it impossible to make multiple passes over the entire dataset throughout the course of the project. Hence the data had to be filtered to consider only relevant documents.
+\item Disambiguation: There could be multiple entities with the same name. Hence, the appearance of the name of an entity in a document doesn’t necessarily mean that the document talks about the target entity of our interest.
+\item Finding relationships for slots: Extracting slot values from text is a hard task because the same relationship could be expressed in a variety of ways and also, finding the boundaries for the slot value poses several challenges as well.
+\item Nature of data: The dataset was collected by crawling the web and most of the documents had ill formed social content from blogs, facebook and twitter. There were embedded html content, advertisements, links to many pages, etc within the corpus.
+\item Nature of slots: Slots like ‘Affiliate’, ‘Contact\_Meet\_PlaceTime’ were not very well defined and drawing lines as to what qualifies as an appropriate slot value was hard.
+\item Parsing algorithms: Natural language is complex to deal with and the sytem we built relies heavily on the performance of the constituency and dependency parsing algorithms. As a result, all the incorrect parses generated affect the performance of our system.
+\end{itemize}
+Our methods and algorithms described in the paper are designed to overcome the challenges mentioned above. 
+
+\subsection{High Level Design}
+Our solution to the challenges discussed above can be broadly broken down into three major components:
+\begin{itemize}
+\item \textbf{Indexing} \\
+In order to perform fast retrieval of documents, it is imperative that we index them. We use Indri to index the documents in our corpus. However, the size of our corpus is huge (\~4.5 TB uncompressed), and not all documents (in fact very few) are relevant to our set of entities. Therefore, in order to facilitate faster querying of relevant documents, we indexed documents based on a high recall filter, the details of which are discussed in Section 6. This filter ensures that almost all the relevant documents are indexed and are available at our disposal to learn patterns and to predict slot changes.
+\item \textbf{Extracting Relevant Documents} \\
+Once the documents have been indexed, we need to extract the relevant documents for every entity. This task is more tricky than it may sound because of the challenges mentioned above. Specifically, there can be (and generally are) multiple people with the same name, e.g. Boris Berezovsky, the businessman and Boris Berezovsky, the pianist, and the same person may be referred to with different names, e.g. William Gates Jr. as Bill Gates etc. Therefore, we use a disambiguation logic, discussed in Section 7, to deal with such issues.
+\item \textbf{Finding Slot Values} \\
+Once the relevant documents have been extracted, we need to find whether they contain information for any of the slots. In order to this, we need to develop a mechanism to detect whether a sentence contains information about any slot, and if it does, we need to extract the value of the slot from that sentence. Moreover, since the sentences may not be very well formed, especially in the social context, our method needs to be flexible enough to accommodate that. In Section 8, we delve deeper into how we obtain slot values. 
+\end{itemize}
+Our system relies heavily on natural language parsing and we use Stanford’s NLP package for the purpose of our project as it is widely considered to be the best off-the-shelf NLP package. An underlying philosophy behind most of our design decisions has been automation and scalability. We have sacrificed accuracy at times to ensure that the solution can be implemented at scale. For instance, for disambiguation and entity expansion, we used automated methods that extracted information from Wikipedia and GCLD, which could be noisy. Doing a manual pruning of the entities would make it more specific and help us achieve better performance, but is not scalable when we have a relatively larger list of entities.
