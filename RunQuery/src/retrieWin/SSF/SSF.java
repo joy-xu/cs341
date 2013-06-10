@@ -1,8 +1,11 @@
 package retrieWin.SSF;
 
+import edu.stanford.nlp.ling.IndexedWord;
+import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.parser.lexparser.NoSuchParseException;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Triple;
 import fig.basic.*;
 import edu.stanford.nlp.util.Pair;
@@ -185,45 +188,90 @@ public class SSF implements Runnable{
 	public static Map<String, Pair<Set<String>, Double>> findTitles(Entity entity, Slot slot, Map<String, Map<String, Set<String>>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
 		Map<String, Pair<Set<String>, Double>> candidates = new HashMap<String, Pair<Set<String>, Double>>();
 		for(String expansion: entity.getExpansions()) {
-			for(String sentence: relevantSentences.get(expansion).keySet()) {
-				System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
-				try {
-					//check for any non-pronominal coreference
-					for(String title: coreNLP.getCorefs(sentence, expansion)) {
-						if(containsUppercaseToken(title)) {
-							if(!candidates.containsKey(title)) {
+			for(String sent: relevantSentences.get(expansion).keySet()) {
+				System.out.println(relevantSentences.get(expansion).get(sent) + ":" + sent);
+				Annotation document = new Annotation(sent);
+				Map<Integer, Set<Integer>> corefsEntity1 = coreNLP.getCorefs(document, expansion);
+				List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
+				for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
+					CoreMap sentenceMap = allSentenceMap.get(sentNum);
+					String sentence = sentenceMap.toString();
+					List<IndexedWord> entityWords = coreNLP.findWordsInSemanticGraph(sentenceMap, expansion, corefsEntity1.get(sentNum));
+					boolean flag = true;
+					System.out.println(entityWords);
+					for(IndexedWord w: entityWords) {
+						if(w.originalText().length() <=3 || !Character.isUpperCase(w.originalText().charAt(0)))
+							continue;
+						flag = false;
+						for(String exp: entity.getExpansions()) {
+							if(Arrays.asList(exp.toLowerCase().split(" ")).contains(w.originalText().toLowerCase())) {
+								System.out.println(exp);
+								flag = true;
+								break;
+							}
+						}
+						if(!flag)
+							break;
+					}
+					
+					if(!flag)
+						continue;
+					
+					try {
+						//check for any non-pronominal coreference
+						for(String tit: coreNLP.getCorefs(sentence, expansion)) {
+							Map<String, String> nerMap = coreNLP.createNERMap(sentenceMap);
+							String title = "";
+							for(String tok: tit.split(" ")) {
+								if(nerMap.containsKey(tok))
+									if(nerMap.get(tok).equals(NERType.O))
+										title += "tok" + " ";
+							}
+							title.trim();
+							if(containsUppercaseToken(title)) {
+								if(!candidates.containsKey(title)) {
+									Set<String> documents = new HashSet<String>(relevantSentences.get(expansion).get(sentence));
+									candidates.put(title, new Pair<Set<String>, Double>(documents, (double)relevantSentences.get(expansion).get(sentence).size()));
+								}
+								else {
+									Pair<Set<String>, Double> setAndScore = candidates.get(title);
+									for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
+										setAndScore.first().add(sentenceID);
+									}
+									setAndScore.setSecond(setAndScore.second() + relevantSentences.get(expansion).get(sentence).size());
+									candidates.put(title, setAndScore);
+								}
+							}
+						}
+						
+						//check for any compound nouns for this entity
+						String nnTit = coreNLP.getNNs(sentence, expansion);
+						Map<String, String> nerMap = coreNLP.createNERMap(sentenceMap);
+						String nnTitle = "";
+						for(String tok: nnTit.split(" ")) {
+							if(nerMap.containsKey(tok))
+								if(nerMap.get(tok).equals(NERType.O))
+									nnTitle += "tok" + " ";
+						}
+						nnTitle.trim();
+						if(containsUppercaseToken(nnTitle)) {
+							if(!candidates.containsKey(nnTitle)) {
 								Set<String> documents = new HashSet<String>(relevantSentences.get(expansion).get(sentence));
-								candidates.put(title, new Pair<Set<String>, Double>(documents, (double)relevantSentences.get(expansion).get(sentence).size()));
+								candidates.put(nnTitle, new Pair<Set<String>, Double>(documents, 1.0));
 							}
 							else {
-								Pair<Set<String>, Double> setAndScore = candidates.get(title);
+								Pair<Set<String>, Double> setAndScore = candidates.get(nnTitle);
 								for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
 									setAndScore.first().add(sentenceID);
 								}
-								setAndScore.setSecond(setAndScore.second() + relevantSentences.get(expansion).get(sentence).size());
-								candidates.put(title, setAndScore);
+								setAndScore.setSecond(setAndScore.second() + 1);
+								candidates.put(nnTitle, setAndScore);
 							}
 						}
+					} catch(NoSuchParseException e) {
+						e.printStackTrace();
+						break;
 					}
-					//check for any compund nouns for this entity
-					String nnTitle = coreNLP.getNNs(sentence, expansion);
-					if(containsUppercaseToken(nnTitle)) {
-						if(!candidates.containsKey(nnTitle)) {
-							Set<String> documents = new HashSet<String>(relevantSentences.get(expansion).get(sentence));
-							candidates.put(nnTitle, new Pair<Set<String>, Double>(documents, 1.0));
-						}
-						else {
-							Pair<Set<String>, Double> setAndScore = candidates.get(nnTitle);
-							for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
-								setAndScore.first().add(sentenceID);
-							}
-							setAndScore.setSecond(setAndScore.second() + 1);
-							candidates.put(nnTitle, setAndScore);
-						}
-					}
-				} catch(NoSuchParseException e) {
-					e.printStackTrace();
-					break;
 				}
 			}
 		}
@@ -482,6 +530,8 @@ public class SSF implements Runnable{
 		OutputWriter writer = new OutputWriter(timestamp + ".txt");
 		
 		for(Entity entity: getEntities()) {
+			if(!entity.getName().equals("Jeremy_McKinnon"))
+				continue;
 			e.execute(new FillSlotForEntity(entity,timestamp,getEntities(),getCoreNLP(),conceptExtractor,workingDirectory, getSlots(), eq, writer));
 		}
 		e.shutdown();
@@ -905,8 +955,8 @@ private static class FillSlotForEntity implements Runnable{
 		
 		
 		List<String> folders = new ArrayList<String>();
-		for(int d = 19; d <= 19; d++) {
-			for(int i = 14 ;i < 16; i++)
+		for(int d = 1; d <= 1; d++) {
+			for(int i = 1 ;i <= 1; i++)
 				folders.add(String.format("%04d-%02d-%02d-%02d", 2011,12,d,i));
 		}
 		
