@@ -201,22 +201,7 @@ public class SSF implements Runnable{
 					CoreMap sentenceMap = allSentenceMap.get(sentNum);
 					String sentence = sentenceMap.toString();
 					List<IndexedWord> entityWords = coreNLP.findWordsInSemanticGraph(sentenceMap, expansion, corefsEntity1.get(sentNum));
-					boolean flag = true;
-					System.out.println(entityWords);
-					for(IndexedWord w: entityWords) {
-						if(w.originalText().length() <=3 || !Character.isUpperCase(w.originalText().charAt(0)))
-							continue;
-						flag = false;
-						for(String exp: entity.getExpansions()) {
-							if(Arrays.asList(exp.toLowerCase().split(" ")).contains(w.originalText().toLowerCase())) {
-								System.out.println(exp);
-								flag = true;
-								break;
-							}
-						}
-						if(!flag)
-							break;
-					}
+					boolean flag = coreNLP.doesExpandedEntityMatch(entity, entityWords);
 					
 					if(!flag)
 						continue;
@@ -1066,8 +1051,8 @@ private class FillSlotForEntity implements Runnable{
 		
 		List<String> folders = new ArrayList<String>();
 		for(int d = 1; d <= 1; d++) {
-			for(int i = 1 ;i <= 1; i++)
-				folders.add(String.format("%04d-%02d-%02d-%02d", 2011,12,d,i));
+			for(int i = 1 ;i <= 23; i++)
+				folders.add(String.format("%04d-%02d-%02d-%02d", 2011,11,d,i));
 		}
 		
 		for(String folderName:folders) {

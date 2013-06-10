@@ -766,6 +766,7 @@ public class NLPUtils {
 			for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
 				CoreMap sentenceMap = allSentenceMap.get(sentNum);
 				List<IndexedWord> entityWords = findWordsInSemanticGraph(sentenceMap, expansion, corefsEntity1.get(sentNum));
+				
 				boolean flag = doesExpandedEntityMatch(entity, entityWords);
 				if(!flag)
 					continue;
@@ -810,12 +811,13 @@ public class NLPUtils {
 		return candidates;
 	}
 	
-	private Boolean doesExpandedEntityMatch(Entity entity, List<IndexedWord> entityWords){
+	public Boolean doesExpandedEntityMatch(Entity entity, List<IndexedWord> entityWords){
 		boolean flag = true;
+		
 		if (entity != null)
 		{
 			for(IndexedWord w: entityWords) {
-				if(w.originalText().length() <=3 || !Character.isUpperCase(w.originalText().charAt(0)))
+				if(w.originalText().length() <= 2 || !Character.isUpperCase(w.originalText().charAt(0)) || (w.originalText().length()==3 && w.originalText().endsWith(".")))
 					continue;
 				flag = false;
 				for(String exp: entity.getExpansions()) {
@@ -1081,6 +1083,7 @@ public class NLPUtils {
 		   	break;
 		   	}
 		   }
+		   //return getText(node);
 		   return traverse.value().equals("NP") ? getText(traverse): getText(node);
 		}
 
