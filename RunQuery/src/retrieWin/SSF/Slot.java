@@ -26,6 +26,7 @@ public class Slot implements Serializable {
 	private List<NERType> sourceNERTypes;
 	private List<NERType> targetNERTypes;
 	private boolean applyPatternAfterCoreference;
+	private List<Constants.SlotName> alsoPopulateSlots;
 	
 	@Override
 	public String toString() {
@@ -38,6 +39,18 @@ public class Slot implements Serializable {
 		ans += patterns + "\n";
 	
 		return ans;
+	}
+	
+	public void addPopulateSets(List<Constants.SlotName> l)
+	{
+		alsoPopulateSlots = new ArrayList<Constants.SlotName>();
+		for (Constants.SlotName s : l)
+			alsoPopulateSlots.add(s);
+	}
+	
+	public List<Constants.SlotName> getPopulateSet()
+	{
+		return alsoPopulateSlots;
 	}
 	
 	public void addSlotPatterns(String fileName) {

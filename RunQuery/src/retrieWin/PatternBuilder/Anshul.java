@@ -518,7 +518,11 @@ public class Anshul {
 				ssf.processor.annotate(document);
 				for(String exp: entity.getExpansions()) {
 					System.out.println(exp);
+<<<<<<< HEAD
 					System.out.println(ssf.getCoreNLP().findSlotValue(document, exp, slot, true, null, null));
+=======
+					System.out.println(ssf.getCoreNLP().findSlotValue(document, exp, slot, true, null,entity));
+>>>>>>> 0d28f8b17083c0a763f0a7aea316706f5e2f155a
 				}
 			}
 		}*/
