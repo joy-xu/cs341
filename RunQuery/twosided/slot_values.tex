@@ -8,7 +8,7 @@ Now that the relevant sentences for each entity have been extracted, we need to 
 Now, let’s talk about how we build the pattern sets and find confidence scores for each slot.
 \subsection{Pattern finding for slots}
 We use a combination of bootstrapping and rule based approaches to construct our patterns.
-\begin{itemize}
+\begin{itemize}[label={}]
 \item \textbf{Bootstrapping} \\
 We use the bootstrapping method to find patterns for the different slots given to us as part of the problem. Since the index we created based on high recall filter had only those documents that mentioned the 170 entities, we created a separate index for around 21 days that indexed all the documents during this period (April 1 to 21, 2012). The choice of 21 days was made so that the dataset fit into the 1 TB hard disk size supported by the machines we used for indexing. The way the bootstrapping method works with is as follows:
 \begin{enumerate}
@@ -16,7 +16,7 @@ We use the bootstrapping method to find patterns for the different slots given t
 \item We extract documents that contain the entity and the slot-value and find the pattern connecting the entity and it’s slot value in the dependency parse of the sentence. 
 \end{enumerate}
 
-\begin{table}[ht]
+\begin{table*}[ht]
 \centering
 \begin{tabular}{|c|c|}
 \hline
@@ -40,7 +40,7 @@ Leymah Gbowee & Nobel Prize \\
 \end{tabular}
 \caption{Seed set for the slot AwardsWon}
 \label{tab:seedset_awardsWon}
-\end{table}
+\end{table*}
 
 
 The seed-set used for AwardsWon is shown in Table~\ref{tab:seedset_awardsWon}. The seed-set is constructed manually and can be (and most likely is) biased, despite our attempts to make it as representative as possible. We refer to the entity whose slot value has to be found as the source. The target is the desired slot-value we wish to extract from the sentence for any slot. And the pattern word is the word in the sentence that indicates the slot. For instance, the word ‘married’ is a pattern word for ‘AssociateOf’ relation between two people. Now, a pattern is defined by the pattern word and a set of at most two dependency rules that connect the source, target and the pattern word. The patterns we obtained using bootstrapping falls under four primary categories (based on the location of the pattern word in the path): 
@@ -52,7 +52,7 @@ The seed-set used for AwardsWon is shown in Table~\ref{tab:seedset_awardsWon}. T
 \end{enumerate}
 Some patterns found using bootstrapping for the slot EmployeeOf are shown in Table~\ref{tab:patterns_employeeOf}. 
 
-\begin{table}[ht]
+\begin{table*}[ht]
 \centering
 \begin{tabular}{|c|c|c|c|}
 \hline
@@ -67,7 +67,7 @@ spokesperson & WordInBetween & nsubj & prep\_at \\
 \end{tabular}
 \caption{Some patterns obtained using bootstrap for the slot EmployeeOf}
 \label{tab:patterns_employeeOf}
-\end{table}
+\end{table*}
 
 \textbf{Computing confidence thresholds} \\
 The confidence with which we can tell that a pattern represents a desired slot depends on:
@@ -94,7 +94,7 @@ It is important to note that the same strategy does not work for all kinds of do
 We use the patterns, rules and confidence thresholds computed in the previous step to find slot values in the set of relevant sentences. This is done using simple pattern matching, i.e. we find if a similar path exists in our sentence connecting our entity to a target word of the appropriate NER type. We do this for all sentences for the entity during the hour and accumulate the confidence scores of each pattern that matched and gave a slot value. In theory, this confidence score can be used to prune all slot values which lie below a certain threshold. However, in practice, we observed that the number of relevant sentences actually generating something useful for a slot was very low (\~1-2 per hour) and therefore, not significant enough for a threshold cutoff.
 
 Another important step here is that of categorizing slot values into equivalence classes. As mentioned before, the same entity can be referred to in very different ways, these variations being even more prominent for facilities and organizations. However, when predicting slot values, we want to collapse all values which refer to the same entity into one equivalence class. Not only is this a requirement of the TREC-KBA submissions, it also helps in accumulating confidence scores for an equivalence class and making a better decision. We followed two major approaches to do this:
-\begin{itemize}
+\begin{itemize}[label={}]
 \item \textbf{Dictionary based}\\
 We used the Google Cross Lingual Dictionary, which contains the different anchor texts used to point to a concept on wikipedia, to map a word to a wikipedia concept. While this system performed well, especially for facilities and organizations (it maps both Seagram Company and Seagram Inc Ltd. to Seagram, I.I.T. Delhi to Indian Institue of Technology Delhi, both Oscar and Oscar winner to Academy Award etc.), it is not the best way for us for two primary reasons. Firstly, because this method is dictionary based, it doesn’t take context into account. Therefore, even though William may refer to different people in different contexts, it will always map them to the same person. It is also not suitable for situations where the target entity may not have a corresponding wikipedia page. Secondly, for the purpose of our submission, we need only the equivalence class and not the concept representing the equivalence class.
 \item \textbf{Approximate matching based} \\

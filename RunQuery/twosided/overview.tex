@@ -14,7 +14,7 @@ Our methods and algorithms described in the paper are designed to overcome the c
 
 \subsection{High Level Design}
 Our solution to the challenges discussed above can be broadly broken down into three major components:
-\begin{itemize}
+\begin{itemize}[label={}]
 \item \textbf{Indexing} \\
 In order to perform fast retrieval of documents, it is imperative that we index them. We use Indri to index the documents in our corpus. However, the size of our corpus is huge (\~4.5 TB uncompressed), and not all documents (in fact very few) are relevant to our set of entities. Therefore, in order to facilitate faster querying of relevant documents, we indexed documents based on a high recall filter, the details of which are discussed in Section 6. This filter ensures that almost all the relevant documents are indexed and are available at our disposal to learn patterns and to predict slot changes.
 \item \textbf{Extracting Relevant Documents} \\
