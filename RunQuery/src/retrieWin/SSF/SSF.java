@@ -626,10 +626,13 @@ private class FillSlotForEntity implements Runnable{
 			for(String expansion: entity.getExpansions()) {
 				Map<String, Set<String>> sentences = new HashMap<String, Set<String>>();
 				boolean phraseQuery;
-				if (entity.getEntityType().equals(Constants.EntityType.PER) || entity.getName().equals("Fargo_Moorhead_Derby_Girls"))
+				if (entity.getEntityType().equals(Constants.EntityType.PER))
 					phraseQuery = false;
 				else
 					phraseQuery = true;
+				if (entity.getName().equals("Fargo_Moorhead_Derby_Girls"))
+					phraseQuery = true;
+				
 				Map<String, Set<String>> returnedSet = ProcessTrecTextDocument.extractRelevantSentencesWithDocID(docs, expansion, phraseQuery);
 				for(String sent: returnedSet.keySet()) 
 					if(!retrievedSentences.contains(sent)) {
