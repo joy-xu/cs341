@@ -1,0 +1,26 @@
+Indexing is a central part of the infrastructure of our solution. It is needed to solve our problem in a reasonable time so that it is useful in a streaming setting. However, to support faster querying, it is also important that we minimise our index size. Therefore, we index only those documents which are potentially relevant to our entities. In order to do this, we first created a high recall entity expansion set as explained below. 
+\subsection{High Recall filter using entity expansion}
+Documents across the web refer to the same person in different ways. Some articles may be very formal in introducing an entity and may have their full names contained in it, whereas some other documents may have part of their names or may contain initials. For example the entity ‘Alexandar McCall Smith’ could be refered by his full name or by ‘Alexandar Smith’ or just ‘A. Smith’. To overcome this, we adopted an approach to expand entities based on:
+\begin{enumerate}
+\item Google Cross Lingual Dictionary (GCLD). The GCLD is a ready-made resource associating Wikipedia entries to strings. For each Wikipedia based entity, we extracted the different anchor texts that are used across the web to refer to the Wikipedia page. Since there were many anchors that contained junk like ‘Click here to navigate to Wikipedia article’, we adopted a character based Jaccard similarity metric to weed out anchor text entries that were not relevant. A GCLD entry that has more than 0.5 character Jaccard similarity with the target entity were used as expansions of the entity.
+\item Manual expansion: Some entities had very few expansions. In addition, the twitter entities were specified by their handles and had to be manually expanded.
+\item Permuting tokens in names: In many instances, for entities with long names, only a part of the entities’ name was present in the document. In order to cover these documents, we generated permutations of two tokens based on the following strategy:
+  \begin{enumerate}
+  \item If there were more than two tokens, for example, Alexander McCall Smith, we generate combinations of two tokes t\_i and t\_j so that i < j.
+  \item If there are exactly two tokens, generate both combinations of names. t\_1 t\_2 and t\_2 t\_1
+  \end{enumerate}
+\end{enumerate}
+In addition, for all entities, we are adding the last name alone as an expansion. This turns out to be useful specifically in the arxiv documents that includes author names in shorthand forms like ‘S. Kachru’.
+
+\subsection{Indexing with high recall filter}
+	We used the Indri indexing system to index our documents. We chose Indri as it has very good indexing and querying performance, as has been successfully by other TREC participants in the past. 
+The indexing workflow involved the following steps:
+\begin{enumerate}
+\item For each hour, download all the documents and build a larger temporary index with all the documents. 
+\item Query this index to obtain relevant documents for each of our entities. This is done by performing an ‘OR’ query over the entity expansions described in the previous section. 
+\item Index only the documents retrieved in step (ii) and delete the temporary index. This index is backed up on S3 and includes all documents that are relevant for a given hour. 
+\item To avoid downloading the relevant documents again for any subsequent processing, we keep the set of relevant documents in a serialized format on S3.  
+\end{enumerate}
+Steps (i) and (ii) of the process were parallelized to take advantage of the multi-core machines on EC2. The entire workflow itself was run in parallel for multiple hours on the biggest machines on EC2. (16 cores and 60 GB RAM).
+
+For each hour, the high recall filter captured about 1 in every 20 documents. The indexing process took five minutes on average to process each hour. 
