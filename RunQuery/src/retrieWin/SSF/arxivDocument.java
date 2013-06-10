@@ -23,7 +23,12 @@ public class arxivDocument {
 		setReferences(new ArrayList<List<String>>());
 	}
 	
+
 	public arxivDocument(String docNo, String workingDirectory) {
+		setAuthors(new ArrayList<String>());
+		setAcknowledgements(new ArrayList<String>());
+		setReferences(new ArrayList<List<String>>());
+
 		boolean inAckSec, inRefSec;
         Matcher matcher;
         NLPUtils coreNLP = new NLPUtils();

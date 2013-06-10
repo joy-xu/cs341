@@ -19,12 +19,14 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.sun.org.apache.bcel.internal.generic.GETSTATIC;
 
+import edu.stanford.nlp.ling.IndexedWord;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.util.Pair;
 import edu.stanford.nlp.util.StringUtils;
@@ -506,7 +508,7 @@ public class Anshul {
 		//getConcept("blah");
 		//System.out.println(getConcept("Billy gates"));
 		SSF ssf = new SSF();
-		for(Entity entity: ssf.getEntities()) {
+		/*for(Entity entity: ssf.getEntities()) {
 			if(!entity.getName().equals("Annie_Laurie_Gaylor"))
 				continue;
 			for(Slot slot: ssf.getSlots()) {
@@ -516,11 +518,17 @@ public class Anshul {
 				ssf.processor.annotate(document);
 				for(String exp: entity.getExpansions()) {
 					System.out.println(exp);
+<<<<<<< HEAD
+					System.out.println(ssf.getCoreNLP().findSlotValue(document, exp, slot, true, null, null));
+=======
 					System.out.println(ssf.getCoreNLP().findSlotValue(document, exp, slot, true, null,entity));
+>>>>>>> 0d28f8b17083c0a763f0a7aea316706f5e2f155a
 				}
 			}
-		}
+		}*/
+		System.out.println(ssf.getCoreNLP().getCorefs("In early January, flyers were handed out at a rally in Ekaterinburg showing Navalny standing next to the exiled oligarch Boris Berezovsky , with a caption saying Berezovsky had funded Navalny s anti-Putin campaign.", "Berezovsky"));
 		//System.out.println(Utils.getByteOffset("1324308300-9d5f56237cc8395411069bdf18888f6b__news-269-91294453ea1cfade403ac432d1418052-ce9557b63d5603ce5e494052fb0ef513.sc.xz.gpg__2011-12-19-15/__840", "Benjamin Netanyahu", "tmp/"));
+		System.out.println(ssf.getCoreNLP().createNERMap("In early January, flyers were handed out at a rally in Ekaterinburg showing Navalny standing next to the exiled oligarch Boris Berezovsky , with a caption saying Berezovsky had funded Navalny s anti-Putin campaign."));
 		long endTime = System.nanoTime();
 		System.out.println("Took "+(endTime - startTime) + " ns"); 
 	}

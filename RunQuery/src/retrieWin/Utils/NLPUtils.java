@@ -767,7 +767,6 @@ public class NLPUtils {
 				CoreMap sentenceMap = allSentenceMap.get(sentNum);
 				List<IndexedWord> entityWords = findWordsInSemanticGraph(sentenceMap, expansion, corefsEntity1.get(sentNum));
 				boolean flag = doesExpandedEntityMatch(entity, entityWords);
-		
 				if(!flag)
 					continue;
 				
@@ -792,7 +791,8 @@ public class NLPUtils {
 							str = str.trim();
 							//Flag to check if we found a matching pattern already
 							if(!str.isEmpty()) {
-								LogInfo.logs(String.format("Expansion: |%s|, Pattern: |%s|, Value: |%s|", entity.getName(), pattern, str));
+								LogInfo.logs(String.format("Expansion: |%s|, Pattern: |%s|, Value: |%s|", expansion, pattern, str));
+
 								if(!candidates.containsKey(str))
 									candidates.put(str, pattern.getConfidenceScore());
 								else
@@ -1391,7 +1391,7 @@ public class NLPUtils {
             for(int i = cm.startIndex-1; i < cm.endIndex-1; i++)
                 clust += tks.get(i).get(TextAnnotation.class) + " ";
             clust = clust.trim();
-           
+            System.out.println(clust);
             for(Set<CorefMention> s : c.getMentionMap().values()){
             	for(CorefMention m: s) {
             		String clust2 = "";
