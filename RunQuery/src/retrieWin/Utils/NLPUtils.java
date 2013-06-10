@@ -669,9 +669,10 @@ public class NLPUtils {
 		return ans;
 	}
 	
-	public Map<String, Double> findPlaceTimeValue(String sentence, String entity1, Slot slot, boolean social) throws NoSuchParseException {
+	public Map<String, Double> findPlaceTimeValue(String sentence, String entity1, Slot slot, Entity entity, boolean social) throws NoSuchParseException {
+		List<String> entityExpansions = Arrays.asList(entity1.split(" "));
 		Map<String, Double> candidates = new HashMap<String, Double>();
-		System.out.println("Entity: " + entity1 + " Slot: " + slot.getName() + " Full sentence: " + sentence);
+		System.out.println("Entity: " + entity1 + " Slot: " + slot.getName().toString() + " Full sentence: " + sentence);
 		if(sentence.length() > 400)
 			return candidates;
 		Annotation document = new Annotation(sentence);
@@ -682,12 +683,15 @@ public class NLPUtils {
 		List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
 		for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
 			CoreMap sentenceMap = allSentenceMap.get(sentNum);
-			System.out.println("Entity: " + entity1 + " Slot: " + slot.getName() + " Processing sentence: " + sentenceMap.toString());
+			System.out.println("Entity: " + entity1 + " Slot: " + slot.getName().toString() + " Processing sentence: " + sentenceMap.toString());
 			Set<String> times = getTimeAsTokens(sentenceMap);
 			Set<String> dates = getDateAsTokens(sentenceMap);
 			//System.out.println(sentenceMap.toString());
 			List<IndexedWord> foundWord = findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum));
+			boolean flag = doesExpandedEntityMatch(entity, foundWord);
 			
+			if(!flag)
+				continue;
 			for(SlotPattern pattern: slot.getPatterns()) {
 				//System.out.println(pattern);
 					for(String ans: findValue(sentenceMap, foundWord, pattern, slot, social, null)) {
@@ -696,7 +700,13 @@ public class NLPUtils {
 					if(!ans.isEmpty()) {
 						Pair<String,String> datetime = findNearestDateTime(sentenceMap.toString(), ans,dates,times);
 						
+						// Check to see if found value is our own entity
+						boolean dontAdd = findMatchWithEntity(ans, entity1);
+						
 						String str = "";
+						if (dontAdd)
+							continue;
+						
 						for(String tok: ans.split(" ")) {
 							if(!entity1.contains(tok))
 								str += " " + tok;
@@ -745,33 +755,44 @@ public class NLPUtils {
 	}
 
 	
-	public Map<String, Double> findSlotValue(Annotation document, String entity1, Slot slot, boolean social, String defaultVal) throws NoSuchParseException {
+	public Map<String, Double> findSlotValue(Annotation document, String expansion, Slot slot, boolean social, String defaultVal, Entity entity) throws NoSuchParseException {
 
 		Map<String, Double> candidates = new HashMap<String, Double>();
 		try {
 			//get coreferences for the entity
-			Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, entity1);
+			Map<Integer, Set<Integer>> corefsEntity1 = getCorefs(document, expansion);
 	
 			List<CoreMap> allSentenceMap = document.get(SentencesAnnotation.class);
 			for(int sentNum = 0;sentNum < allSentenceMap.size();sentNum++) {
 				CoreMap sentenceMap = allSentenceMap.get(sentNum);
-				System.out.println("Entity: " + entity1 + " Slot: " + slot.getName().toString() + " Processing sentence: " + sentenceMap.toString());
+				List<IndexedWord> entityWords = findWordsInSemanticGraph(sentenceMap, expansion, corefsEntity1.get(sentNum));
+				boolean flag = doesExpandedEntityMatch(entity, entityWords);
+				if(!flag)
+					continue;
+				
+				System.out.println("Entity: " + expansion + " Slot: " + slot.getName() + " Processing sentence: " + sentenceMap.toString());
 				for(SlotPattern pattern: slot.getPatterns()) {
-					for(String ans: findValue(sentenceMap, findWordsInSemanticGraph(sentenceMap, entity1, corefsEntity1.get(sentNum)), pattern, slot, social,defaultVal)) {
+					for(String ans: findValue(sentenceMap, entityWords, pattern, slot, social,defaultVal)) {
 
 						if(ans == null)
 							continue;
 
 						if(!ans.isEmpty()) {
+							
+							boolean dontAdd = findMatchWithEntity(ans, expansion);
+							
 							String str = "";
+							if (dontAdd)
+								continue;
 							for(String tok: ans.split(" ")) {
-								if(!entity1.contains(tok))
+								if(!expansion.contains(tok))
 									str += " " + tok;
 							}
 							str = str.trim();
 							//Flag to check if we found a matching pattern already
 							if(!str.isEmpty()) {
-								LogInfo.logs(String.format("Expansion: |%s|, Pattern: |%s|, Value: |%s|", entity1, pattern, str));
+								LogInfo.logs(String.format("Expansion: |%s|, Pattern: |%s|, Value: |%s|", expansion, pattern, str));
+
 								if(!candidates.containsKey(str))
 									candidates.put(str, pattern.getConfidenceScore());
 								else
@@ -789,6 +810,36 @@ public class NLPUtils {
 		return candidates;
 	}
 	
+	private Boolean doesExpandedEntityMatch(Entity entity, List<IndexedWord> entityWords){
+		boolean flag = true;
+		if (entity != null)
+		{
+			for(IndexedWord w: entityWords) {
+				if(w.originalText().length() <=3 || !Character.isUpperCase(w.originalText().charAt(0)))
+					continue;
+				flag = false;
+				for(String exp: entity.getExpansions()) {
+					if(Arrays.asList(exp.toLowerCase().split(" ")).contains(w.originalText().toLowerCase())) {
+						flag = true;
+						break;
+					}
+				}
+				if(!flag)
+					break;
+			}
+		}
+		return flag;
+	}
+	
+	private Boolean findMatchWithEntity(String ans, String entity)
+	{
+		List<String> entityExpansions = Arrays.asList(entity.split(" ")); 
+		boolean dontAdd = false;
+		for (String tok:ans.split(" "))
+			if (entityExpansions.contains(tok))
+				dontAdd = true;
+		return dontAdd;
+	}
 	private Set<String> findValue(CoreMap sentence, List<IndexedWord> words1, SlotPattern pattern, Slot slot, boolean social, String defaultVal) {
 		List<NERType> targetNERTypes = slot.getTargetNERTypes();
 		SemanticGraph graph = sentence.get(CollapsedCCProcessedDependenciesAnnotation.class);
@@ -927,6 +978,8 @@ public class NLPUtils {
 			String phrase = findExpandedEntity(sentence, w.originalText());
 			//System.out.println("Phrase: " + phrase);
 			String temp = "";
+			boolean fitTobeAdded  = true;
+			
 			for(String tok: phrase.split(" ")) {
 				//System.out.println("Token: " + tok);
 				//System.out.println("NER Types");
@@ -935,11 +988,16 @@ public class NLPUtils {
 				//System.out.println();
 				if(targetNERTypes == null || targetNERTypes.contains(NERType.NONE) || targetNERTypes.contains(NERType.valueOf(nerMap.get(tok)))) {
 					
-					
+					// Remove time, date etc from contact meet entity/place time slots
 					if (slot.getName().equals(Constants.SlotName.Contact_Meet_Entity) || slot.getName().equals(Constants.SlotName.Contact_Meet_PlaceTime))
 						if (NERType.valueOf(nerMap.get(tok)).equals(NERType.TIME) || NERType.valueOf(nerMap.get(tok)).equals(NERType.DATE)
 								|| NERType.valueOf(nerMap.get(tok)).equals(NERType.DURATION) || NERType.valueOf(nerMap.get(tok)).equals(NERType.MONEY))
-							continue;
+						{
+							fitTobeAdded = false;
+							break;
+						}
+					
+						
 					
 					if(patternWord != null) {
 						if(!tok.equals(patternWord.lemma()))
@@ -949,7 +1007,7 @@ public class NLPUtils {
 						temp += " " + tok;	
 				}
 			}
-			if(!temp.trim().isEmpty()) {
+			if(fitTobeAdded && !temp.trim().isEmpty()) {
 				ans.add(temp.trim());
 				//System.out.println("ans: " + pattern);
 			}
@@ -1333,7 +1391,7 @@ public class NLPUtils {
             for(int i = cm.startIndex-1; i < cm.endIndex-1; i++)
                 clust += tks.get(i).get(TextAnnotation.class) + " ";
             clust = clust.trim();
-           
+            System.out.println(clust);
             for(Set<CorefMention> s : c.getMentionMap().values()){
             	for(CorefMention m: s) {
             		String clust2 = "";

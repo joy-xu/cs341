@@ -22,7 +22,7 @@ public class Constants  implements Serializable {
 		WithoutRules
 	}
 	
-	public final static String defaultWorkingDirectory = "tmp/";
+	//public final static String defaultWorkingDirectory = "tmp/";
 	
 	public enum EntityType {
 		PER,
