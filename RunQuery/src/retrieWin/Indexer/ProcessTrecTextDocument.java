@@ -105,7 +105,7 @@ public class ProcessTrecTextDocument {
 		return returnString;
 	}
 
-	public static Map<String, Set<String>> extractRelevantSentencesWithDocID(Collection<TrecTextDocument> documents, String entity1) 
+	public static Map<String, Set<String>> extractRelevantSentencesWithDocID(Collection<TrecTextDocument> documents, String entity1, boolean phraseQuery) 
 	{
 		Map<String, Set<String>> returnString = new HashMap<String, Set<String>>();
 		List<String> entitySplits = Arrays.asList(entity1.split(" "));
@@ -120,20 +120,33 @@ public class ProcessTrecTextDocument {
 				for(String currentSentence: cleanedSentences) {
 					if(currentSentence.length() > 400)
 						continue;
-					List<String> tokens = Arrays.asList(currentSentence.toLowerCase().split(" "));
-						for (String entitySplit:entitySplits)
+					if (phraseQuery)
+					{
+						if (currentSentence.toLowerCase().contains(entity1))
 						{
-
-							if (tokens.contains(entitySplit.toLowerCase()))
-							{
-								if(returnString.containsKey(currentSentence)) 
-									returnString.get(currentSentence).add(t.docNumber + "__" + index);
-								else
-									returnString.put(currentSentence, new HashSet<String>(Arrays.asList(t.docNumber + "__" + index)));
-								break;
-							}
-
+							if(returnString.containsKey(currentSentence)) 
+								returnString.get(currentSentence).add(t.docNumber + "__" + index);
+							else
+								returnString.put(currentSentence, new HashSet<String>(Arrays.asList(t.docNumber + "__" + index)));
 						}
+					}
+					else
+					{
+						List<String> tokens = Arrays.asList(currentSentence.toLowerCase().split(" "));
+							for (String entitySplit:entitySplits)
+							{
+	
+								if (tokens.contains(entitySplit.toLowerCase()))
+								{
+									if(returnString.containsKey(currentSentence)) 
+										returnString.get(currentSentence).add(t.docNumber + "__" + index);
+									else
+										returnString.put(currentSentence, new HashSet<String>(Arrays.asList(t.docNumber + "__" + index)));
+									break;
+								}
+	
+							}
+					}
 				}
 			}
 		}

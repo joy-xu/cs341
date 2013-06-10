@@ -23,7 +23,7 @@ public class arxivDocument {
 		setReferences(new ArrayList<List<String>>());
 	}
 	
-	public arxivDocument(String docNo) {
+	public arxivDocument(String docNo, String workingDirectory) {
 		boolean inAckSec, inRefSec;
         Matcher matcher;
         NLPUtils coreNLP = new NLPUtils();
@@ -36,7 +36,7 @@ public class arxivDocument {
 		String folder = a[2];
 		
 		try {
-			StreamItem item = ThriftReader.GetFilteredStreamItems(folder, fileName, "tmp/", new HashSet<String>(Arrays.asList(streamID))).get(0);
+			StreamItem item = ThriftReader.GetFilteredStreamItems(folder, fileName, workingDirectory, new HashSet<String>(Arrays.asList(streamID))).get(0);
 	        
 			for(String auth: Utils.bb_to_str(item.other_content.get("abstract").raw).split("Authors:|Categories:")[1].trim().split(",| and ")) {
 				if(!auth.isEmpty())

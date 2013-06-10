@@ -35,6 +35,7 @@ import retrieWin.Indexer.TrecTextDocument;
 import retrieWin.SSF.Constants;
 import retrieWin.SSF.arxivDocument;
 import streamcorpus.OffsetType;
+import streamcorpus.Rating;
 import streamcorpus.Sentence;
 import streamcorpus.StreamItem;
 import streamcorpus.Token;
@@ -646,6 +647,73 @@ public class Utils {
 			e.printStackTrace();
 		}
 		return new Pair<Long, Long>(start,end);
+	}
+	
+	public static synchronized Set<String> getManualAnnotationsForDocument(String docId, String workingDirectory)
+	{
+		Set<String> output = new HashSet<String>();
+		StreamItem item;
+		String[] split = docId.split("__");
+		
+		String streamId = split[0];
+		String file = split[1];
+		String folder = split[2];
+		String downloadedFile = Downloader.downloadfile(folder, file, workingDirectory);
+		if (downloadedFile == null)
+			return output;
+		try 
+		{
+			TBinaryProtocol protocol = ThriftReader.openBinaryProtocol(downloadedFile);
+			while (true) 
+	        {
+	            item = new StreamItem(); 
+	            try {
+	            	item.read(protocol);  
+	            }
+	            catch (Exception transportException)
+	            {
+	            	break;
+	            }
+	            
+            	if (!item.stream_id.equals(streamId))
+            		continue;
+            	
+            	System.out.println(item.stream_id);
+            	
+            	try {
+	                
+	            	if (item.ratings == null){
+	            		System.out.println("Ratings file is null");
+	            		break;
+	            	}
+            		for (String a:item.ratings.keySet())
+            		{
+            			List<Rating> ratings = item.ratings.get(a);
+            			if (ratings.isEmpty())
+            				System.out.println("Map exists but Ratings list empty");
+            			for (Rating r : ratings)
+            			{
+            				System.out.println("Rating is : " + r.relevance);
+            				if (r.relevance == 1 || r.relevance == 2)
+            				{
+            					output.add(r.target.target_id);
+            				}
+            			}
+            		}
+	            	break;
+	            }
+            	catch (Exception e) {
+            		continue;
+            	}
+            }
+		} 
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+		
+		
+		return output;
 	}
 
 }

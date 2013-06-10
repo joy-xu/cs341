@@ -59,11 +59,13 @@ public class SSF implements Runnable{
 	public void initialize() {
 		readEntities();
 		readSlots();
-		//setCoreNLP(new NLPUtils());
-		//conceptExtractor = new Concept();
-		//Properties props = new Properties();
-		//props.put("annotators", "tokenize, ssplit, pos, lemma, parse, ner, dcoref");
-		//processor = new StanfordCoreNLP(props, false);
+		
+		setCoreNLP(new NLPUtils());
+		conceptExtractor = new Concept();
+		Properties props = new Properties();
+		props.put("annotators", "tokenize, ssplit, pos, lemma, parse, ner, dcoref");
+		processor = new StanfordCoreNLP(props, false);
+		
 	}
 	
 	@SuppressWarnings("unchecked")
@@ -185,23 +187,37 @@ public class SSF implements Runnable{
 	public static Map<String, Pair<Set<String>, Double>> findTitles(Entity entity, Slot slot, Map<String, Map<String, Set<String>>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
 		Map<String, Pair<Set<String>, Double>> candidates = new HashMap<String, Pair<Set<String>, Double>>();
 		for(String expansion: entity.getExpansions()) {
+			List<String> expansionTokens = Arrays.asList(expansion.split(" "));
 			for(String sentence: relevantSentences.get(expansion).keySet()) {
 				System.out.println(relevantSentences.get(expansion).get(sentence) + ":" + sentence);
 				try {
 					//check for any non-pronominal coreference
 					for(String title: coreNLP.getCorefs(sentence, expansion)) {
 						if(containsUppercaseToken(title)) {
-							if(!candidates.containsKey(title)) {
-								Set<String> documents = new HashSet<String>(relevantSentences.get(expansion).get(sentence));
-								candidates.put(title, new Pair<Set<String>, Double>(documents, (double)relevantSentences.get(expansion).get(sentence).size()));
+							String[] titleTokens = title.split(" ");
+							boolean dontAdd = false;
+							for (String t:titleTokens)
+							{
+								System.out.println("Entity expansion is: " + expansion);
+								System.out.println("Title token is: " + t);
+							
+								if (expansionTokens.contains(t))
+									dontAdd = true;
 							}
-							else {
-								Pair<Set<String>, Double> setAndScore = candidates.get(title);
-								for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
-									setAndScore.first().add(sentenceID);
+							if (!dontAdd)
+							{
+								if(!candidates.containsKey(title)) {
+									Set<String> documents = new HashSet<String>(relevantSentences.get(expansion).get(sentence));
+									candidates.put(title, new Pair<Set<String>, Double>(documents, (double)relevantSentences.get(expansion).get(sentence).size()));
 								}
-								setAndScore.setSecond(setAndScore.second() + relevantSentences.get(expansion).get(sentence).size());
-								candidates.put(title, setAndScore);
+								else {
+									Pair<Set<String>, Double> setAndScore = candidates.get(title);
+									for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
+										setAndScore.first().add(sentenceID);
+									}
+									setAndScore.setSecond(setAndScore.second() + relevantSentences.get(expansion).get(sentence).size());
+									candidates.put(title, setAndScore);
+								}
 							}
 						}
 					}
@@ -263,12 +279,12 @@ public class SSF implements Runnable{
 						Map<String, Double> values= null;
 						if(docType.equals("social")) {
 							
-							values = coreNLP.findPlaceTimeValue(sentence, expansion, slot, false);
+							values = coreNLP.findPlaceTimeValue(sentence, expansion, slot, entity, false);
 						}
 						//News documents	
 						else {
 							
-							values = coreNLP.findPlaceTimeValue(sentence, expansion, slot, false);
+							values = coreNLP.findPlaceTimeValue(sentence, expansion, slot, entity, false);
 						}
 						for(String str: values.keySet()) {
 							if(!candidates.containsKey(str)){
@@ -299,7 +315,7 @@ public class SSF implements Runnable{
 
 	}
 	
-	public static Map<String, Pair<Set<String>, Double>> findCandidates(Entity entity, Slot slot, Map<String, Map<String, Set<String>>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
+	public Map<String, Pair<Set<String>, Double>> findCandidates(Entity entity, Slot slot, Map<String, Map<String, Set<String>>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
 		if(slot.getName().equals(Constants.SlotName.Titles))
 			return findTitles(entity, slot, relevantSentences, coreNLP, conceptExtractor);
 		
@@ -355,7 +371,7 @@ public class SSF implements Runnable{
 					if(docType.equals("arxiv")) {
 						if(!slot.getName().equals(Constants.SlotName.AssociateOf) || !entity.getEntityType().equals(Constants.EntityType.PER))
 							continue;
-						arxivDocument arxivDoc = new arxivDocument(docId);
+						arxivDocument arxivDoc = new arxivDocument(docId, workingDirectory);
 						List<String> arxivCandidates = new ArrayList<String>();
 						if(arxivDoc.getAuthors().contains(expansion)) {
 							for(String author: arxivDoc.getAuthors()) 
@@ -478,7 +494,7 @@ public class SSF implements Runnable{
 		// for each entity, for each slot, for each entity expansion
 		System.out.println("Finding slot values...");
 		
-		ExecutorService e = Executors.newFixedThreadPool(1);
+		ExecutorService e = Executors.newFixedThreadPool(8);
 		OutputWriter writer = new OutputWriter(timestamp + ".txt");
 		
 		for(Entity entity: getEntities()) {
@@ -499,7 +515,7 @@ public class SSF implements Runnable{
 		writer.Close();
 	}
 	
-private static class FillSlotForEntity implements Runnable{
+private class FillSlotForEntity implements Runnable{
 		
 		Entity entity;
 		String timestamp;
@@ -540,7 +556,12 @@ private static class FillSlotForEntity implements Runnable{
 			Set<String> retrievedSentences = new HashSet<String>();
 			for(String expansion: entity.getExpansions()) {
 				Map<String, Set<String>> sentences = new HashMap<String, Set<String>>();
-				Map<String, Set<String>> returnedSet = ProcessTrecTextDocument.extractRelevantSentencesWithDocID(docs, expansion);
+				boolean phraseQuery;
+				if (entity.getEntityType().equals(Constants.EntityType.PER))
+					phraseQuery = false;
+				else
+					phraseQuery = true;
+				Map<String, Set<String>> returnedSet = ProcessTrecTextDocument.extractRelevantSentencesWithDocID(docs, expansion, phraseQuery);
 				for(String sent: returnedSet.keySet()) 
 					if(!retrievedSentences.contains(sent)) {
 							sentences.put(sent, returnedSet.get(sent));
@@ -560,9 +581,11 @@ private static class FillSlotForEntity implements Runnable{
 
 				
 
-				boolean filter = (slot.getName().equals(Constants.SlotName.Contact_Meet_Entity) || slot.getName().equals(Constants.SlotName.Contact_Meet_PlaceTime));
-				if (!filter)
-						continue;
+				boolean filter = (slot.getName().equals(Constants.SlotName.Contact_Meet_Entity) || 
+						slot.getName().equals(Constants.SlotName.Contact_Meet_PlaceTime) || 
+						(slot.getName().equals(Constants.SlotName.Affiliate)));
+				//if (!filter)
+					//	continue;
 				/*boolean aff_per = (slot.getName().equals(Constants.SlotName.Affiliate) && slot.getEntityType().equals(Constants.EntityType.PER));
 				if (!aff_per)
 >>>>>>> c72ad48beb9e693828889b151b7deeff536d37eb
@@ -610,13 +633,34 @@ private static class FillSlotForEntity implements Runnable{
 				}
 				//updating slots
 				slotToValues.put(slot, finalCandidateList);
-				System.out.println(entity.getName() + "," + slot.getName() + ":" + entity.updateSlot(slot, finalCandidateList));
+				//System.out.println(entity.getName() + "," + slot.getName() + ":" + entity.updateSlot(slot, finalCandidateList));
 			}
 			
+			// Auto populating subset slots
 			for (Slot slot:allSlots)
 			{
-				
+				if (slotToValues.containsKey(slot) && !slotToValues.get(slot).isEmpty())
+				{
+					List<Constants.SlotName> alsoPopulate = slot.getPopulateSet();
+					if (alsoPopulate == null)
+					{
+						System.out.println("Also populate is null for slot: " + slot.getName().toString());
+						continue;
+					}
+					for (Slot slot2 : allSlots)
+					{
+						if (alsoPopulate.contains(slot2.getName()) && slot2.getEntityType().equals(slot.getEntityType()))
+						{
+							for (String found : slotToValues.get(slot))
+								if (!slotToValues.get(slot2).contains(found))
+									slotToValues.get(slot2).add(found);
+						}
+					}
+				}
 			}
+			for (Slot slot:allSlots)
+				if (slotToValues.containsKey(slot))
+					System.out.println(entity.getName() + "," + slot.getName() + ":" + entity.updateSlot(slot, slotToValues.get(slot)));
 		}
 	}
 	
@@ -654,12 +698,14 @@ private static class FillSlotForEntity implements Runnable{
 		//PER slots
 		//Affiliate
 		// Also populate - None
+		List<Constants.SlotName> emptySlotNameSet = new ArrayList<Constants.SlotName>();
 		slot = new Slot();
 		slot.setName(SlotName.Affiliate);
 		slot.setEntityType(EntityType.PER);
 		slot.setThreshold(0.0);
 		slot.setSourceNERTypes(null);
 		slot.setTargetNERTypes(Arrays.asList(NERType.NONE));
+		slot.addPopulateSets(emptySlotNameSet);
 		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 		file = new File(filename);
 		if(!file.exists()) 
@@ -676,6 +722,7 @@ private static class FillSlotForEntity implements Runnable{
 		slot.setThreshold(0.0);
 		slot.setSourceNERTypes(null);
 		slot.setTargetNERTypes(Arrays.asList(NERType.PERSON));
+		slot.addPopulateSets(emptySlotNameSet);
 		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 		file = new File(filename);
 		if(!file.exists()) 
@@ -692,6 +739,7 @@ private static class FillSlotForEntity implements Runnable{
 		slot.setThreshold(0.0);
 		slot.setSourceNERTypes(null);
 		slot.setTargetNERTypes(Arrays.asList(NERType.NONE));
+		slot.addPopulateSets(emptySlotNameSet);
 		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 		file = new File(filename);
 		if(!file.exists()) 
@@ -708,6 +756,7 @@ private static class FillSlotForEntity implements Runnable{
 		slot.setThreshold(0.0);
 		slot.setSourceNERTypes(null);
 		slot.setTargetNERTypes(Arrays.asList(NERType.NONE));
+		slot.addPopulateSets(emptySlotNameSet);
 		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 		file = new File(filename);
 		if(!file.exists()) 
@@ -724,6 +773,7 @@ private static class FillSlotForEntity implements Runnable{
 		slot.setThreshold(0.0);
 		slot.setSourceNERTypes(null);
 		slot.setTargetNERTypes(Arrays.asList(NERType.DATE, NERType.TIME));
+		slot.addPopulateSets(emptySlotNameSet);
 		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 		file = new File(filename);
 		if(!file.exists()) 
@@ -740,6 +790,7 @@ private static class FillSlotForEntity implements Runnable{
 		slot.setThreshold(0.0);
 		slot.setSourceNERTypes(null);
 		slot.setTargetNERTypes(Arrays.asList(NERType.NONE));
+		slot.addPopulateSets(emptySlotNameSet);
 		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 		file = new File(filename);
 		if(!file.exists()) 
@@ -756,6 +807,7 @@ private static class FillSlotForEntity implements Runnable{
 		slot.setThreshold(0.0);
 		slot.setSourceNERTypes(null);
 		slot.setTargetNERTypes(Arrays.asList(NERType.NONE));
+		slot.addPopulateSets(emptySlotNameSet);
 		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 		file = new File(filename);
 		if(!file.exists()) 
@@ -765,13 +817,16 @@ private static class FillSlotForEntity implements Runnable{
 		slots.add(slot);
 		
 		//FounderOf
-		// Also populate - Affiliate_PER, Top Members
+		// Also populate - Affiliate_PER
+		List<Constants.SlotName> populateSet = new ArrayList<Constants.SlotName>();
+		populateSet.add(Constants.SlotName.Affiliate);
 		slot = new Slot();
 		slot.setName(SlotName.FounderOf);
 		slot.setEntityType(EntityType.PER);
 		slot.setThreshold(0.0);
 		slot.setSourceNERTypes(null);
 		slot.setTargetNERTypes(Arrays.asList(NERType.ORGANIZATION));
+		slot.addPopulateSets(populateSet);
 		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 		file = new File(filename);
 		if(!file.exists()) 
@@ -788,6 +843,7 @@ private static class FillSlotForEntity implements Runnable{
 		slot.setThreshold(0.0);
 		slot.setSourceNERTypes(null);
 		slot.setTargetNERTypes(Arrays.asList(NERType.ORGANIZATION));
+		slot.addPopulateSets(populateSet);
 		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 		file = new File(filename);
 		if(!file.exists()) 
@@ -805,6 +861,7 @@ private static class FillSlotForEntity implements Runnable{
 		slot.setThreshold(0.0);
 		slot.setSourceNERTypes(null);
 		slot.setTargetNERTypes(Arrays.asList(NERType.PERSON,NERType.ORGANIZATION));
+		slot.addPopulateSets(emptySlotNameSet);
 		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 		file = new File(filename);
 		if(!file.exists()) 
@@ -821,6 +878,7 @@ private static class FillSlotForEntity implements Runnable{
 		slot.setThreshold(0.0);
 		slot.setSourceNERTypes(null);
 		slot.setTargetNERTypes(Arrays.asList(NERType.NONE));
+		slot.addPopulateSets(emptySlotNameSet);
 		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 		file = new File(filename);
 		if(!file.exists()) 
@@ -838,6 +896,7 @@ private static class FillSlotForEntity implements Runnable{
 		slot.setThreshold(0.0);
 		slot.setSourceNERTypes(null);
 		slot.setTargetNERTypes(Arrays.asList(NERType.PERSON,NERType.ORGANIZATION));
+		slot.addPopulateSets(emptySlotNameSet);
 		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 		file = new File(filename);
 		if(!file.exists()) 
@@ -847,13 +906,14 @@ private static class FillSlotForEntity implements Runnable{
 		slots.add(slot);
 		
 		//TopMembers
-		//Also populate - Affiliate_PER
+		//Also populate - Affiliate_ORF
 		slot = new Slot();
 		slot.setName(SlotName.TopMembers);
 		slot.setEntityType(EntityType.ORG);
 		slot.setThreshold(0.0);
 		slot.setSourceNERTypes(null);
 		slot.setTargetNERTypes(Arrays.asList(NERType.PERSON));
+		slot.addPopulateSets(populateSet);
 		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 		file = new File(filename);
 		if(!file.exists()) 
@@ -864,12 +924,14 @@ private static class FillSlotForEntity implements Runnable{
 		
 		//FoundedBy
 		//Also populate - Affiliate_ORG
+		populateSet.add(Constants.SlotName.TopMembers);
 		slot = new Slot();
 		slot.setName(SlotName.FoundedBy);
 		slot.setEntityType(EntityType.ORG);
 		slot.setThreshold(0.0);
 		slot.setSourceNERTypes(null);
 		slot.setTargetNERTypes(Arrays.asList(NERType.PERSON));
+		slot.addPopulateSets(populateSet);
 		filename = "data/slots/" + slot.getName().toString().toLowerCase() + "_" + slot.getEntityType().toString().toLowerCase();
 		file = new File(filename);
 		if(!file.exists()) 
@@ -891,8 +953,8 @@ private static class FillSlotForEntity implements Runnable{
 
 		//System.out.println("Took "+(endTime - startTime) + " ns"); 
 		//new SSF().createSlots();
-		//Execution.run(args, "Main", new SSF());
-		SSF s= new SSF();
+		Execution.run(args, "Main", new SSF());
+		//SSF s= new SSF();
 		
 		//new SSF().updateSlots();
 		//Execution.run(args, "Main", new SSF());
@@ -931,9 +993,9 @@ private static class FillSlotForEntity implements Runnable{
 		
 		
 		List<String> folders = new ArrayList<String>();
-		for(int d = 19; d <= 19; d++) {
-			for(int i = 14 ;i < 16; i++)
-				folders.add(String.format("%04d-%02d-%02d-%02d", 2011,12,d,i));
+		for(int d = 1; d <= 1; d++) {
+			for(int i = 0;i < 1; i++)
+				folders.add(String.format("%04d-%02d-%02d-%02d", 2011,11,d,i));
 		}
 		
 		for(String folderName:folders) {

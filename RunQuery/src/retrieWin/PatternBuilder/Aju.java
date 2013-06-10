@@ -104,7 +104,7 @@ public class Aju implements Runnable{
 				for(String sentence:sentences) {
 					Annotation document = new Annotation(sentence);
 					processor.annotate(document);
-					Map<String, Double> values = obj.findSlotValue(document, "Seagram Company", slot, false, "");
+					Map<String, Double> values = obj.findSlotValue(document, "Seagram Company", slot, false, "",null);
 					LogInfo.logs("Sentence    : " + sentence);
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
@@ -123,7 +123,7 @@ public class Aju implements Runnable{
 				for(String sentence:sentences) {
 					Annotation document = new Annotation(sentence);
 					processor.annotate(document);
-					Map<String, Double> values = obj.findSlotValue(document, "Bill Gates", slot, false, "");
+					Map<String, Double> values = obj.findSlotValue(document, "Bill Gates", slot, false, "",null);
 					LogInfo.logs("Sentence    : " + sentence);
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
@@ -144,7 +144,7 @@ public class Aju implements Runnable{
 				for(String sentence:sentences) {
 					Annotation document = new Annotation(sentence);
 					processor.annotate(document);
-					Map<String, Double> values = obj.findSlotValue(document, "Bill Gates", slot, false, "");
+					Map<String, Double> values = obj.findSlotValue(document, "Bill Gates", slot, false, "",null);
 					LogInfo.logs("Sentence    : " + sentence);
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
@@ -163,7 +163,7 @@ public class Aju implements Runnable{
 				for(String sentence:sentences) {
 					Annotation document = new Annotation(sentence);
 					processor.annotate(document);
-					Map<String, Double> values = obj.findSlotValue(document, "Bill Gates", slot, false, "");
+					Map<String, Double> values = obj.findSlotValue(document, "Bill Gates", slot, false, "",null);
 					LogInfo.logs("Sentence    : " + sentence);
 					if(values != null && values.size() > 0) {
 						for(String str:values.keySet()) {
@@ -444,7 +444,7 @@ public class Aju implements Runnable{
 											e.getEntityType() == EntityType.ORG) {
 										Annotation document = new Annotation(sentence);
 										processor.annotate(document);
-										Map<String, Double> values = obj.findSlotValue(document, expansion, slot, false, "");
+										Map<String, Double> values = obj.findSlotValue(document, expansion, slot, false, "", e);
 										LogInfo.logs("Sentence   $$ " + sentence);
 										if(values != null && values.size() > 0) {
 											for(String str:values.keySet()) {
@@ -459,7 +459,7 @@ public class Aju implements Runnable{
 											e.getEntityType() == EntityType.PER) {
 										Annotation document = new Annotation(sentence);
 										processor.annotate(document);
-										Map<String, Double> values = obj.findSlotValue(document, expansion, slot, false, "");
+										Map<String, Double> values = obj.findSlotValue(document, expansion, slot, false, "", e);
 										LogInfo.logs("Sentence   $$ " + sentence);
 										if(values != null && values.size() > 0) {
 											for(String str:values.keySet()) {
@@ -475,7 +475,7 @@ public class Aju implements Runnable{
 											e.getEntityType() == EntityType.PER) {
 										Annotation document = new Annotation(sentence);
 										processor.annotate(document);
-										Map<String, Double> values = obj.findSlotValue(document, expansion, slot, false, "");
+										Map<String, Double> values = obj.findSlotValue(document, expansion, slot, false, "", e);
 										LogInfo.logs("Sentence   $$ " + sentence);
 										if(values != null && values.size() > 0) {
 											for(String str:values.keySet()) {
@@ -491,7 +491,7 @@ public class Aju implements Runnable{
 											e.getEntityType() == EntityType.PER) {
 										Annotation document = new Annotation(sentence);
 										processor.annotate(document);
-										Map<String, Double> values = obj.findSlotValue(document, expansion, slot, false, "");
+										Map<String, Double> values = obj.findSlotValue(document, expansion, slot, false, "", e);
 										LogInfo.logs("Sentence   $$ " + sentence);
 										if(values != null && values.size() > 0) {
 											for(String str:values.keySet()) {
