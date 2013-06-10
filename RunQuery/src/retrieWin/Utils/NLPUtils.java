@@ -833,13 +833,21 @@ public class NLPUtils {
 		return flag;
 	}
 	
-	private Boolean findMatchWithEntity(String ans, String entity)
+	public Boolean findMatchWithEntity(String ans, String entity)
 	{
-		List<String> entityExpansions = Arrays.asList(entity.split(" ")); 
+		List<String> entityExpansions = Arrays.asList(entity.toLowerCase().split(" ")); 
 		boolean dontAdd = false;
+		if (ans.matches("William Cohan"))
+		{
+			System.out.println("Entity expansions:");
+			for (String e:entityExpansions)
+			System.out.println(e);
+		}
 		for (String tok:ans.split(" "))
-			if (entityExpansions.contains(tok))
+			if (entityExpansions.contains(tok.toLowerCase()))
 				dontAdd = true;
+		if (ans.matches("William Cohan"))
+			System.out.println("Don't add value is: " + dontAdd);
 		return dontAdd;
 	}
 	private Set<String> findValue(CoreMap sentence, List<IndexedWord> words1, SlotPattern pattern, Slot slot, boolean social, String defaultVal) {

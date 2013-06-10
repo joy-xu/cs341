@@ -27,7 +27,7 @@ public class OutputWriter {
 	public void Write(String streamID, String entityID, double confidenceScore, String directoryName, String slotName, String equivalenceClass, Long long1, Long long2) {
 		try {
 			writer.write(String.format("%s\t%s\t%s\t%s\t%f\t%s\t%s\t%s\t%s\t%s\t%s\n",
-					TeamID, SystemID, streamID, entityID, confidenceScore,"2", "1", directoryName, slotName, equivalenceClass.replace("[^a-zA-Z0-9-/:]", "_"), (long1 + "-"  + long2)));
+					TeamID, SystemID, streamID, entityID, confidenceScore,"2", "1", directoryName, slotName, equivalenceClass.replaceAll("[^a-zA-Z0-9-/:]", "_"), (long1 + "-"  + long2)));
 		} catch (IOException e) {
 			LogInfo.logs("Exception caught: " + e);
 			e.printStackTrace();

@@ -189,7 +189,7 @@ public class SSF implements Runnable{
 	public static Map<String, Pair<Set<String>, Double>> findTitles(Entity entity, Slot slot, Map<String, Map<String, Set<String>>> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
 		Map<String, Pair<Set<String>, Double>> candidates = new HashMap<String, Pair<Set<String>, Double>>();
 		for(String expansion: entity.getExpansions()) {
-			List<String> expansionTokens = Arrays.asList(expansion.split(" "));
+			//List<String> expansionTokens = Arrays.asList(expansion.split(" "));
 			for(String sent: relevantSentences.get(expansion).keySet()) {
 				System.out.println("Processing for titles: " + sent);
 				Annotation document = new Annotation(sent);
@@ -217,7 +217,9 @@ public class SSF implements Runnable{
 							}
 							title.trim();
 							if(containsUppercaseToken(title)) {
-								String[] titleTokens = title.split(" ");
+								//String[] titleTokens = title.split(" ");
+								boolean dontAdd = coreNLP.findMatchWithEntity(title, expansion);
+								/*
 								boolean dontAdd = false;
 								for (String t:titleTokens)
 								{
@@ -227,6 +229,7 @@ public class SSF implements Runnable{
 									if (expansionTokens.contains(t))
 										dontAdd = true;
 								}
+								*/
 								if(!dontAdd) {
 									if(!candidates.containsKey(title)) {
 										Set<String> documents = new HashSet<String>(relevantSentences.get(expansion).get(sentence));
@@ -1050,7 +1053,7 @@ private class FillSlotForEntity implements Runnable{
 		
 		List<String> folders = new ArrayList<String>();
 		for(int d = 1; d <= 1; d++) {
-			for(int i = 1 ;i <= 23; i++)
+			for(int i = 2 ;i <= 2; i++)
 				folders.add(String.format("%04d-%02d-%02d-%02d", 2011,11,d,i));
 		}
 		
