@@ -224,17 +224,30 @@ public class SSF implements Runnable{
 					//check for any compund nouns for this entity
 					String nnTitle = coreNLP.getNNs(sentence, expansion);
 					if(containsUppercaseToken(nnTitle)) {
-						if(!candidates.containsKey(nnTitle)) {
-							Set<String> documents = new HashSet<String>(relevantSentences.get(expansion).get(sentence));
-							candidates.put(nnTitle, new Pair<Set<String>, Double>(documents, 1.0));
+						String[] titleTokens = nnTitle.split(" ");
+						boolean dontAdd = false;
+						for (String t:titleTokens)
+						{
+							System.out.println("Entity expansion is: " + expansion);
+							System.out.println("Title token is: " + t);
+						
+							if (expansionTokens.contains(t))
+								dontAdd = true;
 						}
-						else {
-							Pair<Set<String>, Double> setAndScore = candidates.get(nnTitle);
-							for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
-								setAndScore.first().add(sentenceID);
+						if (!dontAdd)
+						{
+							if(!candidates.containsKey(nnTitle)) {
+								Set<String> documents = new HashSet<String>(relevantSentences.get(expansion).get(sentence));
+								candidates.put(nnTitle, new Pair<Set<String>, Double>(documents, 1.0));
 							}
-							setAndScore.setSecond(setAndScore.second() + 1);
-							candidates.put(nnTitle, setAndScore);
+							else {
+								Pair<Set<String>, Double> setAndScore = candidates.get(nnTitle);
+								for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
+									setAndScore.first().add(sentenceID);
+								}
+								setAndScore.setSecond(setAndScore.second() + 1);
+								candidates.put(nnTitle, setAndScore);
+							}
 						}
 					}
 				} catch(NoSuchParseException e) {
