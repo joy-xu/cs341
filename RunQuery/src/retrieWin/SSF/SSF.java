@@ -54,6 +54,7 @@ public class SSF implements Runnable{
 	private List<Entity> entities;
 	private NLPUtils coreNLP;
 	Concept conceptExtractor;
+	boolean runWikipediaTest = false;
 	public static StanfordCoreNLP processor;
 	public SSF() {
 		initialize();
@@ -480,13 +481,17 @@ public class SSF implements Runnable{
 							values = coreNLP.findSlotValue(document, expansion, slot, false, defaultVal, entity);
 						}
 						for(String str: values.keySet()) {
-							if(!NLPUtils.isEntitiesSame(entity.getName().replace("_", " "), str) && !str.equals(entity.getName().replace("_", " "))) {
+							//if(!NLPUtils.isEntitiesSame(entity.getName().replace("_", " "), str) && !str.equals(entity.getName().replace("_", " "))) {
+							if(!str.equals(entity.getName().replace("_", " "))) {
+								if(slot.getName() == SlotName.AwardsWon && !(str.toLowerCase().contains("award") ||
+										str.toLowerCase().contains("medal") || str.toLowerCase().contains("prize")))
+										continue;
 								if(!candidates.containsKey(str)){
 									Set<String> documents = new HashSet<String>();
 									for(String sentenceID:relevantSentences.get(expansion).get(sentence)) {
 										documents.add(sentenceID);
 									}
-									LogInfo.logs(String.format("Entity    :%s\nExpansion :%s\nSentence :%s\nSlot      :%s\nValue     :%s\n\n",
+									LogInfo.logs(String.format("Entity    :%s\nExpansion :%s\nSentence  :%s\nSlot      :%s\nValue     :%s\n\n",
 															entity.getName(), expansion, sentence, slot.getName().toString(), str));
 									candidates.put(str, new Pair<Set<String>, Double>(documents, values.get(str) * relevantSentences.get(expansion).get(sentence).size()));
 								}
@@ -601,12 +606,13 @@ private class FillSlotForEntity implements Runnable{
 
 			//System.out.println("Finding slot values for entity " + entity.getName());
 			//get all relevant documents for the entity
-
-			List<TrecTextDocument> docs = entity.getRelevantDocuments(timestamp, workingDirectory, entities, eq);
-			//System.out.println("Retrieved " + docs.size() + " relevant documents for entity: " + entity.getName());
-			if(docs.isEmpty())
-				return;
-			
+			List<TrecTextDocument> docs = null;
+			if(!runWikipediaTest){
+				docs = entity.getRelevantDocuments(timestamp, workingDirectory, entities, eq);
+				//System.out.println("Retrieved " + docs.size() + " relevant documents for entity: " + entity.getName());
+				if(docs.isEmpty())
+					return;
+			}
 			//get relevant sentences for each expansion, ensure no sentence retrieved twice
 			Map<String, Map<String, Set<String>>> relevantSentences = new HashMap<String, Map<String, Set<String>>>();
 			Set<String> retrievedSentences = new HashSet<String>();
@@ -619,8 +625,11 @@ private class FillSlotForEntity implements Runnable{
 					phraseQuery = true;
 				if (entity.getName().equals("Fargo_Moorhead_Derby_Girls"))
 					phraseQuery = true;
-				
-				Map<String, Set<String>> returnedSet = ProcessTrecTextDocument.extractRelevantSentencesWithDocID(docs, expansion, phraseQuery);
+				Map<String, Set<String>> returnedSet;
+				if(!runWikipediaTest)
+					returnedSet = ProcessTrecTextDocument.extractRelevantSentencesWithDocID(docs, expansion, phraseQuery);
+				else
+					returnedSet = RunTests.getRelevantSentences(expansion, entity.getName());
 				for(String sent: returnedSet.keySet()) 
 					if(!retrievedSentences.contains(sent)) {
 							sentences.put(sent, returnedSet.get(sent));
@@ -717,9 +726,11 @@ private class FillSlotForEntity implements Runnable{
 					}
 				}
 			}
-			for (Slot slot:allSlots)
-				if (slotToValues.containsKey(slot))
-					System.out.println(entity.getName() + "," + slot.getName() + ":" + entity.updateSlot(slot, slotToValues.get(slot)));
+			if(!runWikipediaTest) {
+				for (Slot slot:allSlots)
+					if (slotToValues.containsKey(slot))
+						LogInfo.logs(entity.getName() + "," + slot.getName() + ":" + entity.updateSlot(slot, slotToValues.get(slot)));
+			}
 		}
 	}
 	
