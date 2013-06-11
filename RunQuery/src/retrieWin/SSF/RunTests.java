@@ -20,9 +20,12 @@ import javax.management.relation.RoleUnresolved;
 
 import org.w3c.dom.EntityReference;
 
+import edu.stanford.nlp.ling.IndexedWord;
+import edu.stanford.nlp.ling.CoreAnnotations.SentencesAnnotation;
 import edu.stanford.nlp.parser.lexparser.NoSuchParseException;
 import edu.stanford.nlp.pipeline.Annotation;
 import edu.stanford.nlp.pipeline.StanfordCoreNLP;
+import edu.stanford.nlp.util.CoreMap;
 import edu.stanford.nlp.util.Pair;
 import fig.basic.LogInfo;
 import fig.exec.Execution;
@@ -30,6 +33,7 @@ import fig.exec.Execution;
 import retrieWin.SSF.Constants.NERType;
 import retrieWin.Utils.FileUtils;
 import retrieWin.Utils.NLPUtils;
+import retrieWin.Utils.Utils;
 
 public class RunTests implements Runnable {
 	public static StanfordCoreNLP processor;
@@ -64,9 +68,8 @@ public class RunTests implements Runnable {
 	}
 	
 	public void readAndRunTests(List<Entity> entities, List<Slot> slots) {
-		//generateFiles(entities);
+		generateFiles(entities);
 		LogInfo.logs("Running tests");
-		runTests(entities, slots);
 	}
 	
 	public void generateFiles(List<Entity> entities) {
@@ -124,130 +127,29 @@ public class RunTests implements Runnable {
 		/**/
 	}
 	
-	public void runTests(List<Entity> entities, List<Slot> slots) {
-		for(Entity entity:entities) {
-			//if(entity.getTargetID().contains("en.wikipedia.org/wiki/Jim_Steyer")) {
-				try {
-					BufferedReader reader = new BufferedReader(new FileReader(String.format("test/sentences/%s.txt", entity.getName())));
-					String line;
-					List<String> sentences = new ArrayList<String>();
-					while((line = reader.readLine()) != null) {
-						line = line.trim();
-						for(String expansion:entity.getExpansions()) {
-							if(line.toLowerCase().contains(expansion.toLowerCase())) {
-								sentences.add(line);
-								break;
-							}
-						}
-						//System.out.println(line);
+	public static Map<String, Set<String>> getRelevantSentences(String expansion, String entityName) {
+		Map<String, Set<String>> relevantSentences = new HashMap<String,Set<String>>();
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(String.format("test/sentences/%s.txt", entityName)));
+			String line;
+
+			Set<String> id = new HashSet<String>();
+			id.add("streamID__news__folderName__11");
+			while((line = reader.readLine()) != null) {
+				line = line.trim();
+				//sentMapping.put(line, id);
+				for(String split:expansion.split(" ")) {
+					if(line.toLowerCase().contains(split.toLowerCase())) {
+						//Map<String, Set<String>> sentMapping = new HashMap<String, Set<String>>();
+						relevantSentences.put(line, id);
 					}
-					
-					for(Slot slot:slots) {
-						Map<String, Double> values = null;
-						if(slot.getName().equals(Constants.SlotName.Titles))
-							values = findTitles(entity, slot, sentences, coreNLP, conceptExtractor);
-						
-						else if (slot.getName().equals(Constants.SlotName.Contact_Meet_PlaceTime))
-							values = findContactMeetPlaceTime(entity,slot,sentences,coreNLP,conceptExtractor);
-						else{
-							for(String expansion: entity.getExpansions()) {	
-								for(String sentence:sentences) {
-									Annotation document = new Annotation(sentence);
-									processor.annotate(document);
-									values = coreNLP.findSlotValue(document, expansion, slot, false, "DEFAULTVAL");
-									if(values != null && values.size() > 0) {
-										for(String value: values.keySet())
-											if(!NLPUtils.isEntitiesSame(expansion, value))
-												LogInfo.logs(String.format("Entity    :%s\nExpansion :%s\nSentence :%s\nSlot      :%s\nValue     :%s\n\n",
-													entity.getName(), expansion, sentence, slot.getName().toString(), value));
-									}
-								
-								}
-							}
-						}
-					}				
 				}
-				catch(Exception ex) {
-					ex.printStackTrace();
-				}
-			//}
-		}
-	}
-	
-	public static Map<String, Double> findTitles(Entity entity, Slot slot, List<String> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
-		Map<String, Double> candidates = new HashMap<String, Double>();
-		for(String expansion: entity.getExpansions()) {
-			for(String sentence: relevantSentences) {
-				try {
-					//check for any non-pronominal coreference
-					for(String title: coreNLP.getCorefs(sentence, expansion)) {
-						if(containsUppercaseToken(title) && !NLPUtils.isEntitiesSame(expansion, title)) {
-							if(!candidates.containsKey(title)) {
-								candidates.put(title, 1.0);
-							}
-							else {
-								double score = candidates.get(title);
-								candidates.put(title, score + 1);
-							}
-							LogInfo.logs(String.format("Entity    :%s\nExpansion :%s\nSentence :%s\nSlot      :%s\nValue     :%s\n\n",
-									entity.getName(), expansion, sentence, slot.getName().toString(), title));
-						}
-					}
-					//check for any compund nouns for this entity
-					String nnTitle = coreNLP.getNNs(sentence, expansion);
-					if(containsUppercaseToken(nnTitle) && !NLPUtils.isEntitiesSame(expansion, nnTitle)) {
-						if(!candidates.containsKey(nnTitle)) {
-							candidates.put(nnTitle, 1.0);
-						}
-						else {
-							double score = candidates.get(nnTitle);
-							candidates.put(nnTitle, score + 1);
-						}
-						LogInfo.logs(String.format("Entity    :%s\nExpansion :%s\nSentence :%s\nSlot      :%s\nValue     :%s\n\n",
-								entity.getName(), expansion, sentence, slot.getName().toString(), nnTitle));
-					}
-				} catch(NoSuchParseException e) {
-					e.printStackTrace();
-					break;
-				}
+				//System.out.println(line);
 			}
 		}
-		return candidates;
-	}
-
-	private static Map<String, Double> findContactMeetPlaceTime(Entity entity, Slot slot, List<String> relevantSentences, NLPUtils coreNLP, Concept conceptExtractor) {
-		Map<String, Double> candidates = new HashMap<String, Double>();
-		for(String expansion: entity.getExpansions()) {
-			for(String sentence: relevantSentences) {
-				Map<String, Double> values= null;
-				values = coreNLP.findPlaceTimeValue(sentence, expansion, slot, false);
-				
-				for(String str: values.keySet()) {
-					if(!NLPUtils.isEntitiesSame(expansion, str)) {
-						if(!candidates.containsKey(str)){
-							candidates.put(str, 1.0);
-						}
-						else {
-							double score = candidates.get(str);
-							candidates.put(str, score + 1);
-						}
-						LogInfo.logs(String.format("Entity    :%s\nExpansion :%s\nSentence :%s\nSlot      :%s\nValue     :%s\n\n",
-								entity.getName(), expansion, sentence, slot.getName().toString(), str));
-					}
-				}
-			}
+		catch(Exception ex) {
+			ex.printStackTrace();
 		}
-		return candidates;
-
-	}
-	
-	private static boolean containsUppercaseToken(String str) {
-		for(String token: str.split(" ")) {
-			if(token.isEmpty())
-				continue;
-			if(Character.isUpperCase(token.charAt(0)))
-					return true;
-		}
-		return false;
+		return relevantSentences;
 	}
 }
