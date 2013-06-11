@@ -54,7 +54,7 @@ public class SSF implements Runnable{
 	private List<Entity> entities;
 	private NLPUtils coreNLP;
 	Concept conceptExtractor;
-	boolean runWikipediaTest = true;
+	boolean runWikipediaTest = false;
 	public static StanfordCoreNLP processor;
 	public SSF() {
 		initialize();
