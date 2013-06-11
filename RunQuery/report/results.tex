@@ -1,0 +1,42 @@
+The models that we built cannot be evaluated directly against the dataset as the TREC KBA SSF task hasn’t released any training or development sets to work with. As a result, one approach we used throughout the project to track progress is to eyeball the results generated. The different design decisions we adopted were also keeping in view the performance of the models on the corpus. We were mostly focusing on precision to begin with, as it is easier to measure in case of extremely large corpora with no training data. 
+While eyeballing the results was a good approach to iteratively improve the models, we decided to use another approach to evaluate the performance of the model. To this end, we scraped the Wikipedia articles for 40 entities that had a Wikipedia page and ran our models on the sentences extracted from this. We manually evaluated the results generated and tagged the prediction to be correct or incorrect by looking at the actual sentence from which the slot value was extracted.
+
+Number of entities: 40
+Number of slot values extracted: 69
+Number of correct predictions: 57
+Precision: 57/69 = 82.6
+
+There is no direct way to measure recall, but on manually inspecting the sentences that contained mentions of the entities of interest, we found that there were many slot values that were not found. It looks like the recall of the system is lower than the precision. This is expected as we mostly rely on bootstrapping based approach with a fixed seed set.
+Here are some sentences from which our algorithm extracted slot values correctly:
+
+\begin{table*}[ht]
+\centering
+\begin{tabular}{|p{3cm}|p{10cm}|}
+\hline
+Entity & Annie Laurie Gaylor \\
+\hline
+Sentence & Gaylor and her mother, Anne Nicol Gaylor, and the late John Sontarck, founded the Freedom From Religion Foundation in a meeting around the Gaylors' dining room table in 1978.\\
+\hline
+Slot & FounderOf\\
+\hline
+Value & Freedom From Religion Foundation\\
+\hline
+\hline
+Entity & Barbara Liskov \\
+\hline
+Sentence & In 2004, Barbara Liskov won the John von Neumann Medal for "fundamental contributions to programming languages, programming methodology, and distributed systems". \\
+\hline
+Slot & AwardsWon \\
+\hline
+Value & the John von Neumann Medal \\
+\hline
+\end{tabular}
+\caption{Sentences found correctly}
+\label{tab:model_correct}
+\end{table*}
+
+On the other side, our model extracted the slot value ‘Senate’ for the entity ‘Bernard Kenny’ for the slot ‘FounderOf’ from the sentence ‘Jon Corzine had left the state or been incapacitated during Kenny's Senate Presidency, Kenny would have served as acting governor.’ Here, the pattern Kenny’s Senate which is similar to Sergey Brin’s Gogle results in an incorrect prediction. To prevent this, possessive references between an organization and an entity could be downweighted.  In another instance, our model finds the value ‘throat cancer’ as ‘CauseOfDeath’ for Nassim Nicholas Taleb from the sentence ‘Though a non-smoker, Taleb suffered from throat cancer in the mid-1990s, which he overcame.’ Here, the pattern suffered was not really indicative of death in itself unless accompanied by stronger clues. This could be fixed either by adjusting the threshold values or by ensuring that strong patterns like ‘death’ or ‘die’ appear in close proximity.
+
+	Since the patterns that we extracted are based on a fixed seed set using bootstrapping they have high precision.  We found that the slots that have a target NER type are easier to capture as we could validate the output of the slot value extracted by comparing it with the NER tag assigned by Stanford NER tagger.
+	News articles have well formed English sentences and can be relied more for the slot values extracted and generally works well with the models we built. Social data on the other hand is much harder to work with as the sentences are not well formed and has a lot of embedded links, advertisements and spam. But, news articles are generally slower to report updates to slot, where as the first sight of new happenings begin in the social media. As a result, we had to adapt the models and patterns to work with social data which was not well structured. 
+Thresholds for different slots had to be tuned separately. Some slots like ‘Date of death’, ‘Cause of death’ etc. are relatively rarer and have highly precise rules and hence the thresholds were chosen to be lower. On the other hand, more commonly occuring slots like ContactMeetPlaceTime, ‘AffiliateOf’ etc required a higher threshold to be met to update a slot value.
