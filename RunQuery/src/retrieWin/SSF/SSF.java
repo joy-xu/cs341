@@ -83,7 +83,7 @@ public class SSF implements Runnable{
 			// Read from expansions file
 			System.out.println("entities file does not exist");
 			Map<String,Set<String>> namesToExpansions = new HashMap<String,Set<String>>();
-			String expFileName = "data/entities_expansions";
+			String expFileName = "data/entities_expansions_new";
 			try{
 				BufferedReader buf = new BufferedReader(new FileReader(expFileName));
 				String line;
@@ -218,7 +218,7 @@ public class SSF implements Runnable{
 							title.trim();
 							if(containsUppercaseToken(title)) {
 								//String[] titleTokens = title.split(" ");
-								boolean dontAdd = coreNLP.findMatchWithEntity(title, expansion);
+								boolean dontAdd = coreNLP.findMatchWithEntity(title, entity);
 								/*
 								boolean dontAdd = false;
 								for (String t:titleTokens)
@@ -1012,8 +1012,8 @@ private class FillSlotForEntity implements Runnable{
 
 		//System.out.println("Took "+(endTime - startTime) + " ns"); 
 		//new SSF().createSlots();
-		Execution.run(args, "Main", new SSF());
-		//SSF s= new SSF();
+		//Execution.run(args, "Main", new SSF());
+		SSF s= new SSF();
 	
 		//new SSF().updateSlots();
 		//Execution.run(args, "Main", new SSF());
@@ -1053,8 +1053,8 @@ private class FillSlotForEntity implements Runnable{
 		
 		List<String> folders = new ArrayList<String>();
 		for(int d = 1; d <= 1; d++) {
-			for(int i = 2 ;i <= 2; i++)
-				folders.add(String.format("%04d-%02d-%02d-%02d", 2011,11,d,i));
+			for(int i = 0 ;i <= 23; i++)
+				folders.add(String.format("%04d-%02d-%02d-%02d", 2012,3,d,i));
 		}
 		
 		for(String folderName:folders) {

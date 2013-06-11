@@ -701,7 +701,7 @@ public class NLPUtils {
 						Pair<String,String> datetime = findNearestDateTime(sentenceMap.toString(), ans,dates,times);
 						
 						// Check to see if found value is our own entity
-						boolean dontAdd = findMatchWithEntity(ans, entity1);
+						boolean dontAdd = findMatchWithEntity(ans, entity);
 						
 						String str = "";
 						if (dontAdd)
@@ -780,7 +780,7 @@ public class NLPUtils {
 
 						if(!ans.isEmpty()) {
 							
-							boolean dontAdd = findMatchWithEntity(ans, expansion);
+							boolean dontAdd = findMatchWithEntity(ans, entity);
 							
 							String str = "";
 							if (dontAdd)
@@ -833,21 +833,18 @@ public class NLPUtils {
 		return flag;
 	}
 	
-	public Boolean findMatchWithEntity(String ans, String entity)
+	public Boolean findMatchWithEntity(String ans, Entity entity)
 	{
-		List<String> entityExpansions = Arrays.asList(entity.toLowerCase().split(" ")); 
+		if (entity == null) return false;
+		List<String> entityExpansions = entity.getExpansions(); 
 		boolean dontAdd = false;
-		if (ans.matches("William Cohan"))
+		for (String expansion : entityExpansions)
 		{
-			System.out.println("Entity expansions:");
-			for (String e:entityExpansions)
-			System.out.println(e);
+			List<String> expansionSplits = Arrays.asList(expansion.toLowerCase().split(" "));
+			for (String tok:ans.split(" "))
+				if (expansionSplits.contains(tok.toLowerCase()))
+					dontAdd = true;
 		}
-		for (String tok:ans.split(" "))
-			if (entityExpansions.contains(tok.toLowerCase()))
-				dontAdd = true;
-		if (ans.matches("William Cohan"))
-			System.out.println("Don't add value is: " + dontAdd);
 		return dontAdd;
 	}
 	private Set<String> findValue(CoreMap sentence, List<IndexedWord> words1, SlotPattern pattern, Slot slot, boolean social, String defaultVal) {
@@ -997,28 +994,36 @@ public class NLPUtils {
 				//	System.out.println(n.toString());
 				//System.out.println();
 				if(targetNERTypes == null || targetNERTypes.contains(NERType.NONE) || targetNERTypes.contains(NERType.valueOf(nerMap.get(tok)))) {
-					
+					fitTobeAdded = true;
+				}
+				else
+				{
+					fitTobeAdded = false;
+					break;
+				}
 					// Remove time, date etc from contact meet entity/place time slots
-					if (slot.getName().equals(Constants.SlotName.Contact_Meet_Entity) || slot.getName().equals(Constants.SlotName.Contact_Meet_PlaceTime))
-						if (NERType.valueOf(nerMap.get(tok)).equals(NERType.TIME) || NERType.valueOf(nerMap.get(tok)).equals(NERType.DATE)
-								|| NERType.valueOf(nerMap.get(tok)).equals(NERType.DURATION) || NERType.valueOf(nerMap.get(tok)).equals(NERType.MONEY))
-						{
-							fitTobeAdded = false;
-							break;
-						}
-					
+				if (slot.getName().equals(Constants.SlotName.Contact_Meet_Entity) || slot.getName().equals(Constants.SlotName.Contact_Meet_PlaceTime))
+					if (NERType.valueOf(nerMap.get(tok)).equals(NERType.TIME) || NERType.valueOf(nerMap.get(tok)).equals(NERType.DATE)
+							|| NERType.valueOf(nerMap.get(tok)).equals(NERType.DURATION) || NERType.valueOf(nerMap.get(tok)).equals(NERType.MONEY))
+					{
+						fitTobeAdded = false;
+						break;
+					}
+			}
 						
-					
+					/*
 					if(patternWord != null) {
 						if(!tok.equals(patternWord.lemma()))
 								temp += " " + tok;	
 					}
-					else 
-						temp += " " + tok;	
-				}
-			}
-			if(fitTobeAdded && !temp.trim().isEmpty()) {
-				ans.add(temp.trim());
+					else
+					*/ 
+			//			temp += " " + tok;	
+				//}
+			//}
+			if(fitTobeAdded)// && !temp.trim().isEmpty()) {
+			{
+				ans.add(phrase);
 				//System.out.println("ans: " + pattern);
 			}
 		}
