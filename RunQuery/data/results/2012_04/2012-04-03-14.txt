@@ -1,0 +1,25 @@
+#{"run_type": "automatic", "poc_email": "ajuts@stanford.edu", "team_id": "RetrieWin", "topic_set_id": "sample-trec-kba-topics-2013", "corpus_id": "tiny-corpus", "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", "team_name": "Stanford University", "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens", "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.", "task_id": "kba-ssf-2013", "poc_name": "Aju T Scaria", "run_info": {"num_entities": 4, "num_stream_hours": 3}, "system_id": "Submission_2"}
+RetrieWin	Submission_2	1333458721-4817937535fd80a51a06e0aa95ace2af	http://en.wikipedia.org/wiki/Alex_Kapranos	500.000000	2	1	2012-04-03-14	AssociateOf	Franz_Ferdinand	24521-24535
+RetrieWin	Submission_2	1333463600-123f38950612ff20a38ca25fcec2898f	http://en.wikipedia.org/wiki/Darren_Rowse	500.000000	2	1	2012-04-03-14	Contact_Meet_PlaceTime	the_Problogger_event	1943-1961
+RetrieWin	Submission_2	1333462925-8a0be631506fda3d67970f8af63395a6	http://en.wikipedia.org/wiki/Douglas_Carswell	500.000000	2	1	2012-04-03-14	EmployeeOf	Westminster_Conservative_Future	-1--1
+#{
+#    "run_type": "automatic", 
+#    "poc_email": "ajuts@stanford.edu",
+#    "team_id": "RetrieWin",
+#    "topic_set_id": "sample-trec-kba-topics-2013",
+#    "corpus_id": "tiny-corpus", 
+#    "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", 
+#    "team_name": "Stanford University", 
+#    "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens",
+#    "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.",
+#    "task_id": "kba-ccr-2012", 
+#    "poc_name": "Aju T Scaria",
+#    "run_info": {
+#        "num_filter_results": 118,
+#        "elapsed_time": 52.14945411682129,
+#        "num_entities": 4, 
+#        "num_entity_doc_compares": 3312,
+#        "num_stream_hours": 3
+#    }, 
+#    "system_id": "Submission_2"
+#}

@@ -1,0 +1,34 @@
+#{"run_type": "automatic", "poc_email": "ajuts@stanford.edu", "team_id": "RetrieWin", "topic_set_id": "sample-trec-kba-topics-2013", "corpus_id": "tiny-corpus", "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", "team_name": "Stanford University", "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens", "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.", "task_id": "kba-ssf-2013", "poc_name": "Aju T Scaria", "run_info": {"num_entities": 4, "num_stream_hours": 3}, "system_id": "Submission_2"}
+RetrieWin	Submission_2	1331121960-a5f6a38d2f6e0cdb4633bb44eb852ace	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-03-07-12	CauseOfDeath	Findlay	22821-22828
+RetrieWin	Submission_2	1331121960-16577159fca2005c7b111b382b1d6db1	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-03-07-12	CauseOfDeath	Findlay	22821-22828
+RetrieWin	Submission_2	1331121960-66fde227e4fabb9b52257d4b60b883d2	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-03-07-12	CauseOfDeath	Findlay	22821-22828
+RetrieWin	Submission_2	1331121960-4da4db11c02dd209f4b5e4bed33869bd	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-03-07-12	CauseOfDeath	Findlay	22821-22828
+RetrieWin	Submission_2	1331121960-dd8a00383329756f1dd6be841b80effa	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-03-07-12	CauseOfDeath	Findlay	22821-22828
+RetrieWin	Submission_2	1331121960-79a247e693280b8b0c3299ab01128ef0	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-03-07-12	CauseOfDeath	Findlay	22821-22828
+RetrieWin	Submission_2	1331121960-373133e7c616ee653aee1a39f4aa4dfc	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-03-07-12	CauseOfDeath	Findlay	22821-22828
+RetrieWin	Submission_2	1331121960-8f3f23c5a79d76f1a5f86b0367e3b53a	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-03-07-12	CauseOfDeath	Findlay	22821-22828
+RetrieWin	Submission_2	1331121960-90333368c9346ce4ff81eb538d52a005	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-03-07-12	CauseOfDeath	Findlay	22821-22828
+RetrieWin	Submission_2	1331121960-0bba3b6c22c8615f67140f596b4d7eab	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-03-07-12	CauseOfDeath	Findlay	22821-22828
+RetrieWin	Submission_2	1331121960-0fcbd15145f980bf15c637846bca13e5	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-03-07-12	CauseOfDeath	Findlay	22821-22828
+RetrieWin	Submission_2	1331121960-ea2d93c42cd259456691cf67a1d0ffb2	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-03-07-12	CauseOfDeath	Findlay	22821-22828
+#{
+#    "run_type": "automatic", 
+#    "poc_email": "ajuts@stanford.edu",
+#    "team_id": "RetrieWin",
+#    "topic_set_id": "sample-trec-kba-topics-2013",
+#    "corpus_id": "tiny-corpus", 
+#    "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", 
+#    "team_name": "Stanford University", 
+#    "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens",
+#    "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.",
+#    "task_id": "kba-ccr-2012", 
+#    "poc_name": "Aju T Scaria",
+#    "run_info": {
+#        "num_filter_results": 118,
+#        "elapsed_time": 52.14945411682129,
+#        "num_entities": 4, 
+#        "num_entity_doc_compares": 3312,
+#        "num_stream_hours": 3
+#    }, 
+#    "system_id": "Submission_2"
+#}

@@ -1,0 +1,29 @@
+#{"run_type": "automatic", "poc_email": "ajuts@stanford.edu", "team_id": "RetrieWin", "topic_set_id": "sample-trec-kba-topics-2013", "corpus_id": "tiny-corpus", "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", "team_name": "Stanford University", "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens", "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.", "task_id": "kba-ssf-2013", "poc_name": "Aju T Scaria", "run_info": {"num_entities": 4, "num_stream_hours": 3}, "system_id": "Submission_2"}
+RetrieWin	Submission_2	1331149616-bcd0c8e8e4db99c502fbcb6ba19a8c1b	http://en.wikipedia.org/wiki/Alexander_McCall_Smith	500.000000	2	1	2012-03-07-19	AssociateOf	Adjoa_Andoh	2943-2953
+RetrieWin	Submission_2	1331150238-dcccdae9dc04aaa30b6de0fd16406ae5	http://en.wikipedia.org/wiki/Great_American_Brass_Band_Festival	500.000000	2	1	2012-03-07-19	Affiliate	Philip_Seymour_Hoffman	1212-1232
+RetrieWin	Submission_2	1331150238-dcccdae9dc04aaa30b6de0fd16406ae5	http://en.wikipedia.org/wiki/Great_American_Brass_Band_Festival	500.000000	2	1	2012-03-07-19	Affiliate	Philip_Seymour_Hoffman	7034-7054
+RetrieWin	Submission_2	1331150238-dcccdae9dc04aaa30b6de0fd16406ae5	http://en.wikipedia.org/wiki/Great_American_Brass_Band_Festival	500.000000	2	1	2012-03-07-19	Affiliate	Willy_Loman	1238-1248
+RetrieWin	Submission_2	1331150238-dcccdae9dc04aaa30b6de0fd16406ae5	http://en.wikipedia.org/wiki/Great_American_Brass_Band_Festival	500.000000	2	1	2012-03-07-19	Affiliate	Willy_Loman	7060-7070
+RetrieWin	Submission_2	1331148600-d0f5fbd005f9d97122b009d7f2948a22	http://en.wikipedia.org/wiki/Keri_Hehn	500.000000	2	1	2012-03-07-19	DateOfDeath	April_7___2012	-1--1
+RetrieWin	Submission_2	1331148600-d0f5fbd005f9d97122b009d7f2948a22	http://en.wikipedia.org/wiki/Keri_Hehn	500.000000	2	1	2012-03-07-19	CauseOfDeath	Hopkinton	21517-21526
+#{
+#    "run_type": "automatic", 
+#    "poc_email": "ajuts@stanford.edu",
+#    "team_id": "RetrieWin",
+#    "topic_set_id": "sample-trec-kba-topics-2013",
+#    "corpus_id": "tiny-corpus", 
+#    "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", 
+#    "team_name": "Stanford University", 
+#    "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens",
+#    "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.",
+#    "task_id": "kba-ccr-2012", 
+#    "poc_name": "Aju T Scaria",
+#    "run_info": {
+#        "num_filter_results": 118,
+#        "elapsed_time": 52.14945411682129,
+#        "num_entities": 4, 
+#        "num_entity_doc_compares": 3312,
+#        "num_stream_hours": 3
+#    }, 
+#    "system_id": "Submission_2"
+#}

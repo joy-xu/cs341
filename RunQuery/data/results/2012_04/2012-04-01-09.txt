@@ -1,0 +1,34 @@
+#{"run_type": "automatic", "poc_email": "ajuts@stanford.edu", "team_id": "RetrieWin", "topic_set_id": "sample-trec-kba-topics-2013", "corpus_id": "tiny-corpus", "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", "team_name": "Stanford University", "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens", "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.", "task_id": "kba-ssf-2013", "poc_name": "Aju T Scaria", "run_info": {"num_entities": 4, "num_stream_hours": 3}, "system_id": "Submission_2"}
+RetrieWin	Submission_2	1333274041-7e9f1910d5fcbd91a2b9ce56e9ac61a5	http://en.wikipedia.org/wiki/Darren_Rowse	500.000000	2	1	2012-04-01-09	EmployeeOf	Starbucks	76814-76823
+RetrieWin	Submission_2	1333272384-38808bdbfdc504b2c2e93bd068463489	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-01-09	AssociateOf	George_W	8888-8895
+RetrieWin	Submission_2	1333274034-2bfe67c217644289c44eddf971cab628	http://en.wikipedia.org/wiki/Ken_Fowler	500.000000	2	1	2012-04-01-09	EmployeeOf	Lehigh_Comments	24226-24240
+RetrieWin	Submission_2	1333274087-427ca0b5ce17ae5a5d75ad32b93283b1	http://en.wikipedia.org/wiki/Lake_Weir_High_School	500.000000	2	1	2012-04-01-09	Affiliate	Zakiyah_Dowdy	539-551
+RetrieWin	Submission_2	1333273431-7d9e0e80dca7d8d5356954b9561541aa	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-04-01-09	AssociateOf	Charles_Rossman	32600-32614
+RetrieWin	Submission_2	1333273431-7d9e0e80dca7d8d5356954b9561541aa	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-04-01-09	Contact_Meet_PlaceTime	Larrys_place	-1--1
+RetrieWin	Submission_2	1333273431-7d9e0e80dca7d8d5356954b9561541aa	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-04-01-09	Contact_Meet_PlaceTime	the_highway	50653-50663
+RetrieWin	Submission_2	1333273431-7d9e0e80dca7d8d5356954b9561541aa	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-04-01-09	DateOfDeath	the_year	26747-26754
+RetrieWin	Submission_2	1333273431-7d9e0e80dca7d8d5356954b9561541aa	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-04-01-09	CauseOfDeath	Things	25535-25541
+RetrieWin	Submission_2	1333273431-7d9e0e80dca7d8d5356954b9561541aa	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-04-01-09	CauseOfDeath	a_dying_aristocracy_in_Remembrance_of_Things_Past_-LRB-_1922_-RRB-	-1--1
+RetrieWin	Submission_2	1333273431-7d9e0e80dca7d8d5356954b9561541aa	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-04-01-09	CauseOfDeath	task_for_his_obsession	25465-25484
+RetrieWin	Submission_2	1333273431-7d9e0e80dca7d8d5356954b9561541aa	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-04-01-09	CauseOfDeath	Revised_in_the_D_	25563-25577
+#{
+#    "run_type": "automatic", 
+#    "poc_email": "ajuts@stanford.edu",
+#    "team_id": "RetrieWin",
+#    "topic_set_id": "sample-trec-kba-topics-2013",
+#    "corpus_id": "tiny-corpus", 
+#    "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", 
+#    "team_name": "Stanford University", 
+#    "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens",
+#    "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.",
+#    "task_id": "kba-ccr-2012", 
+#    "poc_name": "Aju T Scaria",
+#    "run_info": {
+#        "num_filter_results": 118,
+#        "elapsed_time": 52.14945411682129,
+#        "num_entities": 4, 
+#        "num_entity_doc_compares": 3312,
+#        "num_stream_hours": 3
+#    }, 
+#    "system_id": "Submission_2"
+#}

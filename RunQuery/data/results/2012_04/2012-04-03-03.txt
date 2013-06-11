@@ -1,0 +1,25 @@
+#{"run_type": "automatic", "poc_email": "ajuts@stanford.edu", "team_id": "RetrieWin", "topic_set_id": "sample-trec-kba-topics-2013", "corpus_id": "tiny-corpus", "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", "team_name": "Stanford University", "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens", "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.", "task_id": "kba-ssf-2013", "poc_name": "Aju T Scaria", "run_info": {"num_entities": 4, "num_stream_hours": 3}, "system_id": "Submission_2"}
+RetrieWin	Submission_2	1333424520-ac0caa7d66c46b6aec02bf6907aebb14	http://en.wikipedia.org/wiki/Fargo-Moorhead_Symphony_Orchestra	500.000000	2	1	2012-04-03-03	Affiliate	Alphonse_Stephenson	20559-20577
+RetrieWin	Submission_2	1333424460-38ef5d17ed808fa9eb4f7e428a05b5a4	http://en.wikipedia.org/wiki/Fargo-Moorhead_Symphony_Orchestra	500.000000	2	1	2012-04-03-03	Affiliate	Alphonse_Stephenson	19631-19649
+RetrieWin	Submission_2	1333423260-5a728deb9b81ba22a0109ad767ba4457	http://en.wikipedia.org/wiki/Geoffrey_E._Hinton	500.000000	2	1	2012-04-03-03	AwardsWon	the_prestigious_2012_Killam_Prize	19370-19399
+#{
+#    "run_type": "automatic", 
+#    "poc_email": "ajuts@stanford.edu",
+#    "team_id": "RetrieWin",
+#    "topic_set_id": "sample-trec-kba-topics-2013",
+#    "corpus_id": "tiny-corpus", 
+#    "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", 
+#    "team_name": "Stanford University", 
+#    "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens",
+#    "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.",
+#    "task_id": "kba-ccr-2012", 
+#    "poc_name": "Aju T Scaria",
+#    "run_info": {
+#        "num_filter_results": 118,
+#        "elapsed_time": 52.14945411682129,
+#        "num_entities": 4, 
+#        "num_entity_doc_compares": 3312,
+#        "num_stream_hours": 3
+#    }, 
+#    "system_id": "Submission_2"
+#}

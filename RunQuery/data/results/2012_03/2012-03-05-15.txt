@@ -1,0 +1,75 @@
+#{"run_type": "automatic", "poc_email": "ajuts@stanford.edu", "team_id": "RetrieWin", "topic_set_id": "sample-trec-kba-topics-2013", "corpus_id": "tiny-corpus", "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", "team_name": "Stanford University", "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens", "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.", "task_id": "kba-ssf-2013", "poc_name": "Aju T Scaria", "run_info": {"num_entities": 4, "num_stream_hours": 3}, "system_id": "Submission_2"}
+RetrieWin	Submission_2	1330962240-9b9b69f0417ac78cff5e44b8b716cd1a	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-03-05-15	Affiliate	I	-1--1
+RetrieWin	Submission_2	1330962420-a9e753debfea952e064a213eba347011	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-03-05-15	Affiliate	I	-1--1
+RetrieWin	Submission_2	1330962600-e147cc1b3f321db034f87092330f95ac	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-03-05-15	Affiliate	I	-1--1
+RetrieWin	Submission_2	1330961940-883001b0abdb63cd92d8b68ad5defd9b	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-03-05-15	Affiliate	I	-1--1
+RetrieWin	Submission_2	1330962240-8b1dba82d98dbf1abf5d1051cf248451	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-03-05-15	Affiliate	I	-1--1
+RetrieWin	Submission_2	1330963080-aae1cb0270bc67827be191d34f2cc3e0	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-03-05-15	Affiliate	I	-1--1
+RetrieWin	Submission_2	1330962840-503d960598fb6c46aeac77f3d1ba2370	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	its_Chairman	16904-16915
+RetrieWin	Submission_2	1330961100-35a2f8365cb49cefaa010f8aff691125	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	its_Chairman	13340-13351
+RetrieWin	Submission_2	1330961340-f22b96a742cd661440c343c32ad159ef	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	its_Chairman	14379-14390
+RetrieWin	Submission_2	1330959600-3ee56952a0461768ce97b92190990818	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	its_Chairman	6318-6329
+RetrieWin	Submission_2	1330961280-a3c60e6b0754f02fb7fac3f6dc790549	http://en.wikipedia.org/wiki/Jasper_Schneider	500.000000	2	1	2012-03-05-15	DateOfDeath	Saturday	19698-19706
+RetrieWin	Submission_2	1330961280-a3c60e6b0754f02fb7fac3f6dc790549	http://en.wikipedia.org/wiki/Jasper_Schneider	500.000000	2	1	2012-03-05-15	DateOfDeath	Saturday	21569-21577
+RetrieWin	Submission_2	1330961280-a3c60e6b0754f02fb7fac3f6dc790549	http://en.wikipedia.org/wiki/Jasper_Schneider	500.000000	2	1	2012-03-05-15	DateOfDeath	March_3___2012	-1--1
+RetrieWin	Submission_2	1330961280-a3c60e6b0754f02fb7fac3f6dc790549	http://en.wikipedia.org/wiki/Jasper_Schneider	500.000000	2	1	2012-03-05-15	DateOfDeath	March_3___2012	-1--1
+RetrieWin	Submission_2	1330961040-4c5374714e416a9746208b6b91080a6c	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	its_Chairman	13395-13406
+RetrieWin	Submission_2	1330960740-e4fb24731c4779b1a114adfeff7d4384	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	its_Chairman	13539-13550
+RetrieWin	Submission_2	1330959660-4a1aa67f42c498909b8ba13b1b7b170d	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	its_Chairman	16147-16158
+RetrieWin	Submission_2	1330959660-31ffc9c40e1425bc04d8b5bc0aa4cc54	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	its_Chairman	12149-12160
+RetrieWin	Submission_2	1330963020-231bd5a23e614e7fc949ada79ed53c88	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	its_Chairman	24030-24041
+RetrieWin	Submission_2	1330963020-4d8a1c357ab2d93bbc817d0ae88cf48e	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	its_Chairman	24310-24321
+RetrieWin	Submission_2	1330962780-3a163124bea28f1338b4db7a3df1a548	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	its_Chairman	33676-33687
+RetrieWin	Submission_2	1330962780-4f5b3baf821f0c96558bf55bed21fdd2	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	its_Chairman	11829-11840
+RetrieWin	Submission_2	1330959780-71ef200321e1ee6c6d942b4f57d1c9d7	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	its_Chairman	23370-23381
+RetrieWin	Submission_2	1330962840-503d960598fb6c46aeac77f3d1ba2370	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	OTC_BB	-1--1
+RetrieWin	Submission_2	1330961100-35a2f8365cb49cefaa010f8aff691125	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	OTC_BB	-1--1
+RetrieWin	Submission_2	1330961340-f22b96a742cd661440c343c32ad159ef	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	OTC_BB	-1--1
+RetrieWin	Submission_2	1330959600-3ee56952a0461768ce97b92190990818	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	OTC_BB	-1--1
+RetrieWin	Submission_2	1330961040-4c5374714e416a9746208b6b91080a6c	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	OTC_BB	-1--1
+RetrieWin	Submission_2	1330961280-a3c60e6b0754f02fb7fac3f6dc790549	http://en.wikipedia.org/wiki/Jasper_Schneider	500.000000	2	1	2012-03-05-15	CauseOfDeath	Dansville	19753-19762
+RetrieWin	Submission_2	1330960740-e4fb24731c4779b1a114adfeff7d4384	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	OTC_BB	-1--1
+RetrieWin	Submission_2	1330961280-a3c60e6b0754f02fb7fac3f6dc790549	http://en.wikipedia.org/wiki/Jasper_Schneider	500.000000	2	1	2012-03-05-15	CauseOfDeath	Dansville	21624-21633
+RetrieWin	Submission_2	1330961280-a3c60e6b0754f02fb7fac3f6dc790549	http://en.wikipedia.org/wiki/Jasper_Schneider	500.000000	2	1	2012-03-05-15	CauseOfDeath	Saturday	19698-19706
+RetrieWin	Submission_2	1330961280-a3c60e6b0754f02fb7fac3f6dc790549	http://en.wikipedia.org/wiki/Jasper_Schneider	500.000000	2	1	2012-03-05-15	CauseOfDeath	Saturday	21569-21577
+RetrieWin	Submission_2	1330959660-4a1aa67f42c498909b8ba13b1b7b170d	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	OTC_BB	-1--1
+RetrieWin	Submission_2	1330959660-31ffc9c40e1425bc04d8b5bc0aa4cc54	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	OTC_BB	-1--1
+RetrieWin	Submission_2	1330963020-231bd5a23e614e7fc949ada79ed53c88	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	OTC_BB	-1--1
+RetrieWin	Submission_2	1330963020-4d8a1c357ab2d93bbc817d0ae88cf48e	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	OTC_BB	-1--1
+RetrieWin	Submission_2	1330962780-3a163124bea28f1338b4db7a3df1a548	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	OTC_BB	-1--1
+RetrieWin	Submission_2	1330962780-4f5b3baf821f0c96558bf55bed21fdd2	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	OTC_BB	-1--1
+RetrieWin	Submission_2	1330959780-71ef200321e1ee6c6d942b4f57d1c9d7	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	OTC_BB	-1--1
+RetrieWin	Submission_2	1330962840-503d960598fb6c46aeac77f3d1ba2370	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	Chief_Executive_Officer	-1--1
+RetrieWin	Submission_2	1330961100-35a2f8365cb49cefaa010f8aff691125	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	Chief_Executive_Officer	-1--1
+RetrieWin	Submission_2	1330961340-f22b96a742cd661440c343c32ad159ef	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	Chief_Executive_Officer	-1--1
+RetrieWin	Submission_2	1330959600-3ee56952a0461768ce97b92190990818	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	Chief_Executive_Officer	-1--1
+RetrieWin	Submission_2	1330961040-4c5374714e416a9746208b6b91080a6c	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	Chief_Executive_Officer	-1--1
+RetrieWin	Submission_2	1330960740-e4fb24731c4779b1a114adfeff7d4384	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	Chief_Executive_Officer	-1--1
+RetrieWin	Submission_2	1330959660-4a1aa67f42c498909b8ba13b1b7b170d	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	Chief_Executive_Officer	-1--1
+RetrieWin	Submission_2	1330959660-31ffc9c40e1425bc04d8b5bc0aa4cc54	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	Chief_Executive_Officer	-1--1
+RetrieWin	Submission_2	1330963020-231bd5a23e614e7fc949ada79ed53c88	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	Chief_Executive_Officer	-1--1
+RetrieWin	Submission_2	1330963020-4d8a1c357ab2d93bbc817d0ae88cf48e	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	Chief_Executive_Officer	-1--1
+RetrieWin	Submission_2	1330962780-3a163124bea28f1338b4db7a3df1a548	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	Chief_Executive_Officer	-1--1
+RetrieWin	Submission_2	1330962780-4f5b3baf821f0c96558bf55bed21fdd2	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	Chief_Executive_Officer	-1--1
+RetrieWin	Submission_2	1330959780-71ef200321e1ee6c6d942b4f57d1c9d7	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-03-05-15	Contact_Meet_Entity	Chief_Executive_Officer	-1--1
+#{
+#    "run_type": "automatic", 
+#    "poc_email": "ajuts@stanford.edu",
+#    "team_id": "RetrieWin",
+#    "topic_set_id": "sample-trec-kba-topics-2013",
+#    "corpus_id": "tiny-corpus", 
+#    "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", 
+#    "team_name": "Stanford University", 
+#    "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens",
+#    "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.",
+#    "task_id": "kba-ccr-2012", 
+#    "poc_name": "Aju T Scaria",
+#    "run_info": {
+#        "num_filter_results": 118,
+#        "elapsed_time": 52.14945411682129,
+#        "num_entities": 4, 
+#        "num_entity_doc_compares": 3312,
+#        "num_stream_hours": 3
+#    }, 
+#    "system_id": "Submission_2"
+#}

@@ -1,0 +1,30 @@
+#{"run_type": "automatic", "poc_email": "ajuts@stanford.edu", "team_id": "RetrieWin", "topic_set_id": "sample-trec-kba-topics-2013", "corpus_id": "tiny-corpus", "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", "team_name": "Stanford University", "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens", "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.", "task_id": "kba-ssf-2013", "poc_name": "Aju T Scaria", "run_info": {"num_entities": 4, "num_stream_hours": 3}, "system_id": "Submission_2"}
+RetrieWin	Submission_2	1333451485-2f2ca7683add2364c24d45e7273c721c	http://en.wikipedia.org/wiki/Aharon_Barak	500.000000	2	1	2012-04-03-11	Affiliate	Mofaz	89758-89763
+RetrieWin	Submission_2	1333451485-2f2ca7683add2364c24d45e7273c721c	http://en.wikipedia.org/wiki/Aharon_Barak	500.000000	2	1	2012-04-03-11	Affiliate	his_28_mandates	-1--1
+RetrieWin	Submission_2	1333453380-6095292b860c5ac635b7820333a23de7	http://en.wikipedia.org/wiki/Aharon_Barak	500.000000	2	1	2012-04-03-11	Affiliate	who	7151-7154
+RetrieWin	Submission_2	1333451820-96f6311fb559e969e06480c5b3825ff8	http://en.wikipedia.org/wiki/Aharon_Barak	500.000000	2	1	2012-04-03-11	Affiliate	who	15053-15056
+RetrieWin	Submission_2	1333451485-2f2ca7683add2364c24d45e7273c721c	http://en.wikipedia.org/wiki/Aharon_Barak	500.000000	2	1	2012-04-03-11	AssociateOf	Netanyahu	89731-89740
+RetrieWin	Submission_2	1333451485-2f2ca7683add2364c24d45e7273c721c	http://en.wikipedia.org/wiki/Aharon_Barak	500.000000	2	1	2012-04-03-11	AssociateOf	Mofaz	89758-89763
+RetrieWin	Submission_2	1333452240-10c6a8f8fb219d4745c13e263565ed2d	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-03-11	Affiliate	his_famous_father	6000-6015
+RetrieWin	Submission_2	1333454115-ab1854ee9e8aa2a8fc6b61d85dda236a	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-03-11	Affiliate	Climate_Central	-1--1
+#{
+#    "run_type": "automatic", 
+#    "poc_email": "ajuts@stanford.edu",
+#    "team_id": "RetrieWin",
+#    "topic_set_id": "sample-trec-kba-topics-2013",
+#    "corpus_id": "tiny-corpus", 
+#    "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", 
+#    "team_name": "Stanford University", 
+#    "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens",
+#    "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.",
+#    "task_id": "kba-ccr-2012", 
+#    "poc_name": "Aju T Scaria",
+#    "run_info": {
+#        "num_filter_results": 118,
+#        "elapsed_time": 52.14945411682129,
+#        "num_entities": 4, 
+#        "num_entity_doc_compares": 3312,
+#        "num_stream_hours": 3
+#    }, 
+#    "system_id": "Submission_2"
+#}

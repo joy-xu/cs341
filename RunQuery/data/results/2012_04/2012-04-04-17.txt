@@ -1,0 +1,58 @@
+#{"run_type": "automatic", "poc_email": "ajuts@stanford.edu", "team_id": "RetrieWin", "topic_set_id": "sample-trec-kba-topics-2013", "corpus_id": "tiny-corpus", "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", "team_name": "Stanford University", "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens", "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.", "task_id": "kba-ssf-2013", "poc_name": "Aju T Scaria", "run_info": {"num_entities": 4, "num_stream_hours": 3}, "system_id": "Submission_2"}
+RetrieWin	Submission_2	1333559107-4fc77aa987f3e7f61b09997af6e1117e	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-04-17	AssociateOf	Yoko	3101-3105
+RetrieWin	Submission_2	1333559949-0a52c9569e3f4ed295b06adacc074519	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-04-17	AssociateOf	Yoko	2854-2858
+RetrieWin	Submission_2	1333559107-4fc77aa987f3e7f61b09997af6e1117e	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-04-17	AssociateOf	Linda	2277-2282
+RetrieWin	Submission_2	1333559949-0a52c9569e3f4ed295b06adacc074519	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-04-17	AssociateOf	Linda	2030-2035
+RetrieWin	Submission_2	1333561394-d4cc980cbc29f4eae734e17b0bcc43c9	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-04-17	AssociateOf	Reagar	43613-43619
+RetrieWin	Submission_2	1333559107-4fc77aa987f3e7f61b09997af6e1117e	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-04-17	CauseOfDeath	mother	2270-2276
+RetrieWin	Submission_2	1333559949-0a52c9569e3f4ed295b06adacc074519	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-04-17	CauseOfDeath	mother	2023-2029
+RetrieWin	Submission_2	1333561920-676e4711e251ce2bbeaca52f0cf7f58f	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3066-3077
+RetrieWin	Submission_2	1333559580-54f685c2ec431389e5699573d4581d34	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3070-3081
+RetrieWin	Submission_2	1333560840-f9da001857acddb31c3d67e168ba8152	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3070-3081
+RetrieWin	Submission_2	1333561260-e1e2b4160fe129881a6172d86fae1403	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3050-3061
+RetrieWin	Submission_2	1333562040-d320c27f429c667c2ececd10e0330ad6	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3070-3081
+RetrieWin	Submission_2	1333561680-04a1149787c1bb7c59faca71986b2aed	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3054-3065
+RetrieWin	Submission_2	1333562340-396b79d30a6c498ef36e4675dc7f890f	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3052-3063
+RetrieWin	Submission_2	1333559005-15dec0a3425784817fa7e7b2c94a72bb	http://en.wikipedia.org/wiki/Weehawken_Cove	500.000000	2	1	2012-04-04-17	Affiliate	Rosemary_J_	380-390
+RetrieWin	Submission_2	1333560240-377384ece600b13a735e275dc0a1d0d4	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3056-3067
+RetrieWin	Submission_2	1333560060-9c8a024cee6593cc6bd63a3f1fa68f2b	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3072-3083
+RetrieWin	Submission_2	1333561140-7270518ddde3aa8dd292d830f9d153e6	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3056-3067
+RetrieWin	Submission_2	1333560720-208381ed231388aec5f687c5c4ef7b01	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3068-3079
+RetrieWin	Submission_2	1333557180-1548d7968209b6f36c7534e93a866e9e	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3108-3119
+RetrieWin	Submission_2	1333562280-8b13a895349d42a703e160c895ad0034	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3070-3081
+RetrieWin	Submission_2	1333560180-62e64fa4445b44ed22793a7ff1be65ec	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	16317-16328
+RetrieWin	Submission_2	1333561920-90d24552ad1b54f2f7b2ace76ce9f222	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3054-3065
+RetrieWin	Submission_2	1333560840-ef60008c1c19cda8875b84eac79a2489	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3058-3069
+RetrieWin	Submission_2	1333561140-8c0d2fbaed7026f7311ee191b128b1a3	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3082-3093
+RetrieWin	Submission_2	1333561680-d77fe1eec8503363bce282113027e4d9	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3058-3069
+RetrieWin	Submission_2	1333561740-ab5d73fe87030d3e2fdbcc7dfa48ad5e	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3066-3077
+RetrieWin	Submission_2	1333561320-76094523b9a573e0a9a9b4ada2673cd1	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3054-3065
+RetrieWin	Submission_2	1333559460-23f6ef109da944f011fe47e30be34b86	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3072-3083
+RetrieWin	Submission_2	1333560180-79b932044691df92e5f359947ca703c9	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3062-3073
+RetrieWin	Submission_2	1333559880-3c47647d5e5a8dd03c5882f9438b0902	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3054-3065
+RetrieWin	Submission_2	1333560180-74dcb44117b29484bd7917a0b92bf911	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3066-3077
+RetrieWin	Submission_2	1333561260-9c1766ff9ba2c1b7eabfe72f5977693e	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3064-3075
+RetrieWin	Submission_2	1333557802-88ed6b53fab3135b6756422d70ccea54	http://en.wikipedia.org/wiki/William_D._Cohan	500.000000	2	1	2012-04-04-17	EmployeeOf	Goldman_Sachs	6086-6098
+RetrieWin	Submission_2	1333562040-4aa5f8fb3d9991f81fb4c5127adcacfe	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3074-3085
+RetrieWin	Submission_2	1333559460-40cdbd42818ef19198bb4a3673b44b71	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-17	Affiliate	head_trainer	3062-3073
+#{
+#    "run_type": "automatic", 
+#    "poc_email": "ajuts@stanford.edu",
+#    "team_id": "RetrieWin",
+#    "topic_set_id": "sample-trec-kba-topics-2013",
+#    "corpus_id": "tiny-corpus", 
+#    "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", 
+#    "team_name": "Stanford University", 
+#    "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens",
+#    "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.",
+#    "task_id": "kba-ccr-2012", 
+#    "poc_name": "Aju T Scaria",
+#    "run_info": {
+#        "num_filter_results": 118,
+#        "elapsed_time": 52.14945411682129,
+#        "num_entities": 4, 
+#        "num_entity_doc_compares": 3312,
+#        "num_stream_hours": 3
+#    }, 
+#    "system_id": "Submission_2"
+#}

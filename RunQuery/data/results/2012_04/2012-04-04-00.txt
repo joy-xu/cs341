@@ -1,0 +1,33 @@
+#{"run_type": "automatic", "poc_email": "ajuts@stanford.edu", "team_id": "RetrieWin", "topic_set_id": "sample-trec-kba-topics-2013", "corpus_id": "tiny-corpus", "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", "team_name": "Stanford University", "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens", "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.", "task_id": "kba-ssf-2013", "poc_name": "Aju T Scaria", "run_info": {"num_entities": 4, "num_stream_hours": 3}, "system_id": "Submission_2"}
+RetrieWin	Submission_2	1333499203-a618b289bace1c0b455ac892a39e7659	http://en.wikipedia.org/wiki/Jasper_Schneider	500.000000	2	1	2012-04-04-00	Affiliate	CNN_affiliate_CBSDFW	40505-40523
+RetrieWin	Submission_2	1333496811-dd2532edd7f95b8129884f86632f04c1	http://en.wikipedia.org/wiki/Masaru_Emoto	500.000000	2	1	2012-04-04-00	AssociateOf	Yoshino	19416-19423
+RetrieWin	Submission_2	1333496811-dd2532edd7f95b8129884f86632f04c1	http://en.wikipedia.org/wiki/Masaru_Emoto	500.000000	2	1	2012-04-04-00	AssociateOf	Tohma	19364-19369
+RetrieWin	Submission_2	1333499688-1259fb1755c084463cabc674798cbf6d	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-04-00	AssociateOf	Sean_Lennon	1098-1108
+RetrieWin	Submission_2	1333499688-1259fb1755c084463cabc674798cbf6d	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-04-00	AssociateOf	Zak_Starkey	1115-1125
+RetrieWin	Submission_2	1333499688-1259fb1755c084463cabc674798cbf6d	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-04-00	AssociateOf	Dhani_Harrison	1082-1095
+RetrieWin	Submission_2	1333495771-52ec498d66cdbdae30d7364b39caacc6	http://en.wikipedia.org/wiki/Weehawken_Cove	500.000000	2	1	2012-04-04-00	Affiliate	Rosemary_J_	408-418
+RetrieWin	Submission_2	1333495771-52ec498d66cdbdae30d7364b39caacc6	http://en.wikipedia.org/wiki/Weehawken_Cove	500.000000	2	1	2012-04-04-00	Affiliate	Rosemary_J_	408-418
+RetrieWin	Submission_2	1333499040-0af33a2b3c836ad2be18d5789c1c8ff7	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-04-00	Contact_Meet_PlaceTime	the_Cavern_Club	23638-23651
+RetrieWin	Submission_2	1333500060-03adb178410e76d1741d910dce36f05b	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-04-00	Contact_Meet_PlaceTime	the_Cavern_Club	23109-23122
+RetrieWin	Submission_2	1333499100-b2eee2af8f9ee9253e2757367783cf8c	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-04-00	Contact_Meet_PlaceTime	the_Cavern_Club	22405-22418
+#{
+#    "run_type": "automatic", 
+#    "poc_email": "ajuts@stanford.edu",
+#    "team_id": "RetrieWin",
+#    "topic_set_id": "sample-trec-kba-topics-2013",
+#    "corpus_id": "tiny-corpus", 
+#    "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", 
+#    "team_name": "Stanford University", 
+#    "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens",
+#    "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.",
+#    "task_id": "kba-ccr-2012", 
+#    "poc_name": "Aju T Scaria",
+#    "run_info": {
+#        "num_filter_results": 118,
+#        "elapsed_time": 52.14945411682129,
+#        "num_entities": 4, 
+#        "num_entity_doc_compares": 3312,
+#        "num_stream_hours": 3
+#    }, 
+#    "system_id": "Submission_2"
+#}

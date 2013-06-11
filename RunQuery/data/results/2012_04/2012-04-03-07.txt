@@ -1,0 +1,32 @@
+#{"run_type": "automatic", "poc_email": "ajuts@stanford.edu", "team_id": "RetrieWin", "topic_set_id": "sample-trec-kba-topics-2013", "corpus_id": "tiny-corpus", "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", "team_name": "Stanford University", "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens", "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.", "task_id": "kba-ssf-2013", "poc_name": "Aju T Scaria", "run_info": {"num_entities": 4, "num_stream_hours": 3}, "system_id": "Submission_2"}
+RetrieWin	Submission_2	1333438800-a3bdb091a2937cd6c0c209c2e306449d	http://en.wikipedia.org/wiki/Aharon_Barak	500.000000	2	1	2012-04-03-07	Affiliate	who	11536-11539
+RetrieWin	Submission_2	1333438334-3f31a9cb8bc7e850fbb0e622d3892767	http://en.wikipedia.org/wiki/Aharon_Barak	500.000000	2	1	2012-04-03-07	Affiliate	who	106563-106566
+RetrieWin	Submission_2	1333437600-54c76d69674dcc14d481324f07fec9d6	http://en.wikipedia.org/wiki/Aharon_Barak	500.000000	2	1	2012-04-03-07	Affiliate	who	6387-6390
+RetrieWin	Submission_2	1333438140-2a56eb13ecaccc49d1793c976b38c0b1	http://en.wikipedia.org/wiki/Aharon_Barak	500.000000	2	1	2012-04-03-07	Affiliate	who	29836-29839
+RetrieWin	Submission_2	1333436640-38b418bb0e8d43a96dc6c87b5c6453cb	http://en.wikipedia.org/wiki/Aharon_Barak	500.000000	2	1	2012-04-03-07	Affiliate	who	8903-8906
+RetrieWin	Submission_2	1333436400-42cd4bc654ad1958da8f9bdabd924837	http://en.wikipedia.org/wiki/Aharon_Barak	500.000000	2	1	2012-04-03-07	Affiliate	who	12191-12194
+RetrieWin	Submission_2	1333437919-19db89192cfa4dbec6a0ae34f71dcbb1	http://en.wikipedia.org/wiki/Aharon_Barak	500.000000	2	1	2012-04-03-07	Affiliate	who	8151-8154
+RetrieWin	Submission_2	1333436700-17566dd3c045b8ab962f4d26bdd4eb55	http://en.wikipedia.org/wiki/Aharon_Barak	500.000000	2	1	2012-04-03-07	Affiliate	who	17984-17987
+RetrieWin	Submission_2	1333438440-52c2b554a6570d7ee0612dcb114c909d	http://en.wikipedia.org/wiki/Aharon_Barak	500.000000	2	1	2012-04-03-07	Affiliate	who	106794-106797
+RetrieWin	Submission_2	1333437000-0ab48df19c1927b5bbb2300d83712691	http://en.wikipedia.org/wiki/Aharon_Barak	500.000000	2	1	2012-04-03-07	Affiliate	who	10934-10937
+#{
+#    "run_type": "automatic", 
+#    "poc_email": "ajuts@stanford.edu",
+#    "team_id": "RetrieWin",
+#    "topic_set_id": "sample-trec-kba-topics-2013",
+#    "corpus_id": "tiny-corpus", 
+#    "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", 
+#    "team_name": "Stanford University", 
+#    "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens",
+#    "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.",
+#    "task_id": "kba-ccr-2012", 
+#    "poc_name": "Aju T Scaria",
+#    "run_info": {
+#        "num_filter_results": 118,
+#        "elapsed_time": 52.14945411682129,
+#        "num_entities": 4, 
+#        "num_entity_doc_compares": 3312,
+#        "num_stream_hours": 3
+#    }, 
+#    "system_id": "Submission_2"
+#}

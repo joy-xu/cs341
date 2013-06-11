@@ -1,0 +1,31 @@
+#{"run_type": "automatic", "poc_email": "ajuts@stanford.edu", "team_id": "RetrieWin", "topic_set_id": "sample-trec-kba-topics-2013", "corpus_id": "tiny-corpus", "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", "team_name": "Stanford University", "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens", "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.", "task_id": "kba-ssf-2013", "poc_name": "Aju T Scaria", "run_info": {"num_entities": 4, "num_stream_hours": 3}, "system_id": "Submission_2"}
+RetrieWin	Submission_2	1333486436-b9fc1c719cae9a27741a80b3b7442b2a	http://en.wikipedia.org/wiki/Geoffrey_E._Hinton	500.000000	2	1	2012-04-03-20	Affiliate	the_US	7373-7378
+RetrieWin	Submission_2	1333486436-b9fc1c719cae9a27741a80b3b7442b2a	http://en.wikipedia.org/wiki/Geoffrey_E._Hinton	500.000000	2	1	2012-04-03-20	AwardsWon	the_prestigious_2012_Killam_Prize	6721-6750
+RetrieWin	Submission_2	1333486740-a3a59c225cb78ce8db08f0e1e6217fc7	http://en.wikipedia.org/wiki/Henry_Gutierrez	500.000000	2	1	2012-04-03-20	Contact_Meet_PlaceTime	Michigan	9444-9452
+RetrieWin	Submission_2	1333484427-946d526dbf1d087cfe2ca81db8bcd3f8	http://en.wikipedia.org/wiki/Jasper_Schneider	500.000000	2	1	2012-04-03-20	Contact_Meet_PlaceTime	the_press_conference	-1--1
+RetrieWin	Submission_2	1333486020-1cbcf0e2c7e61090948d06b4f0329256	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-03-20	Contact_Meet_PlaceTime	central_London_venue	-1--1
+RetrieWin	Submission_2	1333486620-46b9c9d45c72a486a93c95c87410cf3b	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-03-20	Contact_Meet_PlaceTime	the_Cavern_Club	16323-16336
+RetrieWin	Submission_2	1333486482-c420982f76833d78924a291f61bfb0fa	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-03-20	Contact_Meet_PlaceTime	the_Cavern_Club	12765-12778
+RetrieWin	Submission_2	1333486200-dcc44c0082f6d5c6b87d604ba57514fb	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-03-20	Contact_Meet_PlaceTime	the_Cavern_Club	16187-16200
+RetrieWin	Submission_2	1333486440-6faacaa9c4d5d420edc430c1f19d9600	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-03-20	Contact_Meet_PlaceTime	the_Cavern_Club	15734-15747
+#{
+#    "run_type": "automatic", 
+#    "poc_email": "ajuts@stanford.edu",
+#    "team_id": "RetrieWin",
+#    "topic_set_id": "sample-trec-kba-topics-2013",
+#    "corpus_id": "tiny-corpus", 
+#    "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", 
+#    "team_name": "Stanford University", 
+#    "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens",
+#    "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.",
+#    "task_id": "kba-ccr-2012", 
+#    "poc_name": "Aju T Scaria",
+#    "run_info": {
+#        "num_filter_results": 118,
+#        "elapsed_time": 52.14945411682129,
+#        "num_entities": 4, 
+#        "num_entity_doc_compares": 3312,
+#        "num_stream_hours": 3
+#    }, 
+#    "system_id": "Submission_2"
+#}

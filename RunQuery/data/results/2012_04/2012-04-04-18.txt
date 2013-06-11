@@ -1,0 +1,48 @@
+#{"run_type": "automatic", "poc_email": "ajuts@stanford.edu", "team_id": "RetrieWin", "topic_set_id": "sample-trec-kba-topics-2013", "corpus_id": "tiny-corpus", "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", "team_name": "Stanford University", "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens", "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.", "task_id": "kba-ssf-2013", "poc_name": "Aju T Scaria", "run_info": {"num_entities": 4, "num_stream_hours": 3}, "system_id": "Submission_2"}
+RetrieWin	Submission_2	1333562700-2dffb718f3a75c989d90b43bca1403f8	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3066-3077
+RetrieWin	Submission_2	1333564680-b8c025a0f8f4e47266493472d389668a	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3054-3065
+RetrieWin	Submission_2	1333563720-edc38a52602bdb01ecd40b815c5f84fa	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3068-3079
+RetrieWin	Submission_2	1333562400-3782a0e532a29992289a7b5045ed4ff5	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3100-3111
+RetrieWin	Submission_2	1333565460-da763ccc48f9c8c9be115e6ede33ce1b	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3062-3073
+RetrieWin	Submission_2	1333565940-aa9102deb1c47337f4e0c6665798da7b	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3084-3095
+RetrieWin	Submission_2	1333562700-45b79c4cb4dffc60797b8a3488113301	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3086-3097
+RetrieWin	Submission_2	1333563120-b618c35eb3262c12a89a1b52daf2cc45	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3064-3075
+RetrieWin	Submission_2	1333562520-d21c53f3f03326bf0f29baef019de6fc	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3066-3077
+RetrieWin	Submission_2	1333563180-8c76285d449c6a953ecf0843465aaf24	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3074-3085
+RetrieWin	Submission_2	1333564320-df81ef5b156587a014627c9ca36f0f7c	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3074-3085
+RetrieWin	Submission_2	1333565700-d824099fb6ad25c93aab52963a1a1163	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3058-3069
+RetrieWin	Submission_2	1333563180-5d6f7bc2351a89b88a18f13048f4991f	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3044-3055
+RetrieWin	Submission_2	1333563720-630d8fee12cfcdbf4351ded8379c339b	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3060-3071
+RetrieWin	Submission_2	1333559640-8775ec01339c7c885afa49b432f9bd87	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3070-3081
+RetrieWin	Submission_2	1333558860-6b40bad13ad8cc0fc6962868387888f1	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3070-3081
+RetrieWin	Submission_2	1333562340-d10e54387d35d2a9d1f92d599ed44a08	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3060-3071
+RetrieWin	Submission_2	1333563007-d06732b0ad5af40a5dac1575538e91d5	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-04-04-18	AssociateOf	Barry_Goldwater	3509-3523
+RetrieWin	Submission_2	1333565280-e7e84e3c2a4406aaaf218c018dd16a3d	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3066-3077
+RetrieWin	Submission_2	1333565700-e544540a2fb8356be737dbca00d74b3b	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3056-3067
+RetrieWin	Submission_2	1333563180-1b2bcbd4bd9d5004077a1e663c4069e8	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3060-3071
+RetrieWin	Submission_2	1333565400-bfe179d6c9ad08226fc18cfa5025cb90	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3054-3065
+RetrieWin	Submission_2	1333563231-59e4cd24ae1bd8862fe99a2a85cc61f3	http://en.wikipedia.org/wiki/William_H._Miller_(writer)	500.000000	2	1	2012-04-04-18	AssociateOf	Barry_Goldwater	7716-7730
+RetrieWin	Submission_2	1333565220-dcad40c7856d0fd9dc900b5f48fa7b14	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3064-3075
+RetrieWin	Submission_2	1333565640-4c733bcf7b3021273b15fdd957440a30	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3062-3073
+RetrieWin	Submission_2	1333563720-a47554d4f9229eb457cadca21471a4ff	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-04-18	Affiliate	head_trainer	3074-3085
+#{
+#    "run_type": "automatic", 
+#    "poc_email": "ajuts@stanford.edu",
+#    "team_id": "RetrieWin",
+#    "topic_set_id": "sample-trec-kba-topics-2013",
+#    "corpus_id": "tiny-corpus", 
+#    "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", 
+#    "team_name": "Stanford University", 
+#    "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens",
+#    "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.",
+#    "task_id": "kba-ccr-2012", 
+#    "poc_name": "Aju T Scaria",
+#    "run_info": {
+#        "num_filter_results": 118,
+#        "elapsed_time": 52.14945411682129,
+#        "num_entities": 4, 
+#        "num_entity_doc_compares": 3312,
+#        "num_stream_hours": 3
+#    }, 
+#    "system_id": "Submission_2"
+#}

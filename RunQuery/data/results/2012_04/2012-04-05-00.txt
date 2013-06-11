@@ -1,0 +1,31 @@
+#{"run_type": "automatic", "poc_email": "ajuts@stanford.edu", "team_id": "RetrieWin", "topic_set_id": "sample-trec-kba-topics-2013", "corpus_id": "tiny-corpus", "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", "team_name": "Stanford University", "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens", "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.", "task_id": "kba-ssf-2013", "poc_name": "Aju T Scaria", "run_info": {"num_entities": 4, "num_stream_hours": 3}, "system_id": "Submission_2"}
+RetrieWin	Submission_2	1333582920-f5bbb13a02ce4047a428c3d160aff854	http://en.wikipedia.org/wiki/DeAnne_Smith	500.000000	2	1	2012-04-05-00	FounderOf	amp	-1--1
+RetrieWin	Submission_2	1333586304-7f3256e7902f869762f66e7e0639612c	http://en.wikipedia.org/wiki/Hoboken_Volunteer_Ambulance_Corps	500.000000	2	1	2012-04-05-00	FoundedBy	Smith	1168-1173
+RetrieWin	Submission_2	1333582704-7f3256e7902f869762f66e7e0639612c	http://en.wikipedia.org/wiki/Hoboken_Volunteer_Ambulance_Corps	500.000000	2	1	2012-04-05-00	FoundedBy	Smith	1168-1173
+RetrieWin	Submission_2	1333585291-9917b4009e036eabbbcbd3cf333fdd99	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-05-00	AssociateOf	Yoko	2899-2903
+RetrieWin	Submission_2	1333585291-9917b4009e036eabbbcbd3cf333fdd99	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-05-00	AssociateOf	Linda	2075-2080
+RetrieWin	Submission_2	1333580857-d5d53b88b5f671d2ee9bd6e2037ade50	http://en.wikipedia.org/wiki/The_Ritz_Apartment_(Ocala,_Florida)	500.000000	2	1	2012-04-05-00	Affiliate	Carlton	25468-25475
+RetrieWin	Submission_2	1333586319-f70a4c6907d9968a9feec0117c627b23	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-05-00	AwardsWon	the_Bader_Award	1981-1994
+RetrieWin	Submission_2	1333582719-f70a4c6907d9968a9feec0117c627b23	http://en.wikipedia.org/wiki/Ken_Freedman	500.000000	2	1	2012-04-05-00	AwardsWon	the_Bader_Award	1981-1994
+RetrieWin	Submission_2	1333585291-9917b4009e036eabbbcbd3cf333fdd99	http://en.wikipedia.org/wiki/James_McCartney	500.000000	2	1	2012-04-05-00	CauseOfDeath	mother	2068-2074
+#{
+#    "run_type": "automatic", 
+#    "poc_email": "ajuts@stanford.edu",
+#    "team_id": "RetrieWin",
+#    "topic_set_id": "sample-trec-kba-topics-2013",
+#    "corpus_id": "tiny-corpus", 
+#    "$schema": "http://trec-kba.org/schemas/v1.1/filter-run.json", 
+#    "team_name": "Stanford University", 
+#    "system_description_short": "rating=2,contains_mention=1,confidence=exact_match_name_tokens/num_name_tokens",
+#    "system_description": "Collapses entity title strings and documents into sets of words and looks for fraction of exact match overlap with entity titles.  Confidence is fraction of entity title words that appear in doc.",
+#    "task_id": "kba-ccr-2012", 
+#    "poc_name": "Aju T Scaria",
+#    "run_info": {
+#        "num_filter_results": 118,
+#        "elapsed_time": 52.14945411682129,
+#        "num_entities": 4, 
+#        "num_entity_doc_compares": 3312,
+#        "num_stream_hours": 3
+#    }, 
+#    "system_id": "Submission_2"
+#}
