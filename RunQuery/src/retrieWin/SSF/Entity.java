@@ -112,6 +112,7 @@ public class Entity  implements Serializable {
 		//return docs;
 		//System.out.println("Originally had " + docs.size() + " docs");
 		List<TrecTextDocument> disambiguated = disambiguate(docs);
+		/*
 		for (TrecTextDocument t : disambiguated)
 		{
 			Set<String> relevantEntities = Utils.getManualAnnotationsForDocument(t.docNumber, workingDirectory);
@@ -123,6 +124,7 @@ public class Entity  implements Serializable {
 					System.out.println("Found document is annotated as not relevant");
 			}
 		}
+		*/
 		return disambiguated;
 	}
 

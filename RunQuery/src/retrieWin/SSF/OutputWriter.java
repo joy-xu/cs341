@@ -8,7 +8,7 @@ import fig.basic.LogInfo;
 
 public class OutputWriter {
 	BufferedWriter writer;
-	String POCEmail = "ajuts@stanford.edu", TeamID = "RetrieWin", TeamName = "Stanford University", POCName = "Aju T Scaria", SystemID = "Submission_1";
+	String POCEmail = "ajuts@stanford.edu", TeamID = "RetrieWin", TeamName = "Stanford University", POCName = "Aju T Scaria", SystemID = "Submission_2";
 	public OutputWriter(String fileName){
 		try {
 			writer = new BufferedWriter(new FileWriter(fileName));

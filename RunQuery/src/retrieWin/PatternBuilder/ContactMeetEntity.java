@@ -197,7 +197,7 @@ public class ContactMeetEntity implements Runnable{
 		else {
 			// Read from expansions file
 			Map<String,Set<String>> namesToExpansions = new HashMap<String,Set<String>>();
-			String expFileName = "data/entities_expansions";
+			String expFileName = "data/entities_expansions_new";
 			try{
 				BufferedReader buf = new BufferedReader(new FileReader(expFileName));
 				String line;
