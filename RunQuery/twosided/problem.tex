@@ -1,0 +1,38 @@
+The SSF task under TREC KBA 2013 track targets extracting relevant information about target entities. Entities are identified by their Wikipedia or twitter page and can be of three types:
+\begin{itemize}
+\item Person (PER): These are people, for eg: Willilam H. Gates Sr., Aharan Barak
+\item Facility (FAC): These are facilites like schools, museums, railway etc. Eg. Stuart Powell Field, Lake Weir High School.
+\item Organization (ORG): These are establishments owned by a person or a group, Eg. Scotiabank Peru, Austral Group.
+\end{itemize}
+There are 125 entities of type PER, 24 of FAC and 21 of ORG.
+
+The information about these entities are extracted by a predefined set of slots. A slot is an attribute of the target entity such as awards won by a person or the founder of an organization. For example, given the sentence, ‘Bill Gates is the founder of the multi billion dollar company Microsoft’, we could extract the slot value of ‘Bill Gates’ for the slot ‘Founder Of’ for the entity ‘Microsoft’. Given slots for each of the target entities, the SSF task is to detect changes to the slot value, such as location of next performance or founder for each hour in the corpus. The slots that needs to be filled for an entity will depend on its type. The list of slots per type is given in Table~\ref{tab:slots}.
+
+\begin{table*}
+\caption{List of Slots}
+\label{tab:slots}
+\begin{tabular}{ |p{1cm}|p{4cm}|p{11cm}| }
+\hline
+\textbf{Entity Type} & \textbf{Slot Name} & \textbf{Description} \\
+\hline
+\multirow{9}{*}{PER} & Affiliate & This slot captures affiliation between a person and a facility or an organization, like an employee, founder etc. \\ 
+ & AssociateOf & This slot captures the affiation of the target entity with other people. \\
+ & Contact\_Meet\_PlaceTime & This slot is used to capture the different locations at which the target entity was present along with the time. \\
+ & AwardsWon & This slot is to identify the awards won by the person. \\ 
+ & DateOfDeath & Teh date at which a person died. \\ 
+ & CauseOfDeath & The cause of a death of a person. \\ 
+ & Titles & Important titles held by a person, like ‘Chairman of Yahoo!’ or ‘CEO of Google’ etc. \\ 
+ & FounderOf & The organizations founded by the target entity. \\ 
+ & EmployeeOf & The organizations that the target entity has worked for. \\ \hline
+\multirow{2}{*}{FAC} & Affiliate & This slot is to find the affiliation of the facility with another facility or organization or a person. \\
+ & Contact\_Meet\_Entity & This slot is to find the people that were present at the target facility. \\ \hline
+\multirow{3}{*}{ORG} & Affiliate & This slot is to find the affiliation of the organization with another facility or organization or a person. \\
+ & TopMembers & This slot is to identify the top members of the target orgaziation like the founder, CEO, CTO, CFO, chairman, VP etc. \\
+ & FoundedBy & The people who founded the target organization. \\ \hline
+\end{tabular}
+\end{table*}
+Some key points about the streaming slot filling task are:
+\begin{itemize}
+\item We need to determine the earliest time (on an hourly granularity) at which there is evidence for a slot change. This means that if a news article mentions a slot change on say 2012-06-15 between 10 am and 11 am, if our system doesn’t capture this change during this hour, then we will be penalized for recall, but at the same time if we gather more evidence in the next hour and predict it, then it will be an incorrect prediction affecting our precision as well.
+\item Ground truth determined post-hoc: There is no training or development set provided as a part of the contest. The ground truth data will be generated post-hoc after the submissions from different teams have been pooled in and assessed manually by National Institute of Standards and Technology (NIST) assessors
+\end{itemize}

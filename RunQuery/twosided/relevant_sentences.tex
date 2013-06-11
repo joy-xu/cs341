@@ -1,0 +1,66 @@
+Once the documents have been indexed, our next task is to extract “relevant” sentences for each entity. A simple solution to this problem could be to look for an exact match of our entity name in the document. As said before, only 0.4\% of the relevant documents for an entity don’t contain an explicit mention, therefore this strategy is certainly good. However, there are three potential problems with this approach:
+\begin{itemize}
+\item The same entity is referred to with different names, e.g. William Gates as W. Gates or Bill Gates, Robert Stovall as Bob Stovall etc.
+\item Different people have the same name, e.g. Boris Berezovsky, the businessman and Boris Berezovsky, the pianist, or Basic Element, the company and Basic Element, the music group.
+\item A document mentions two people with a part of the name being common. For e.g. a document overall may mention Henry Gutierrez, however, it may also contain a mention for Priscilla Gutierrez. This may be a problem because if a sentence uses only the word Gutierrez, we need to know which Gutierrez it refers to.
+\end{itemize}
+In order to counter these problems, we use explicit mentions along with a combination of disambiguation strategies to find the “relevant” sentences. 
+
+Our first task is to find out documents which are relevant to our entity. In order to do this, we created a set of disambiguation words relevant to each entity. This set was created using the wikipedia pages for these entities. The process of creating the disambiguation sets had the following three steps:
+\begin{itemize}
+\item \textbf{Anchors} \\
+Find top 10 (by count) anchor texts on the wikipedia page of the entity and consider all tokens occurring in them. We consider only the top 10 to consider only the significant concepts representing the entity. The logic here is that the outlinks refer to concepts (people, places etc.) relevant to the entity and will therefore provide valuable disambiguation information. Table~\ref{tab:disamb_anchors} shows the disambiguation set for two entities obtained using this method.
+\item \textbf{Categories} \\
+Every wikipedia page is annotated with information about the different categories that the entity belongs to on wikipedia. This information is valuable in providing most relevant concepts relating to the entity and we, therefore, consider all tokens occurring in these categories as well.
+\item \textbf{Pruning} \\ 
+While the above two methods together give us a very good disambiguation set, they generally include some very common words, which don’t add any value to the set. We, therefore, pruned them manually. Although, we did this step manually, it can also be automated by considering the document frequency of the words in wikipedia. 
+\end{itemize}	
+Table~\ref{tab:disamb_final} shows the final disambiguation set for two entities obtained after the three steps.
+ 
+For every entity, while retrieving relevant documents, we estimate how many of the disambiguation words are contained in the document. Only when this number crosses a certain threshold do we consider the document to be relevant. We experimented with different threshold values and settled on a value of 0.1. However, in the absence of a training set, this value was based more on manual screening of several runs. Moreover, we also observed that the same threshold does not seem to work for different entities, however, there was no clear way to learn different threshold values for different entities.
+
+Once the relevance of a document has been estimated, we need to extract all sentences within the document which are relevant to our entity. In order to this, we consider all possible unigrams of the expansions for that entity and retrieve all sentences which contain that. We do this because a sentence may refer to the entity only with the first or last name within the document. However, this necessitates disambiguation even at the sentence level. We do this using the following two methods:
+
+\begin{table*}[ht]
+\centering
+\begin{tabular}{|c|c|}
+\hline
+Boris Berezovsky (Businessman) & Boris Berezovsky (Pianist) \\
+\hline
+Alexander Litvinenko & Hamish Milne \\
+Roman Abramovich & Violin \\
+Vladimir Putin & Sergei Rachmaninoff \\
+Nikolai Glushkov & Moscow \\
+Federal Security Service (Russia) & Russia \\
+Yevgeny Primakov & Leopold Godowsky \\
+Aeroflot & Piano Trio No. 2 (Shostakovich) \\
+Paul Klebnikov & Virtual International Authority File \\
+High Court of Justice & Pianist \\
+The Guardian & Swedish Chamber Orchestra \\
+\hline
+\end{tabular}
+\caption{Disambiguation set obtained using anchors}
+\label{tab:disamb_anchors}
+\end{table*}
+
+
+\begin{table*}[ht]
+\centering
+\begin{tabular}{|p{7cm}|p{7cm}|}
+\hline
+Boris Berezovsky (Businessman) & Boris Berezovsky (Pianist) \\
+\hline
+nikolai, christian, mathematician, activist, abramovich, england, oil, financier, hanging, owner, polish, paul, suicide, wanted, aeroflot, descent, service, federal, writer, sunninghill, christianity, member, jewish, academy, litvinenko, local, kingdom, whitecollar, putin, orthodox, klebnikov, guardian, moscow, fugitive, emigrant, glushkov, billionaire, political & sergei, trio, violin, swedish, tchaikovsky, pianoforte, orchestra, classical, milne, international, piano, pianist, prizewinners, hamish, moscow, leeds, russian, shostakovich, leopold, conservatory, rachmaninoff, chamber, godowsky, russia \\
+\hline
+\end{tabular}
+\caption{Final disambiguation set for two entities}
+\label{tab:disamb_final}
+\end{table*}
+
+\begin{itemize}
+\item \textbf{Coreference resolution} \\
+We use Stanford NLP parser to resolve the coreferences of the mentions so that we know that the pronominal references point to our entity and not some other entity. For example, in the sentence, Henry Gutierrez met his wife Priscilla Gutierrez while he was working at IBM, we conclude that “he” refers to Henry and is therefore relevant to us.
+\item \textbf{Word Expansion} \\
+Since we retrieve sentences which have all possible unigrams, it is possible that the sentence actually does not refer to our entity at all. For example, the sentence, Priscilla Gutierrez works at Microsoft, will be retrieved for the entity Henry Gutierrez. However, it is not relevant to our entity. In order to handle such scenarios, we expand the entity mention into the noun phrase and consider it relevant only if all the tokens are present within our entity’s expansion set. In this example, Gutierrez will be expanded to Priscilla Gutierrez, and since the token Priscilla doesn’t occur in Henry Gutierrez’s expansion set, this sentence will be ignored.
+\end{itemize}
+While retrieving relevant sentences, we also clean them up (non-ascii characters etc.) and split them further wherever necessary, especially for social documents like twitter.

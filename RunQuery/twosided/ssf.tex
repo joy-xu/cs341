@@ -1,0 +1,98 @@
+% to compile, make sure you use the following (in order to get proper font embedding):
+% for PDF use dvipdfm
+% for PS use dvips -t letter -Pdownload35
+
+\documentclass[letterpaper]{article}
+\usepackage{aaai}
+\usepackage{times}
+\usepackage{helvet}
+\usepackage{courier}
+\usepackage{multirow}
+\usepackage{enumitem}
+\frenchspacing
+\pdfinfo{
+/Title (...................)
+/Subject (AAAI Publications)
+/Author (AAAI Press)}
+\setcounter{secnumdepth}{0}
+
+\usepackage[show]{chato-notes} % set to ``hide'' for submission
+%\usepackage[hide]{chato-notes} % set to ``hide'' for submission
+
+\usepackage{graphicx}
+\usepackage{url}
+% to get formulae in the time font as well:
+\usepackage{mathptmx}
+\usepackage{hyphenat}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{subfigure}
+
+\newcommand{\hide}[1]{}
+%\newcommand{\xhdr}[1]{\vspace{2mm}\noindent{{\bf #1.}}}
+\newcommand{\xhdr}[1]{\vspace{0mm}{\bf #1.}}
+\newcommand{\xhdrNoPeriod}[1]{\vspace{0mm}{\bf #1}}
+\newcommand{\cpt}[1]{\textsc{\MakeLowercase{#1}}}
+\newcommand{\rev}[1]{\underline{#1}}
+
+%%% space saving ideas
+%\enlargethispage{\baselineskip} % to add additional line to a page
+%\renewcommand{\baselinestretch}{0.983}
+\newcommand{\denselist}{ \itemsep -2pt\topsep-10pt\partopsep-10pt }
+\newcommand{\denselistRefs}{ \itemsep -2pt\topsep-5pt\partopsep-7pt }
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+% for line breaks in tables; e.g., \specialcell[t]{Foo\\bar}:
+\newcommand{\specialcell}[3]{\begin{tabular}[#1]{@{}#2@{}}#3\end{tabular}}
+
+\clubpenalty = 10000
+\widowpenalty = 10000 
+
+\hyphenation{
+Wi-ki-pe-dia
+Wi-ki-speedia
+Page-Rank
+un-suc-cess-ful
+}
+
+% for some reason it's important to have this line that late on in the doc:
+\usepackage{cmm-greek}
+
+\begin{document}
+
+\title{Streaming Slot Filling}
+\author{Aju T. Scaria, Anshul Mittal, Bharath Bhat \\
+ Advisor: Jeffrey Ullman}
+\renewcommand{\today}{June 10, 2013}
+\maketitle
+The web has an enormous amount of information stored as text content and it grows by the day. Building systems that could  extract meaningful information from this large, freely available data repository would help us to maintain upto date information about different events and people. According to statistics released by the Text REtrieval Conference (TREC), it takes around 365 days on the average for a news article to be cited in Wikipedia after it has been published~\cite{kba}. This lag of almost a year is quite alarming considering the tremendous advancements in the field of data warehousing and information extraction in the recent years. TREC promotes research in this area by introducing a Knowledge Base Acceleration (KBA) track specifically targeting extracting information from a huge web corpus collected from different sources. The KBA systems must filter a large stream of text to find documents that can help update a knowledge base like Wikipedia. In this paper, we present our approach and models to extract information about a set of entities (people, facilities and organizations) released as part of the TREC KBA 2013 Streaming Slot Filling (SSF) task.
+\section{Problem statement}
+\input{problem}
+\section{Dataset}
+\input{dataset}
+\section{Related work}
+\input{related_work}
+\section{Overview}
+\input{overview}
+\section{Indexing}
+\input{indexing}
+\section{Extracting relevant sentences}
+\input{relevant_sentences}
+\section{Finding slot values}
+\input{slot_values.tex}
+\section{Results}
+\input{results}
+\section{Conclusion}
+\input{conclusion}
+%\section{References}
+%\input{references}
+\bibliographystyle{aaai}
+\bibliography{bibliography}
+
+%\appendix
+%\section{Appendix -- leftovers}
+%\label{sec:appendix}
+%\input{070appendix}
+
+\end{document}

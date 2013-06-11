@@ -1,0 +1,42 @@
+\begin{thebibliography}{}
+
+\bibitem[\protect\citeauthoryear{Brin}{1998}]{brin}
+Brin, S.
+\newblock 1998.
+\newblock Extracting patterns and relations from the world wide web.
+\newblock Technical Report. Stanford InfoLab.
+
+\bibitem[\protect\citeauthoryear{Dalton and Deitz}{2012}]{dalton}
+Dalton, J., and Deitz, L.
+\newblock 2012.
+\newblock Bi-directional linkability from wikipedia to documents and back
+  again.
+
+\bibitem[\protect\citeauthoryear{Frank \bgroup et al.\egroup }{2012}]{kba}
+Frank, J.; Kleiman-Weiner, M.; Soboroff, I.; and Roberts, D.~A.
+\newblock 2012.
+\newblock Trec-kba 2012 overview slides.
+
+\bibitem[\protect\citeauthoryear{Gebremeskel \bgroup et al.\egroup
+  }{2012}]{gebre}
+Gebremeskel, G.; He, J.; Bosscarino, C.; and de~Vries, A.
+\newblock 2012.
+\newblock Cwi at trec 2012, kba track and session track.
+
+\bibitem[\protect\citeauthoryear{Kjersten and McNamee}{2012}]{kjersten}
+Kjersten, B., and McNamee, P.
+\newblock 2012.
+\newblock The hltcoe approach to the trec 2012 kba track.
+
+\bibitem[\protect\citeauthoryear{Mintz \bgroup et al.\egroup }{2009}]{mintz}
+Mintz, M.; Bills, S.; Snow, R.; and Jurafsky, D.
+\newblock 2009.
+\newblock Distant supervision for relation extraction without labeled data.
+\newblock ACL/AFNLP 2009: 1003-1011.
+
+\bibitem[\protect\citeauthoryear{Spitkovsky and Norvig}{2012}]{gcld}
+Spitkovsky, V., and Norvig, P.
+\newblock 2012.
+\newblock Google cross lingual dictionary.
+
+\end{thebibliography}
